@@ -1,0 +1,24 @@
+{
+  "$schema": "https://example.com/i18n.schema.json",
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "about": "About us"
+  },
+  "cart": {
+    "empty": "Your cart is empty.",
+    "items": "{count} items in your cart",
+    "checkout": "Check out",
+    "removed": "Removed \"{name}\" from your cart."
+  },
+  "errors": {
+    "network": "We couldn't reach the server. Check your connection and try again.",
+    "code": "ERR_NETWORK"
+  },
+  "footer": {
+    "tagline": "Hand tools that last.",
+    "contact": "mailto:hello@example.com",
+    "brand": "#1a5f3f",
+    "links": ["Privacy", "Terms", "Returns"]
+  }
+}

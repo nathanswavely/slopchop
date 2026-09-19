@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Northwind Tools</title>
+  <meta name="description" content="Hand tools made in Lancaster, PA &amp; sharpened for life.">
+  <meta property="og:title" content="Northwind Tools">
+  <meta name="viewport" content="width=device-width">
+  <style>
+    body { font: 16px/1.5 sans-serif; }
+  </style>
+</head>
+<body>
+  <!-- The hero. Copy lives in the markup on purpose. -->
+  <header>
+    <h1>Tools you&rsquo;ll hand down</h1>
+    <p>We make a few things well. Chisels, gauges, mallets. Everything is
+      sharpened before it ships and sharpened again whenever you like.</p>
+    <a href="/shop" title="Browse the shop">See what's on the bench</a>
+  </header>
+
+  <form action="/subscribe">
+    <input type="email" placeholder="Your email address" aria-label="Email address">
+    <button>Keep me posted</button>
+  </form>
+
+  {% if user %}
+    <p>Welcome back, {{ user.name }}.</p>
+  {% else %}
+    <p>New here? Start with the marking gauge.</p>
+  {% endif %}
+
+  <pre>make sharpen</pre>
+  <p>Call us at <code>555-0100</code> or just stop by.</p>
+
+  <script>
+    console.log("This is not copy, and it never enters the ledger.");
+  </script>
+</body>
+</html>

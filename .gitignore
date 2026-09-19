@@ -1,0 +1,4 @@
+node_modules/
+copy/drafts/
+*.orphaned.txt
+.DS_Store

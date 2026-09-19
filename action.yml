@@ -1,0 +1,41 @@
+name: 'SlopChop'
+description: 'Fail the build when copy enters the source without a recorded author. Nothing leaves the runner.'
+author: 'Swavely Creative'
+branding:
+  icon: 'edit-3'
+  color: 'green'
+
+inputs:
+  working-directory:
+    description: 'Directory holding .slopchop.json'
+    required: false
+    default: '.'
+  config:
+    description: 'Path to the config file, if not .slopchop.json in the working directory'
+    required: false
+    default: ''
+  node-version:
+    description: 'Node.js version to run the check with'
+    required: false
+    default: '22'
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    # The tool ships inside this action and has no dependencies, so there is
+    # nothing to install and nothing to fetch from a registry.
+    - name: SlopChop check
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        CONFIG: ${{ inputs.config }}
+      run: |
+        if [ -n "$CONFIG" ]; then
+          node "${{ github.action_path }}/bin/slopchop.js" check --config "$CONFIG"
+        else
+          node "${{ github.action_path }}/bin/slopchop.js" check
+        fi

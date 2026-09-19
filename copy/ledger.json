@@ -1,0 +1,1061 @@
+{
+  "version": 1,
+  "strict": false,
+  "entries": [
+    {
+      "id": "8012034e88f7",
+      "text": "# SlopChop",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 1,
+          "kind": "md-block",
+          "raw": "# SlopChop",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "aaeababbfc74",
+      "text": "SlopChop is copy review for a site or app you built with AI. It finds every string a visitor can read, puts the paragraphs in front of you one at a time so you can write them yourself, and lets you wave through the labels and error messages that were never going to sound like anyone. Each decision is recorded in a file next to the code, and a CI check keeps the next AI session from quietly undoing your work.",
+      "words": 81,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 3,
+          "kind": "md-block",
+          "raw": "SlopChop is copy review for a site or app you built with AI. It finds every string a visitor can read, puts the paragraphs in front of you one at a time so you can write them yourself, and lets you wave through the labels and error messages that were never going to sound like anyone. Each decision is recorded in a file next to the code, and a CI check keeps the next AI session from quietly undoing your work.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "0b1f06a21098",
+      "text": "## Why this exists",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 5,
+          "kind": "md-block",
+          "raw": "## Why this exists",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "957b3e2cc00d",
+      "text": "Patchwork, the community platform I run, was built with a lot of AI assistance, and most of its copy was drafted the same way. The build went quickly, and most of the words on the site were not mine. There were about two thousand strings, so \"I will go through and fix it sometime\" was never going to happen. What I needed was a way to find the couple hundred paragraphs that carried the voice, skip the labels that did not, and keep a record so I would not have to make the same call twice. This is that tool with the Patchwork-specific parts turned into configuration.",
+      "words": 107,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 7,
+          "kind": "md-block",
+          "raw": "Patchwork, the community platform I run, was built with a lot of AI assistance, and most of its copy was drafted the same way. The build went quickly, and most of the words on the site were not mine. There were about two thousand strings, so \"I will go through and fix it sometime\" was never going to happen. What I needed was a way to find the couple hundred paragraphs that carried the voice, skip the labels that did not, and keep a record so I would not have to make the same call twice. This is that tool with the Patchwork-specific parts turned into configuration.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "00d80b6f74d1",
+      "text": "It is not an AI detector. It records what you decided, and it makes deciding fast.",
+      "words": 16,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 9,
+          "kind": "md-block",
+          "raw": "It is not an AI detector. It records what you decided, and it makes deciding fast.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "5ae438610cf1",
+      "text": "## How it works",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 11,
+          "kind": "md-block",
+          "raw": "## How it works",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "622d34635d80",
+      "text": "`slopchop sync` reads the files named in `.slopchop.json` and pulls out every string a person could read: paragraphs in Markdown, text between tags, `placeholder` and `alt` attributes, message catalog values, sentence-shaped strings in your JavaScript. Identical text in twelve places becomes one entry, so you decide \"Save changes\" once. The result is `copy/ledger.json`, with every entry marked unreviewed.",
+      "words": 58,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 13,
+          "kind": "md-block",
+          "raw": "`slopchop sync` reads the files named in `.slopchop.json` and pulls out every string a person could read: paragraphs in Markdown, text between tags, `placeholder` and `alt` attributes, message catalog values, sentence-shaped strings in your JavaScript. Identical text in twelve places becomes one entry, so you decide \"Save changes\" once. The result is `copy/ledger.json`, with every entry marked unreviewed.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "da51d253ae02",
+      "text": "`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `⌘↵` saves what you wrote.",
+      "words": 88,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 15,
+          "kind": "md-block",
+          "raw": "`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `⌘↵` saves what you wrote.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "9fd4638e44bb",
+      "text": "`slopchop apply` writes your versions into the source files. It is a dry run until you pass `--apply`, and it edits nothing unless it finds the exact original text where the ledger says it should be. Run it on a clean tree and read the diff.",
+      "words": 46,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 17,
+          "kind": "md-block",
+          "raw": "`slopchop apply` writes your versions into the source files. It is a dry run until you pass `--apply`, and it edits nothing unless it finds the exact original text where the ledger says it should be. Run it on a clean tree and read the diff.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "7ce292edbd3e",
+      "text": "`slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it.",
+      "words": 20,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 19,
+          "kind": "md-block",
+          "raw": "`slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "1e4c3372a5d2",
+      "text": "## The four decisions",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 21,
+          "kind": "md-block",
+          "raw": "## The four decisions",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "8ed588e980dd",
+      "text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has looked. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |",
+      "words": 58,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 23,
+          "kind": "md-block",
+          "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has looked. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "4b880144de98",
+      "text": "`ai-fine` is the one that makes this bearable. \"Failed to load comments\" does not need your voice, and neither do most of the labels around it. Marking them is one keystroke each, or one command for a whole file. The report counts them separately from `human`, so the number you end up with is honest about which is which.",
+      "words": 59,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 30,
+          "kind": "md-block",
+          "raw": "`ai-fine` is the one that makes this bearable. \"Failed to load comments\" does not need your voice, and neither do most of the labels around it. Marking them is one keystroke each, or one command for a whole file. The report counts them separately from `human`, so the number you end up with is honest about which is which.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "33d33ec3137f",
+      "text": "## Getting through it without losing a weekend",
+      "words": 8,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 32,
+          "kind": "md-block",
+          "raw": "## Getting through it without losing a weekend",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "d78c6c433bac",
+      "text": "Every string is sorted into a tier by length: paragraphs (16 words and up), helper text (6 to 15), and labels (under 6). Paragraphs are where the writing happens. Labels mostly need a glance, and a lot of them can go in bulk:",
+      "words": 43,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 34,
+          "kind": "md-block",
+          "raw": "Every string is sorted into a tier by length: paragraphs (16 words and up), helper text (6 to 15), and labels (under 6). Paragraphs are where the writing happens. Labels mostly need a glance, and a lot of them can go in bulk:",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "611c62264e44",
+      "text": "`decide` only ever moves strings out of `unreviewed`, so running it again cannot undo something you decided by hand. It is a dry run until you pass `--apply`.",
+      "words": 28,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 42,
+          "kind": "md-block",
+          "raw": "`decide` only ever moves strings out of `unreviewed`, so running it again cannot undo something you decided by hand. It is a dry run until you pass `--apply`.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "7d12cc60277e",
+      "text": "The queue also comes out as Markdown, for the places writing actually happens (a phone, a train, the GitHub web editor):",
+      "words": 21,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 44,
+          "kind": "md-block",
+          "raw": "The queue also comes out as Markdown, for the places writing actually happens (a phone, a train, the GitHub web editor):",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "d986bab8506b",
+      "text": "Each string sits between `                ` markers. Write between them. A block you leave alone is skipped, so doing three and coming back later is fine. Replace a whole block with `@mine` if the words are already yours, or `@fine` to leave the draft in place.",
+      "words": 46,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 53,
+          "kind": "md-block",
+          "raw": "Each string sits between `                ` markers. Write between them. A block you leave alone is skipped, so doing three and coming back later is fine. Replace a whole block with `@mine` if the words are already yours, or `@fine` to leave the draft in place.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "4683518a93b2",
+      "text": "A draft is a checkout. While one exists, decide that file in the draft and not in the review page, because the page can rewrite a string out from under a marker and then your writing has nowhere to land. The page refuses a decision on a checked-out string and names the file. `pull` never records a block you did not touch. If the source moves anyway, `pull --redraft` saves any stranded writing to a file beside the draft and cuts a fresh one. `SLOPCHOP_DRAFTS_DIR` points the drafts at a private repo, so the half-finished sentences stay out of a public one.",
+      "words": 102,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 55,
+          "kind": "md-block",
+          "raw": "A draft is a checkout. While one exists, decide that file in the draft and not in the review page, because the page can rewrite a string out from under a marker and then your writing has nowhere to land. The page refuses a decision on a checked-out string and names the file. `pull` never records a block you did not touch. If the source moves anyway, `pull --redraft` saves any stranded writing to a file beside the draft and cuts a fresh one. `SLOPCHOP_DRAFTS_DIR` points the drafts at a private repo, so the half-finished sentences stay out of a public one.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "02a0a48a4b29",
+      "text": "## Keeping it that way",
+      "words": 5,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 57,
+          "kind": "md-block",
+          "raw": "## Keeping it that way",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "081218b81647",
+      "text": "Rewriting two thousand strings once is a finite job. Keeping them rewritten is not, because the next AI session adds forty more and the site slides back without anyone noticing.",
+      "words": 30,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 59,
+          "kind": "md-block",
+          "raw": "Rewriting two thousand strings once is a finite job. Keeping them rewritten is not, because the next AI session adds forty more and the site slides back without anyone noticing.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "37607732d9ab",
+      "text": "So the first `sync` stamps a baseline: every unreviewed string at that moment is accepted as existing debt, and `check` fails only when a string that is not in the baseline shows up undecided. You can leave the backlog alone for a month and CI stays green. New copy has to be looked at before it merges. When the backlog reaches zero, set `\"strict\": true` in the ledger and the check fails on any unreviewed string at all.",
+      "words": 78,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 61,
+          "kind": "md-block",
+          "raw": "So the first `sync` stamps a baseline: every unreviewed string at that moment is accepted as existing debt, and `check` fails only when a string that is not in the baseline shows up undecided. You can leave the backlog alone for a month and CI stays green. New copy has to be looked at before it merges. When the backlog reaches zero, set `\"strict\": true` in the ledger and the check fails on any unreviewed string at all.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "f2d88b7996fb",
+      "text": "The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings in the job summary, with the file and line for each.",
+      "words": 33,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 67,
+          "kind": "md-block",
+          "raw": "The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings in the job summary, with the file and line for each.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2e9efc2248fe",
+      "text": "## Setting it up",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 69,
+          "kind": "md-block",
+          "raw": "## Setting it up",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "eddaeb766c91",
+      "text": "`init` looks at the repo and writes a `.slopchop.json` with the patterns that matched something. Edit it to taste:",
+      "words": 19,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 75,
+          "kind": "md-block",
+          "raw": "`init` looks at the repo and writes a `.slopchop.json` with the patterns that matched something. Edit it to taste:",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "733c543e200e",
+      "text": "What counts as copy, by file type:",
+      "words": 7,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 89,
+          "kind": "md-block",
+          "raw": "What counts as copy, by file type:",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "1fd07944acd4",
+      "text": "| Files | What comes out |\n|---|---|\n| `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |\n| `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |\n| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |\n| `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |\n| `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |\n| `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |\n| `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{\"error\":\"...\"}` bodies. |",
+      "words": 151,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 91,
+          "kind": "md-block",
+          "raw": "| Files | What comes out |\n|---|---|\n| `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |\n| `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |\n| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |\n| `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |\n| `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |\n| `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |\n| `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{\"error\":\"...\"}` bodies. |",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "fe7ded79e306",
+      "text": "The filters over-collect on purpose. A false positive costs one keystroke; a false negative is a string you never see. If something odd shows up in the queue, mark it and keep going.",
+      "words": 33,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 101,
+          "kind": "md-block",
+          "raw": "The filters over-collect on purpose. A false positive costs one keystroke; a false negative is a string you never see. If something odd shows up in the queue, mark it and keep going.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "f4a43bdd0d6b",
+      "text": "## Where it will get in your way",
+      "words": 8,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 103,
+          "kind": "md-block",
+          "raw": "## Where it will get in your way",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "6b0fdc437cca",
+      "text": "In HTML, JSX, and Vue, an inline element splits the sentence around it. `Call us at <code>555-0100</code> or stop by` shows up as two entries. Markdown does not have this problem, since a paragraph is one block whatever is inside it.",
+      "words": 41,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 105,
+          "kind": "md-block",
+          "raw": "In HTML, JSX, and Vue, an inline element splits the sentence around it. `Call us at <code>555-0100</code> or stop by` shows up as two entries. Markdown does not have this problem, since a paragraph is one block whatever is inside it.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "dc65d1533022",
+      "text": "The YAML reader is a subset: block mappings, sequences, plain and quoted scalars, and `|` and `>` blocks. Flow collections, anchors, and tags are skipped rather than guessed at.",
+      "words": 29,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 107,
+          "kind": "md-block",
+          "raw": "The YAML reader is a subset: block mappings, sequences, plain and quoted scalars, and `|` and `>` blocks. Flow collections, anchors, and tags are skipped rather than guessed at.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "82ff4c657728",
+      "text": "Writeback refuses anything that would break the file it lands in (a `{` in JSX text, a quote that would close a YAML scalar, a newline in an attribute) and tells you which entry and why. It would rather leave a string undone than produce a file that does not build.",
+      "words": 51,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 109,
+          "kind": "md-block",
+          "raw": "Writeback refuses anything that would break the file it lands in (a `{` in JSX text, a quote that would close a YAML scalar, a newline in an attribute) and tells you which entry and why. It would rather leave a string undone than produce a file that does not build.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "c5aa7fec5641",
+      "text": "## What it does not do",
+      "words": 6,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 111,
+          "kind": "md-block",
+          "raw": "## What it does not do",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "318e866dbc04",
+      "text": "- It does not send your text anywhere. There is no server, no account, and no model call. The review page is a local process reading local files.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. A first pass that flags the worst AI tells and suggests a direction is coming, and it will run on your own key. A suggestion you accept without editing will be recorded as its own status, so `human` only ever means a person typed it.",
+      "words": 116,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 113,
+          "kind": "md-block",
+          "raw": "- It does not send your text anywhere. There is no server, no account, and no model call. The review page is a local process reading local files.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. A first pass that flags the worst AI tells and suggests a direction is coming, and it will run on your own key. A suggestion you accept without editing will be recorded as its own status, so `human` only ever means a person typed it.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "4a658ef4b0b9",
+      "text": "## Report and badge",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 117,
+          "kind": "md-block",
+          "raw": "## Report and badge",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "4ad50a9edb27",
+      "text": "writes `copy/REPORT.md` with the counts by status and tier, the scope and what was left out of it, and every replaced draft next to the text that replaced it. It also writes `copy/badge.json` for shields.io and `copy/badge.svg` for a repo that would rather not call out. The badge shows two numbers, reviewed and human-written, because either one alone overstates things.",
+      "words": 60,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 123,
+          "kind": "md-block",
+          "raw": "writes `copy/REPORT.md` with the counts by status and tier, the scope and what was left out of it, and every replaced draft next to the text that replaced it. It also writes `copy/badge.json` for shields.io and `copy/badge.svg` for a repo that would rather not call out. The badge shows two numbers, reviewed and human-written, because either one alone overstates things.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "88cae4fc43af",
+      "text": "## Next",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 125,
+          "kind": "md-block",
+          "raw": "## Next",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2a6723c8cee5",
+      "text": "A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. Pull request comments listing new strings, with suggested rewrites as suggestion blocks. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves.",
+      "words": 67,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 127,
+          "kind": "md-block",
+          "raw": "A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. Pull request comments listing new strings, with suggested rewrites as suggestion blocks. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "08d5560916c7",
+      "text": "To start, run `npx slopchop init` in the repo, then `sync`. The first sync stamps the baseline, so the check passes from the beginning. After that, open `slopchop review` and start with the paragraphs.",
+      "words": 34,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 129,
+          "kind": "md-block",
+          "raw": "To start, run `npx slopchop init` in the repo, then `sync`. The first sync stamps the baseline, so the check passes from the beginning. After that, open `slopchop review` and start with the paragraphs.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "d38ab294e6b6",
+      "text": "SlopChop",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 6,
+          "kind": "html-text",
+          "raw": "SlopChop",
+          "quote": null
+        },
+        {
+          "file": "src/ui.html",
+          "line": 108,
+          "kind": "html-text",
+          "raw": "SlopChop",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "fbc6d752fe52",
+      "text": "loading…",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 110,
+          "kind": "html-text",
+          "raw": "loading…",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "5c4fcf9baf2d",
+      "text": "Apply rewrites",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 111,
+          "kind": "html-text",
+          "raw": "Apply rewrites",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "0f36d92c78c9",
+      "text": "Write approved rewrites into source",
+      "words": 5,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 111,
+          "kind": "html-attr:title",
+          "raw": "Write approved rewrites into source",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "f5265a26ad89",
+      "text": "Unreviewed",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 115,
+          "kind": "html-text",
+          "raw": "Unreviewed",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "a52ace420f21",
+      "text": "All",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 116,
+          "kind": "html-text",
+          "raw": "All",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "e88b2a530839",
+      "text": "Rewritten (pending apply)",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 117,
+          "kind": "html-text",
+          "raw": "Rewritten (pending apply)",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "9ffa865f2bc6",
+      "text": "Human",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 118,
+          "kind": "html-text",
+          "raw": "Human",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "58d0290703dc",
+      "text": "Left as drafted",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 119,
+          "kind": "html-text",
+          "raw": "Left as drafted",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "36e2aebf17a6",
+      "text": "Every tier",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 122,
+          "kind": "html-text",
+          "raw": "Every tier",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "7f55c8b76807",
+      "text": "Paragraphs (16+ words)",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 123,
+          "kind": "html-text",
+          "raw": "Paragraphs (16+ words)",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "d81e357d53a8",
+      "text": "Helper text (6–15)",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 124,
+          "kind": "html-text",
+          "raw": "Helper text (6–15)",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "0a4ca47ba8ae",
+      "text": "Labels (1–5)",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 125,
+          "kind": "html-text",
+          "raw": "Labels (1–5)",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "aa66377e0510",
+      "text": "Every file",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 127,
+          "kind": "html-text",
+          "raw": "Every file",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "761fdd9e5d85",
+      "text": "Search copy… ⌘K",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 128,
+          "kind": "html-attr:placeholder",
+          "raw": "Search copy…  ⌘K",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "ba3bbbe10d8b",
+      "text": "Loading…",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 136,
+          "kind": "html-text",
+          "raw": "Loading…",
+          "quote": null
+        }
+      ]
+    }
+  ],
+  "retired": [],
+  "baseline": [
+    "8012034e88f7",
+    "aaeababbfc74",
+    "0b1f06a21098",
+    "957b3e2cc00d",
+    "00d80b6f74d1",
+    "5ae438610cf1",
+    "622d34635d80",
+    "da51d253ae02",
+    "9fd4638e44bb",
+    "7ce292edbd3e",
+    "1e4c3372a5d2",
+    "8ed588e980dd",
+    "4b880144de98",
+    "33d33ec3137f",
+    "d78c6c433bac",
+    "611c62264e44",
+    "7d12cc60277e",
+    "d986bab8506b",
+    "4683518a93b2",
+    "02a0a48a4b29",
+    "081218b81647",
+    "37607732d9ab",
+    "f2d88b7996fb",
+    "2e9efc2248fe",
+    "eddaeb766c91",
+    "733c543e200e",
+    "1fd07944acd4",
+    "fe7ded79e306",
+    "f4a43bdd0d6b",
+    "6b0fdc437cca",
+    "dc65d1533022",
+    "82ff4c657728",
+    "c5aa7fec5641",
+    "318e866dbc04",
+    "4a658ef4b0b9",
+    "4ad50a9edb27",
+    "88cae4fc43af",
+    "2a6723c8cee5",
+    "08d5560916c7",
+    "d38ab294e6b6",
+    "fbc6d752fe52",
+    "5c4fcf9baf2d",
+    "0f36d92c78c9",
+    "f5265a26ad89",
+    "a52ace420f21",
+    "e88b2a530839",
+    "9ffa865f2bc6",
+    "58d0290703dc",
+    "36e2aebf17a6",
+    "7f55c8b76807",
+    "d81e357d53a8",
+    "0a4ca47ba8ae",
+    "aa66377e0510",
+    "761fdd9e5d85",
+    "ba3bbbe10d8b"
+  ]
+}

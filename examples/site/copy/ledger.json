@@ -1,0 +1,1126 @@
+{
+  "version": 1,
+  "strict": false,
+  "entries": [
+    {
+      "id": "d0f96c5b3417",
+      "text": "About Northwind Tools",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "content/about.md",
+          "line": 2,
+          "kind": "yaml-plain",
+          "raw": "About Northwind Tools",
+          "quote": null,
+          "at": "title"
+        }
+      ]
+    },
+    {
+      "id": "6d43ba3e1418",
+      "text": "A small shop making hand tools that last, since 1987.",
+      "words": 10,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "content/about.md",
+          "line": 3,
+          "kind": "yaml-quoted",
+          "raw": "A small shop making hand tools that last, since 1987.",
+          "quote": "\"",
+          "at": "description"
+        }
+      ]
+    },
+    {
+      "id": "c3b8576c4125",
+      "text": "# About us",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "content/about.md",
+          "line": 7,
+          "kind": "md-block",
+          "raw": "# About us",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "c5ab420a29b2",
+      "text": "Northwind Tools is a two-person shop in Lancaster, Pennsylvania. We make\nchisels, marking gauges and the odd mallet, and we sharpen anything you\nbring in on a Saturday.",
+      "words": 28,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "content/about.md",
+          "line": 9,
+          "kind": "md-block",
+          "raw": "Northwind Tools is a two-person shop in Lancaster, Pennsylvania. We make\nchisels, marking gauges and the odd mallet, and we sharpen anything you\nbring in on a Saturday.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "c1ee25843265",
+      "text": "Our workshop is open to visitors on the first Saturday of every month.",
+      "words": 13,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "content/about.md",
+          "line": 14,
+          "kind": "html-text",
+          "raw": "Our workshop is open to visitors on the first Saturday of every month.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "65d50e51b33e",
+      "text": "## What we believe",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "content/about.md",
+          "line": 17,
+          "kind": "md-block",
+          "raw": "## What we believe",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "5fa2ae6e0bf3",
+      "text": "- A tool should outlive the person who bought it.\n- Repairs are part of the job, not an upsell.",
+      "words": 20,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "content/about.md",
+          "line": 19,
+          "kind": "md-block",
+          "raw": "- A tool should outlive the person who bought it.\n- Repairs are part of the job, not an upsell.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "63208b6400a7",
+      "text": "# Pricing",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "content/pricing.mdx",
+          "line": 7,
+          "kind": "md-block",
+          "raw": "# Pricing",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "9c1a15c224df",
+      "text": "Every tool is priced at what it costs us to make it well, plus enough to\nkeep the lights on. No tiers, no bundles.",
+      "words": 24,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "content/pricing.mdx",
+          "line": 9,
+          "kind": "md-block",
+          "raw": "Every tool is priced at what it costs us to make it well, plus enough to\nkeep the lights on. No tiers, no bundles.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "039217c57f16",
+      "text": "Sharpening is free for anything we made. Bring it by.",
+      "words": 10,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "content/pricing.mdx",
+          "line": 13,
+          "kind": "html-text",
+          "raw": "Sharpening is free for anything we made. Bring it by.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "f4d5362f6df7",
+      "text": "Shipping is a flat rate inside the United States.",
+      "words": 9,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "content/pricing.mdx",
+          "line": 18,
+          "kind": "md-block",
+          "raw": "Shipping is a flat rate inside the United States.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "3a78695388b3",
+      "text": "Home",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 4,
+          "kind": "json-value",
+          "raw": "Home",
+          "quote": "\"",
+          "at": "nav.home"
+        }
+      ]
+    },
+    {
+      "id": "d00aae6b7fbf",
+      "text": "Shop",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 5,
+          "kind": "json-value",
+          "raw": "Shop",
+          "quote": "\"",
+          "at": "nav.shop"
+        }
+      ]
+    },
+    {
+      "id": "b4b580a9ad8c",
+      "text": "About us",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 6,
+          "kind": "json-value",
+          "raw": "About us",
+          "quote": "\"",
+          "at": "nav.about"
+        }
+      ]
+    },
+    {
+      "id": "cdefccfa695c",
+      "text": "Your cart is empty.",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 9,
+          "kind": "json-value",
+          "raw": "Your cart is empty.",
+          "quote": "\"",
+          "at": "cart.empty"
+        }
+      ]
+    },
+    {
+      "id": "cb559e28c2f2",
+      "text": "{count} items in your cart",
+      "words": 5,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 10,
+          "kind": "json-value",
+          "raw": "{count} items in your cart",
+          "quote": "\"",
+          "at": "cart.items"
+        }
+      ]
+    },
+    {
+      "id": "326e405a5be3",
+      "text": "Check out",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 11,
+          "kind": "json-value",
+          "raw": "Check out",
+          "quote": "\"",
+          "at": "cart.checkout"
+        }
+      ]
+    },
+    {
+      "id": "2e7b9e8e564f",
+      "text": "Removed \"{name}\" from your cart.",
+      "words": 5,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 12,
+          "kind": "json-value",
+          "raw": "Removed \\\"{name}\\\" from your cart.",
+          "quote": "\"",
+          "at": "cart.removed"
+        }
+      ]
+    },
+    {
+      "id": "888a599e7720",
+      "text": "We couldn't reach the server. Check your connection and try again.",
+      "words": 11,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 15,
+          "kind": "json-value",
+          "raw": "We couldn't reach the server. Check your connection and try again.",
+          "quote": "\"",
+          "at": "errors.network"
+        }
+      ]
+    },
+    {
+      "id": "2a331b842d53",
+      "text": "Hand tools that last.",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 19,
+          "kind": "json-value",
+          "raw": "Hand tools that last.",
+          "quote": "\"",
+          "at": "footer.tagline"
+        }
+      ]
+    },
+    {
+      "id": "54a57c3147c4",
+      "text": "Privacy",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 22,
+          "kind": "json-value",
+          "raw": "Privacy",
+          "quote": "\"",
+          "at": "footer.links[0]"
+        }
+      ]
+    },
+    {
+      "id": "ede548996483",
+      "text": "Terms",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 22,
+          "kind": "json-value",
+          "raw": "Terms",
+          "quote": "\"",
+          "at": "footer.links[1]"
+        }
+      ]
+    },
+    {
+      "id": "16dcaa923f16",
+      "text": "Returns",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.json",
+          "line": 22,
+          "kind": "json-value",
+          "raw": "Returns",
+          "quote": "\"",
+          "at": "footer.links[2]"
+        }
+      ]
+    },
+    {
+      "id": "4e47826698bb",
+      "text": "Hello there",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.yml",
+          "line": 3,
+          "kind": "yaml-plain",
+          "raw": "Hello there",
+          "quote": null,
+          "at": "en.hello"
+        }
+      ]
+    },
+    {
+      "id": "dbb5f6371b6a",
+      "text": "Your account",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.yml",
+          "line": 5,
+          "kind": "yaml-quoted",
+          "raw": "Your account",
+          "quote": "\"",
+          "at": "en.account.title"
+        }
+      ]
+    },
+    {
+      "id": "98c555b4da60",
+      "text": "Signed in as %{name}",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.yml",
+          "line": 6,
+          "kind": "yaml-quoted",
+          "raw": "Signed in as %{name}",
+          "quote": "'",
+          "at": "en.account.signed_in_as"
+        }
+      ]
+    },
+    {
+      "id": "c0f8c2843147",
+      "text": "This can't be undone. Your orders will be kept for tax purposes, but everything else goes.",
+      "words": 16,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.yml",
+          "line": 7,
+          "kind": "yaml-plain",
+          "raw": "This can't be undone. Your orders will be kept for tax\n      purposes, but everything else goes.",
+          "quote": null,
+          "at": "en.account.delete_warning"
+        }
+      ]
+    },
+    {
+      "id": "46f7e9724e73",
+      "text": "Welcome to Northwind",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.yml",
+          "line": 13,
+          "kind": "yaml-plain",
+          "raw": "Welcome to Northwind",
+          "quote": null,
+          "at": "en.emails.welcome.subject"
+        }
+      ]
+    },
+    {
+      "id": "f96e9076b17c",
+      "text": "Thanks for signing up.\n\nYour first sharpening is on us. Bring anything in\non a Saturday and we'll take care of it.",
+      "words": 22,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.yml",
+          "line": 15,
+          "kind": "yaml-block",
+          "raw": "Thanks for signing up.\n\n        Your first sharpening is on us. Bring anything in\n        on a Saturday and we'll take care of it.",
+          "quote": null,
+          "at": "en.emails.welcome.body",
+          "indent": "        "
+        }
+      ]
+    },
+    {
+      "id": "d81dddaef8c1",
+      "text": "Pick a tool",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.yml",
+          "line": 24,
+          "kind": "yaml-plain",
+          "raw": "Pick a tool",
+          "quote": null,
+          "at": "en.steps[]"
+        }
+      ]
+    },
+    {
+      "id": "1abe9f5439aa",
+      "text": "Tell us how you'll use it",
+      "words": 6,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.yml",
+          "line": 25,
+          "kind": "yaml-quoted",
+          "raw": "Tell us how you'll use it",
+          "quote": "\"",
+          "at": "en.steps[]"
+        }
+      ]
+    },
+    {
+      "id": "26b83994dca8",
+      "text": "Wait",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.yml",
+          "line": 26,
+          "kind": "yaml-plain",
+          "raw": "Wait",
+          "quote": null,
+          "at": "en.steps[].name"
+        }
+      ]
+    },
+    {
+      "id": "f4958ae4cf90",
+      "text": "We ship on Tuesdays.",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "locales/en.yml",
+          "line": 27,
+          "kind": "yaml-plain",
+          "raw": "We ship on Tuesdays.",
+          "quote": null,
+          "at": "en.steps[].hint"
+        }
+      ]
+    },
+    {
+      "id": "5ced8f24ff29",
+      "text": "Ships Tuesday. Sharpened before it leaves.",
+      "words": 6,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/Card.vue",
+          "line": 4,
+          "kind": "html-text",
+          "raw": "Ships Tuesday. Sharpened before it leaves.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "afbfbdf04c75",
+      "text": "Out of stock. We make a batch every six weeks.",
+      "words": 10,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/Card.vue",
+          "line": 5,
+          "kind": "html-text",
+          "raw": "Out of stock. We make a batch every six weeks.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "9fd728c66c9a",
+      "text": "Add",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/Card.vue",
+          "line": 6,
+          "kind": "html-text",
+          "raw": "Add",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "0e9408353c72",
+      "text": "Add to cart",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/Card.vue",
+          "line": 6,
+          "kind": "html-attr:aria-label",
+          "raw": "Add to cart",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "974d0168eecb",
+      "text": "Sorry, that one just sold out.",
+      "words": 6,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/Card.vue",
+          "line": 12,
+          "kind": "js-string",
+          "raw": "Sorry, that one just sold out.",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "09abed023c19",
+      "text": "Empty cart",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/Hero.jsx",
+          "line": 5,
+          "kind": "jsx-string",
+          "raw": "Empty cart",
+          "quote": "'"
+        }
+      ]
+    },
+    {
+      "id": "19b5493df616",
+      "text": "Made to be repaired, not replaced.",
+      "words": 6,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/Hero.jsx",
+          "line": 10,
+          "kind": "jsx-text",
+          "raw": "Made to be repaired, not replaced.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "d399045f4ada",
+      "text": "Every tool we sell comes with a promise: bring it back and we will fix it. {count} people have taken us up on that this year.",
+      "words": 26,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/Hero.jsx",
+          "line": 12,
+          "kind": "jsx-text",
+          "raw": "Every tool we sell comes with a promise: bring it back and we will\n        fix it. {count} people have taken us up on that this year.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "b186cae1931f",
+      "text": "Open your cart",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/Hero.jsx",
+          "line": 15,
+          "kind": "jsx-attr:title",
+          "raw": "Open your cart",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "75ef6380289c",
+      "text": "The workbench on a Saturday morning",
+      "words": 6,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/Hero.jsx",
+          "line": 18,
+          "kind": "jsx-attr:alt",
+          "raw": "The workbench on a Saturday morning",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "41ff6661e096",
+      "text": "Your cart has been saved for later.",
+      "words": 7,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/Hero.jsx",
+          "line": 19,
+          "kind": "jsx-string",
+          "raw": "Your cart has been saved for later.",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "71a53ee68c81",
+      "text": "Northwind Tools",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 5,
+          "kind": "html-text",
+          "raw": "Northwind Tools",
+          "quote": null
+        },
+        {
+          "file": "src/index.html",
+          "line": 7,
+          "kind": "html-attr:content",
+          "raw": "Northwind Tools",
+          "quote": "\"",
+          "at": "meta og:title"
+        }
+      ]
+    },
+    {
+      "id": "8a23274ec552",
+      "text": "Hand tools made in Lancaster, PA & sharpened for life.",
+      "words": 10,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 6,
+          "kind": "html-attr:content",
+          "raw": "Hand tools made in Lancaster, PA &amp; sharpened for life.",
+          "quote": "\"",
+          "at": "meta description"
+        }
+      ]
+    },
+    {
+      "id": "925dab06b202",
+      "text": "Tools you’ll hand down",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 16,
+          "kind": "html-text",
+          "raw": "Tools you&rsquo;ll hand down",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "fae650861c27",
+      "text": "We make a few things well. Chisels, gauges, mallets. Everything is sharpened before it ships and sharpened again whenever you like.",
+      "words": 21,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 17,
+          "kind": "html-text",
+          "raw": "We make a few things well. Chisels, gauges, mallets. Everything is\n      sharpened before it ships and sharpened again whenever you like.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "65ff098325ea",
+      "text": "See what's on the bench",
+      "words": 5,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 19,
+          "kind": "html-text",
+          "raw": "See what's on the bench",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "4057912051eb",
+      "text": "Browse the shop",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 19,
+          "kind": "html-attr:title",
+          "raw": "Browse the shop",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "3fa7c5ef191f",
+      "text": "Your email address",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 23,
+          "kind": "html-attr:placeholder",
+          "raw": "Your email address",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "f2488fd4ef4a",
+      "text": "Email address",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 23,
+          "kind": "html-attr:aria-label",
+          "raw": "Email address",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "ef456e9f9beb",
+      "text": "Keep me posted",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 24,
+          "kind": "html-text",
+          "raw": "Keep me posted",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "35170616ba65",
+      "text": "Welcome back, {{ user.name }}.",
+      "words": 5,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 28,
+          "kind": "html-text",
+          "raw": "Welcome back, {{ user.name }}.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "300db65261ee",
+      "text": "New here? Start with the marking gauge.",
+      "words": 7,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 30,
+          "kind": "html-text",
+          "raw": "New here? Start with the marking gauge.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "3bfb1e2adf7c",
+      "text": "Call us at",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 34,
+          "kind": "html-text",
+          "raw": "Call us at",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "41f1189e6af3",
+      "text": "or just stop by.",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/index.html",
+          "line": 34,
+          "kind": "html-text",
+          "raw": "or just stop by.",
+          "quote": null
+        }
+      ]
+    }
+  ],
+  "retired": [],
+  "baseline": [
+    "d0f96c5b3417",
+    "6d43ba3e1418",
+    "c3b8576c4125",
+    "c5ab420a29b2",
+    "c1ee25843265",
+    "65d50e51b33e",
+    "5fa2ae6e0bf3",
+    "63208b6400a7",
+    "9c1a15c224df",
+    "039217c57f16",
+    "f4d5362f6df7",
+    "3a78695388b3",
+    "d00aae6b7fbf",
+    "b4b580a9ad8c",
+    "cdefccfa695c",
+    "cb559e28c2f2",
+    "326e405a5be3",
+    "2e7b9e8e564f",
+    "888a599e7720",
+    "2a331b842d53",
+    "54a57c3147c4",
+    "ede548996483",
+    "16dcaa923f16",
+    "4e47826698bb",
+    "dbb5f6371b6a",
+    "98c555b4da60",
+    "c0f8c2843147",
+    "46f7e9724e73",
+    "f96e9076b17c",
+    "d81dddaef8c1",
+    "1abe9f5439aa",
+    "26b83994dca8",
+    "f4958ae4cf90",
+    "5ced8f24ff29",
+    "afbfbdf04c75",
+    "9fd728c66c9a",
+    "0e9408353c72",
+    "974d0168eecb",
+    "09abed023c19",
+    "19b5493df616",
+    "d399045f4ada",
+    "b186cae1931f",
+    "75ef6380289c",
+    "41ff6661e096",
+    "71a53ee68c81",
+    "8a23274ec552",
+    "925dab06b202",
+    "fae650861c27",
+    "65ff098325ea",
+    "4057912051eb",
+    "3fa7c5ef191f",
+    "f2488fd4ef4a",
+    "ef456e9f9beb",
+    "35170616ba65",
+    "300db65261ee",
+    "3bfb1e2adf7c",
+    "41f1189e6af3"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "ledger": "copy/ledger.json",
+  "report": "copy/REPORT.md",
+  "badge": "copy/badge.json",
+  "include": [
+    "content/**/*.{md,mdx}",
+    "locales/**/*.{json,yml}",
+    "src/**/*.{html,jsx,vue}"
+  ],
+  "exclude": [
+    "locales/*.fr.*"
+  ],
+  "outOfScope": [
+    { "path": "locales/*.fr.*", "reason": "Translations follow the English; review the source language." }
+  ]
+}

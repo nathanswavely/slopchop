@@ -1,0 +1,27 @@
+# Rails-style locale file
+en:
+  hello: Hello there
+  account:
+    title: "Your account"
+    signed_in_as: 'Signed in as %{name}'
+    delete_warning: This can't be undone. Your orders will be kept for tax
+      purposes, but everything else goes.
+    empty: ~
+    flow: [one, two]
+  emails:
+    welcome:
+      subject: Welcome to Northwind
+      body: |
+        Thanks for signing up.
+
+        Your first sharpening is on us. Bring anything in
+        on a Saturday and we'll take care of it.
+  legal:
+    id: legal_v2
+    url: https://example.com/terms
+    enabled: true
+  steps:
+    - Pick a tool
+    - "Tell us how you'll use it"
+    - name: Wait
+      hint: We ship on Tuesdays.

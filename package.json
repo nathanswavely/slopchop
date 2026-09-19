@@ -1,0 +1,18 @@
+{
+  "name": "slopchop",
+  "version": "0.1.0",
+  "description": "Copy review for a site you built with AI: write the paragraphs yourself, wave through the labels, and keep a record next to the code so the next AI session cannot undo it.",
+  "type": "module",
+  "bin": { "slopchop": "bin/slopchop.js" },
+  "files": ["bin", "src", "action.yml", "README.md"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "check": "node bin/slopchop.js check",
+    "sync": "node bin/slopchop.js sync",
+    "review": "node bin/slopchop.js review",
+    "report": "node bin/slopchop.js report"
+  },
+  "keywords": ["copy", "provenance", "ai", "review", "ci", "i18n", "content"],
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,19 @@
+{
+  "ledger": "copy/ledger.json",
+  "report": "copy/REPORT.md",
+  "badge": "copy/badge.json",
+  "include": [
+    "README.md",
+    "src/ui.html"
+  ],
+  "exclude": [
+    "**/node_modules/**",
+    "examples/**",
+    "test/**"
+  ],
+  "outOfScope": [
+    { "path": "src/**/*.js", "reason": "Source comments and CLI output. Read by contributors, not visitors." },
+    { "path": "examples/", "reason": "Fixture copy for the test suite; it carries its own ledger." },
+    { "path": "test/", "reason": "Test fixtures." }
+  ]
+}
