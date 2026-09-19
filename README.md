@@ -61,7 +61,7 @@ Rewriting two thousand strings once is a finite job. Keeping them rewritten is n
 So the first `sync` stamps a baseline: every unreviewed string at that moment is accepted as existing debt, and `check` fails only when a string that is not in the baseline shows up undecided. You can leave the backlog alone for a month and CI stays green. New copy has to be looked at before it merges. When the backlog reaches zero, set `"strict": true` in the ledger and the check fails on any unreviewed string at all.
 
 ```yaml
-- uses: swavely/slopchop@v1
+- uses: nathanswavely/slopchop@v1
 ```
 
 The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings in the job summary, with the file and line for each.
