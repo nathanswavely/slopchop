@@ -195,6 +195,12 @@ const $ = (s) => document.querySelector(s);
 let entries = [], view = [], cursor = 0, statsData = null, drafts = { checkedOut: {}, files: [] };
 let selected = new Set(), anchor = null, baseline = new Set();
 
+// Writing mode: landing on a string puts the cursor in "Your version", and
+// Alt+letter shortcuts move and decide without leaving it. Escape drops to
+// list mode, where the plain single keys work (for selecting in bulk), and
+// plain j/k keep you there until you press e, press Enter, or click in.
+let writing = true;
+
 // "new" is the CI gate's view: unreviewed and not part of the debt
 // accepted at baseline. Every other value is a plain status.
 const matchesStatus = (e, st) => {
@@ -359,7 +365,7 @@ function renderQueue() {
     b.onclick = (ev) => {
       if (ev.shiftKey) return pick(i, 'range');
       if (ev.ctrlKey || ev.metaKey) return pick(i, 'toggle');
-      cursor = i; anchor = i; renderQueue(); renderDetail();
+      cursor = i; anchor = i; writing = true; renderQueue(); renderDetail();
     };
     row.append(ck, b);
     q.append(row);
@@ -540,7 +546,10 @@ async function renderDetail() {
   ta.id = 'editor'; ta.className = 'lt-field';
   ta.setAttribute('aria-label', 'Your version');
   ta.value = e.replacement ?? e.text;
-  d.append(eyebrow('Your version'), ta);
+  const label = eyebrow('Your version');
+  label.append(' ', kbd('e'));
+  d.append(label, ta);
+  ta.addEventListener('focus', () => { writing = true; });
 
   const warn = document.createElement('div'); warn.className = 'warn'; warn.setAttribute('role', 'status'); d.append(warn);
   const checkPlaceholders = () => {
@@ -580,6 +589,11 @@ async function renderDetail() {
     mk('Save as small edits', EDIT_KEY, 'lt-btn-secondary', () => saveRewrite(e, ta.value, 'edited')),
   );
   syncSave();
+
+  // Into the editor on arrival, unless the person is typing somewhere else
+  // (a search box refiltering the list re-renders this pane too).
+  const there = document.activeElement;
+  if (writing && (!isTyping(there) || !there.isConnected || there.tagName === 'TEXTAREA')) focusEditor();
   mk('Already mine', 'h', '', () => setStatus(e, 'human'));
   mk('Leave as drafted', 'a', '', () => setStatus(e, 'ai-fine'));
   mk('Skip', 'j', 'lt-btn-ghost', () => move(1));
@@ -770,11 +784,15 @@ $('#sideBtn').onclick = () => setCollapsed(!document.body.classList.contains('co
 // --------------------------------------------------------------- keyboard ---
 
 const SHORTCUTS = [
-  ['j  k  ↑  ↓', 'Next and previous string'],
+  [`${keys('Alt+J')}  ${keys('Alt+K')}`, 'Next and previous string, from anywhere, the editor included'],
+  [`${keys('Alt+H')}  ${keys('Alt+A')}  ${keys('Alt+U')}`, 'Already mine, leave as drafted, back to unreviewed, from anywhere'],
+  [keys('Alt+S'), "Start from the model's suggestion, from anywhere"],
+  ['Esc', 'Leave the editor for the list, where the single keys below work'],
+  ['j  k  ↑  ↓', 'Next and previous string, staying in the list'],
   ['Shift+j  Shift+k', 'Extend the selection down or up'],
   ['x', 'Select or unselect this string'],
   [keys('Mod+A'), 'Select everything shown'],
-  ['e  Enter', 'Write in the editor'],
+  ['e  Enter', 'Back into the editor'],
   [SAVE_KEY, 'Save as a rewrite'],
   [EDIT_KEY, 'Save as small edits'],
   ['s', "Copy the model's suggestion into the editor"],
@@ -785,7 +803,7 @@ const SHORTCUTS = [
   [`/  ${keys('Mod+K')}`, 'Search the copy'],
   ['f', 'Filter by file'],
   ['t', 'Switch between light and dark'],
-  ['Esc', 'Clear the selection, leave a field, close this'],
+  ['Esc again', 'Clear the selection, leave a search field, close this'],
   ['?', 'This list'],
 ];
 
@@ -805,11 +823,35 @@ function decideKey(status) {
   if (e) setStatus(e, status);
 }
 
+/** The cursor in "Your version", at the end of what is there. */
+function focusEditor() {
+  const ta = $('#editor');
+  if (!ta) return;
+  ta.focus({ preventScroll: true });
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+
 addEventListener('keydown', (ev) => {
   if (help.isOpen) return;
   const mod = ev.metaKey || ev.ctrlKey;
   const editing = document.activeElement?.tagName === 'TEXTAREA';
   const key = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
+
+  // Alt+letter works everywhere, the editor included, so writing never has
+  // to stop for moving or deciding. ev.code, because on a Mac Option+J
+  // arrives as the character ∆.
+  if (ev.altKey && !mod && !ev.shiftKey) {
+    const alt = { KeyJ: 'next', ArrowDown: 'next', KeyK: 'prev', ArrowUp: 'prev', KeyH: 'human', KeyA: 'ai-fine', KeyU: 'unreviewed', KeyS: 'suggest' }[ev.code];
+    if (alt) {
+      ev.preventDefault();
+      writing = editing || writing;
+      if (alt === 'next') move(1);
+      else if (alt === 'prev') move(-1);
+      else if (alt === 'suggest') { if (view[cursor]?.suggestion) useSuggestion(view[cursor]); }
+      else decideKey(alt);
+      return;
+    }
+  }
 
   if (mod && key === 'Enter' && editing) {
     ev.preventDefault(); saveRewrite(view[cursor], $('#editor').value, ev.shiftKey ? 'edited' : 'written'); return;
@@ -818,7 +860,11 @@ addEventListener('keydown', (ev) => {
   if (mod && key === 'k') { ev.preventDefault(); $('#fText').focus(); $('#fText').select(); return; }
   if (key === 'Escape') {
     // Leave the field as it is: a search box would otherwise clear itself.
-    if (isTyping(document.activeElement)) { ev.preventDefault(); document.activeElement.blur(); }
+    if (isTyping(document.activeElement)) {
+      ev.preventDefault();
+      if (document.activeElement.tagName === 'TEXTAREA') writing = false;
+      document.activeElement.blur();
+    }
     else if (selected.size) selectAll(false);
     return;
   }
@@ -830,10 +876,10 @@ addEventListener('keydown', (ev) => {
 
   if ((key === 'j' || key === 'ArrowDown') && ev.shiftKey) { ev.preventDefault(); extend(1); }
   else if ((key === 'k' || key === 'ArrowUp') && ev.shiftKey) { ev.preventDefault(); extend(-1); }
-  else if (key === 'j' || key === 'ArrowDown') { ev.preventDefault(); move(1); }
-  else if (key === 'k' || key === 'ArrowUp') { ev.preventDefault(); move(-1); }
+  else if (key === 'j' || key === 'ArrowDown') { ev.preventDefault(); writing = false; move(1); }
+  else if (key === 'k' || key === 'ArrowUp') { ev.preventDefault(); writing = false; move(-1); }
   else if (key === 'x') { ev.preventDefault(); pick(cursor, 'toggle'); }
-  else if (key === 'e' || (key === 'Enter' && ev.target.tagName !== 'BUTTON')) { ev.preventDefault(); $('#editor')?.focus(); }
+  else if (key === 'e' || (key === 'Enter' && ev.target.tagName !== 'BUTTON')) { ev.preventDefault(); writing = true; focusEditor(); }
   else if (key === 'h') { ev.preventDefault(); decideKey('human'); }
   else if (key === 'a') { ev.preventDefault(); decideKey('ai-fine'); }
   else if (key === 'u') { ev.preventDefault(); decideKey('unreviewed'); }
