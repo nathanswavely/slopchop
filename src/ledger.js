@@ -36,7 +36,7 @@ export function save(project, ledger) {
  * Re-extract from source and fold the result into an existing ledger,
  * preserving every human decision.
  *
- * Returns { ledger, added, removed } so callers can report honestly
+ * Returns { ledger, added, removed, landed } so callers can report honestly
  * instead of silently reconciling.
  */
 export function sync(project, existing = load(project)) {
@@ -48,9 +48,28 @@ export function merge(existing, fresh) {
   const prior = new Map(existing.entries.map((e) => [e.id, e]));
   const retired = new Map((existing.retired || []).map((e) => [e.id, e]));
 
+  // A rewrite can reach the source without `apply`: a committed suggestion
+  // on a pull request, or someone pasting it in by hand. The person's words
+  // are in the ledger already, so text that matches them is theirs.
+  const rewrites = new Map();
+  for (const e of [...existing.entries, ...retired.values()]) {
+    if (e.status === 'rewritten' && e.replacement) rewrites.set(idFor(e.replacement), e);
+  }
+
   const added = [];
+  const landed = [];
   const entries = fresh.map((f) => {
     const seen = prior.get(f.id) || retired.get(f.id);
+    const from = !seen && rewrites.get(f.id);
+    if (from) {
+      landed.push(from);
+      return {
+        ...f,
+        status: 'human',
+        note: from.note ?? null,
+        previous_ai_text: from.previous_ai_text || from.text,
+      };
+    }
     if (!seen) { added.push(f); return f; }
     return {
       ...f,
@@ -67,15 +86,20 @@ export function merge(existing, fresh) {
 
   // A decision that took thought is worth keeping even after the string
   // leaves the source; an untouched `unreviewed` carries no information.
+  // A rewrite that landed everywhere lives on as the new entry's
+  // previous_ai_text; keeping the old entry too would count it twice.
+  const landedIds = new Set(landed.map((e) => e.id));
   const keptRetired = [...retired.values(), ...removed]
     .filter((e) => e.status && e.status !== 'unreviewed')
-    .filter((e) => !freshIds.has(e.id));
+    .filter((e) => !freshIds.has(e.id))
+    .filter((e) => !landedIds.has(e.id));
   const dedupedRetired = [...new Map(keptRetired.map((e) => [e.id, e])).values()];
 
   return {
     ledger: { ...existing, version: 1, entries, retired: dedupedRetired },
     added,
     removed,
+    landed,
   };
 }
 

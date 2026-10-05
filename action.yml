@@ -1,5 +1,5 @@
 name: 'SlopChop'
-description: 'Fail the build when copy enters the source without a recorded author. Nothing leaves the runner.'
+description: 'Fail the build when copy enters the source without a recorded author, and say so on the pull request.'
 author: 'Swavely Creative'
 branding:
   icon: 'edit-3'
@@ -18,6 +18,14 @@ inputs:
     description: 'Node.js version to run the check with'
     required: false
     default: '22'
+  comment:
+    description: 'On a pull request, comment on new strings and offer unapplied rewrites as suggestions. Needs pull-requests: write.'
+    required: false
+    default: 'true'
+  github-token:
+    description: 'Token used to comment on the pull request'
+    required: false
+    default: ${{ github.token }}
 
 runs:
   using: 'composite'
@@ -28,6 +36,23 @@ runs:
 
     # The tool ships inside this action and has no dependencies, so there is
     # nothing to install and nothing to fetch from a registry.
+
+    # Comment first, because check is the step that fails the job. The
+    # comment never fails it: a fork's read-only token just means no comment.
+    - name: SlopChop comment
+      if: inputs.comment == 'true' && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        CONFIG: ${{ inputs.config }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        if [ -n "$CONFIG" ]; then
+          node "${{ github.action_path }}/bin/slopchop.js" comment --config "$CONFIG" || true
+        else
+          node "${{ github.action_path }}/bin/slopchop.js" comment || true
+        fi
+
     - name: SlopChop check
       shell: bash
       working-directory: ${{ inputs.working-directory }}

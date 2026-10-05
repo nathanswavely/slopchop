@@ -409,9 +409,27 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 67,
+          "line": 72,
           "kind": "md-block",
           "raw": "The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings in the job summary, with the file and line for each.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "87cfe9082a61",
+      "text": "On a pull request it also says so on the pull request: one summary comment that stays current, and a comment on each new string the diff touches. If you wrote a rewrite in the ledger and never ran `apply`, it shows up as a suggestion block, and committing the suggestion counts the same as applying it. The next `sync` sees your words in the source and records them as yours. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.",
+      "words": 107,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 74,
+          "kind": "md-block",
+          "raw": "On a pull request it also says so on the pull request: one summary comment that stays current, and a comment on each new string the diff touches. If you wrote a rewrite in the ledger and never ran `apply`, it shows up as a suggestion block, and committing the suggestion counts the same as applying it. The next `sync` sees your words in the source and records them as yours. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.",
           "quote": null
         }
       ]
@@ -427,7 +445,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 69,
+          "line": 76,
           "kind": "md-block",
           "raw": "## Setting it up",
           "quote": null
@@ -445,7 +463,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 75,
+          "line": 82,
           "kind": "md-block",
           "raw": "`init` looks at the repo and writes a `.slopchop.json` with the patterns that matched something. Edit it to taste:",
           "quote": null
@@ -463,7 +481,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 89,
+          "line": 96,
           "kind": "md-block",
           "raw": "What counts as copy, by file type:",
           "quote": null
@@ -481,7 +499,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 91,
+          "line": 98,
           "kind": "md-block",
           "raw": "| Files | What comes out |\n|---|---|\n| `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |\n| `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |\n| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |\n| `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |\n| `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |\n| `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |\n| `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{\"error\":\"...\"}` bodies. |",
           "quote": null
@@ -499,7 +517,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 101,
+          "line": 108,
           "kind": "md-block",
           "raw": "The filters over-collect on purpose. A false positive costs one keystroke; a false negative is a string you never see. If something odd shows up in the queue, mark it and keep going.",
           "quote": null
@@ -517,7 +535,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 103,
+          "line": 110,
           "kind": "md-block",
           "raw": "## Where it will get in your way",
           "quote": null
@@ -535,7 +553,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 105,
+          "line": 112,
           "kind": "md-block",
           "raw": "In HTML, JSX, and Vue, an inline element splits the sentence around it. `Call us at <code>555-0100</code> or stop by` shows up as two entries. Markdown does not have this problem, since a paragraph is one block whatever is inside it.",
           "quote": null
@@ -553,7 +571,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 107,
+          "line": 114,
           "kind": "md-block",
           "raw": "The YAML reader is a subset: block mappings, sequences, plain and quoted scalars, and `|` and `>` blocks. Flow collections, anchors, and tags are skipped rather than guessed at.",
           "quote": null
@@ -571,7 +589,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 109,
+          "line": 116,
           "kind": "md-block",
           "raw": "Writeback refuses anything that would break the file it lands in (a `{` in JSX text, a quote that would close a YAML scalar, a newline in an attribute) and tells you which entry and why. It would rather leave a string undone than produce a file that does not build.",
           "quote": null
@@ -589,7 +607,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 111,
+          "line": 118,
           "kind": "md-block",
           "raw": "## What it does not do",
           "quote": null
@@ -597,9 +615,9 @@
       ]
     },
     {
-      "id": "318e866dbc04",
-      "text": "- It does not send your text anywhere. There is no server, no account, and no model call. The review page is a local process reading local files.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. A first pass that flags the worst AI tells and suggests a direction is coming, and it will run on your own key. A suggestion you accept without editing will be recorded as its own status, so `human` only ever means a person typed it.",
-      "words": 116,
+      "id": "db4ceee50056",
+      "text": "- It does not send your text anywhere it was not already. There is no server, no account, and no model call. The review page is a local process reading local files, and the pull request comments go to the same GitHub that holds the code.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. A first pass that flags the worst AI tells and suggests a direction is coming, and it will run on your own key. A suggestion you accept without editing will be recorded as its own status, so `human` only ever means a person typed it.",
+      "words": 134,
       "tier": "prose",
       "status": "unreviewed",
       "replacement": null,
@@ -607,9 +625,9 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 113,
+          "line": 120,
           "kind": "md-block",
-          "raw": "- It does not send your text anywhere. There is no server, no account, and no model call. The review page is a local process reading local files.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. A first pass that flags the worst AI tells and suggests a direction is coming, and it will run on your own key. A suggestion you accept without editing will be recorded as its own status, so `human` only ever means a person typed it.",
+          "raw": "- It does not send your text anywhere it was not already. There is no server, no account, and no model call. The review page is a local process reading local files, and the pull request comments go to the same GitHub that holds the code.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. A first pass that flags the worst AI tells and suggests a direction is coming, and it will run on your own key. A suggestion you accept without editing will be recorded as its own status, so `human` only ever means a person typed it.",
           "quote": null
         }
       ]
@@ -625,7 +643,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 117,
+          "line": 124,
           "kind": "md-block",
           "raw": "## Report and badge",
           "quote": null
@@ -643,7 +661,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 123,
+          "line": 130,
           "kind": "md-block",
           "raw": "writes `copy/REPORT.md` with the counts by status and tier, the scope and what was left out of it, and every replaced draft next to the text that replaced it. It also writes `copy/badge.json` for shields.io and `copy/badge.svg` for a repo that would rather not call out. The badge shows two numbers, reviewed and human-written, because either one alone overstates things.",
           "quote": null
@@ -661,7 +679,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 125,
+          "line": 132,
           "kind": "md-block",
           "raw": "## Next",
           "quote": null
@@ -669,9 +687,9 @@
       ]
     },
     {
-      "id": "2a6723c8cee5",
-      "text": "A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. Pull request comments listing new strings, with suggested rewrites as suggestion blocks. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves.",
-      "words": 67,
+      "id": "475d16289a27",
+      "text": "A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves.",
+      "words": 55,
       "tier": "prose",
       "status": "unreviewed",
       "replacement": null,
@@ -679,9 +697,9 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 127,
+          "line": 134,
           "kind": "md-block",
-          "raw": "A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. Pull request comments listing new strings, with suggested rewrites as suggestion blocks. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves.",
+          "raw": "A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves.",
           "quote": null
         }
       ]
@@ -697,7 +715,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 129,
+          "line": 136,
           "kind": "md-block",
           "raw": "To start, run `npx slopchop init` in the repo, then `sync`. The first sync stamps the baseline, so the check passes from the beginning. After that, open `slopchop review` and start with the paragraphs.",
           "quote": null

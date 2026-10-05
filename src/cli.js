@@ -9,14 +9,19 @@
 //   decide    bulk-decide a file or tier
 //   apply     write approved replacements into source (dry run by default)
 //   check     CI gate: fails on copy that entered source unreviewed
+//   comment   explain the gate on a pull request, with rewrites as suggestions
 //   report    render the ledger as a publishable summary, plus a badge
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadProject, proposeConfig, CONFIG_NAME } from './config.js';
 import { load, save, sync, stats, gate, STATUSES } from './ledger.js';
-import { writeback } from './writeback.js';
+import { writeback, previewLines } from './writeback.js';
 import { writeReport } from './report.js';
+import {
+  renderVerdict, summaryBody, planComments, publish, apiClient,
+  repoPrefix, localDiff, pullDiff, pullFromEvent,
+} from './github.js';
 import {
   writeDrafts, pullDrafts, pruneDrafts, outstandingDrafts, rescueOrphans, draftDirLabel,
 } from './drafts.js';
@@ -79,7 +84,7 @@ function cmdInit() {
 function cmdSync() {
   const p = project();
   const before = load(p);
-  const { ledger, added, removed } = sync(p, before);
+  const { ledger, added, removed, landed } = sync(p, before);
 
   if (flag('rebaseline') || !before.baseline) {
     ledger.baseline = ledger.entries
@@ -94,7 +99,9 @@ function cmdSync() {
   const s = stats(ledger);
   console.log(`${GREEN}synced${OFF} ${p.rel(p.ledgerPath)}: ${s.total} entries, ${s.words.toLocaleString()} words, ${p.sourceFiles().length} files`);
   if (added.length) console.log(`  ${added.length} new`);
-  if (removed.length) console.log(`  ${removed.length} no longer in source`);
+  if (landed.length) console.log(`  ${landed.length} rewrite${landed.length === 1 ? '' : 's'} found in source without apply, recorded as yours`);
+  const gone = removed.filter((e) => !landed.includes(e));
+  if (gone.length) console.log(`  ${gone.length} no longer in source`);
 }
 
 // ----------------------------------------------------------------- stats ---
@@ -390,27 +397,76 @@ function cmdCheck() {
 function writeSummary(p, g, s) {
   const target = process.env.GITHUB_STEP_SUMMARY;
   if (!target) return;
-  const L = ['## SlopChop', ''];
-  if (g.unledgered.length) {
-    L.push(`**${g.unledgered.length} new string${g.unledgered.length === 1 ? '' : 's'}** entered the source without a recorded author.`);
-    L.push('');
-    L.push('| Where | Text |');
-    L.push('|---|---|');
-    for (const e of g.unledgered.slice(0, 50)) {
-      const o = e.occurrences[0];
-      L.push(`| \`${o.file}:${o.line}\` | ${e.text.replace(/\|/g, '\\|').slice(0, 120)} |`);
-    }
-    if (g.unledgered.length > 50) L.push(`| … | and ${g.unledgered.length - 50} more |`);
-    L.push('');
-    L.push('Run `slopchop sync` then `slopchop review` locally, decide each one, and commit the ledger.');
-  } else {
-    L.push('Every string in source has an author on record.');
-  }
-  L.push('');
-  L.push(`${s.done}/${s.total} strings decided (${pct(s.done, s.total)}) · ${pct(s.byStatus.human, s.total)} written by a person` +
-    (g.backlog.length ? ` · ${g.backlog.length} in the grandfathered backlog` : ''));
-  L.push('');
+  const L = ['## SlopChop', '', ...renderVerdict(g, s), ''];
   try { fs.appendFileSync(target, L.join('\n')); } catch { /* a summary is a nicety */ }
+}
+
+// --------------------------------------------------------------- comment ---
+
+// The gate's verdict, said on the pull request. Never fails the job: a
+// fork's read-only token or a GitHub hiccup costs a comment, not a build.
+async function cmdComment() {
+  const p = project();
+  if (!fs.existsSync(p.ledgerPath)) {
+    console.error(`${RED}no ledger${OFF} at ${p.rel(p.ledgerPath)}. Run: slopchop sync`);
+    process.exit(1);
+  }
+  const onDisk = load(p);
+  const { ledger: fresh } = sync(p, onDisk);
+  const g = gate(onDisk, fresh);
+  const s = stats(fresh);
+  const { changes } = previewLines(p, fresh);
+  const prefix = repoPrefix(p.root);
+  const key = prefix || '.';
+  const warn = (m) => console.log(process.env.GITHUB_ACTIONS ? `::warning title=SlopChop::${m}` : `${YEL}${m}${OFF}`);
+
+  // Local preview: the same plan against `git diff`, printed, nothing sent.
+  const base = val('base');
+  if (base) {
+    let diff;
+    try { diff = localDiff(p.root, base); }
+    catch (e) { console.error(`${RED}git diff against ${base} failed:${OFF} ${e.message}`); process.exit(1); }
+    const plan = planComments({ unledgered: g.unledgered, changes, diff, entries: fresh.entries, prefix });
+    console.log(summaryBody(key, g, s, { pending: g.pendingApply }));
+    for (const c of plan.inline) {
+      console.log(`${DIM}──${OFF} ${GREEN}${c.path}:${c.start_line ? `${c.start_line}-` : ''}${c.line}${OFF}`);
+      console.log(c.body.split('\n').slice(1).join('\n'));
+    }
+    if (plan.dropped) console.log(`${DIM}…and ${plan.dropped} more not posted this run${OFF}`);
+    if (plan.outsideDiff.length) console.log(`${DIM}${plan.outsideDiff.length} new string(s) sit outside the diff; the summary lists them.${OFF}`);
+    return;
+  }
+
+  const pr = pullFromEvent();
+  const token = process.env.GITHUB_TOKEN;
+  const repo = process.env.GITHUB_REPOSITORY;
+  if (!pr || !token || !repo) {
+    console.error('Not a pull request run. Pass --base <ref> to preview the comments locally.');
+    console.error(`${DIM}On GitHub Actions this needs GITHUB_TOKEN, GITHUB_REPOSITORY and a pull_request event.${OFF}`);
+    process.exit(process.env.GITHUB_ACTIONS ? 0 : 1);
+  }
+
+  const server = process.env.GITHUB_SERVER_URL || 'https://github.com';
+  const link = (file, line) => `${server}/${repo}/blob/${pr.sha}/${prefix ? `${prefix}/` : ''}${file}#L${line}`;
+  const gh = apiClient({ token, api: process.env.GITHUB_API_URL || 'https://api.github.com' });
+
+  try {
+    const diff = await pullDiff(gh, repo, pr.number);
+    const existing = await gh.all(`/repos/${repo}/pulls/${pr.number}/comments`);
+    const plan = planComments({ unledgered: g.unledgered, changes, diff, entries: fresh.entries, prefix, existing });
+    const summary = summaryBody(key, g, s, { link, pending: g.pendingApply });
+    const hasNews = g.unledgered.length > 0 || plan.inline.length > 0;
+    const log = await publish({ gh, repo, pr: pr.number, sha: pr.sha, key: prefix, summary, plan, hasNews });
+    for (const line of log) console.log(line);
+    if (!log.length) console.log('Nothing new to say on this pull request.');
+    if (plan.dropped) console.log(`${plan.dropped} more held back; they go up as earlier ones are settled.`);
+  } catch (e) {
+    if (e.status === 403 || e.status === 404) {
+      warn('Could not comment on this pull request. A fork\'s token is read-only; elsewhere, grant the job `pull-requests: write`.');
+    } else {
+      warn(`Commenting failed: ${e.message}`);
+    }
+  }
 }
 
 // ---------------------------------------------------------------- report ---
@@ -435,6 +491,7 @@ async function cmdReview() {
 const COMMANDS = {
   init: cmdInit, sync: cmdSync, stats: cmdStats, apply: cmdApply, check: cmdCheck,
   report: cmdReport, decide: cmdDecide, draft: cmdDraft, pull: cmdPull, review: cmdReview,
+  comment: cmdComment,
 };
 
 if (!COMMANDS[cmd]) {

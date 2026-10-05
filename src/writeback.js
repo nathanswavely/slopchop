@@ -166,7 +166,7 @@ function planEdits(project, ledger) {
           reason = `source drifted: no exact match for this text in ${file} (re-run sync)`;
           break;
         }
-        edits.push({ file, start: at, end: at + occ.raw.length, value: enc.value });
+        edits.push({ file, id: entry.id, start: at, end: at + occ.raw.length, value: enc.value });
         cursor = at + occ.raw.length;
       }
       if (reason) break;
@@ -181,6 +181,58 @@ function planEdits(project, ledger) {
   }
 
   return { plan, blocked, ready, contents };
+}
+
+/**
+ * What apply would do, as whole-line replacements: for each run of lines an
+ * edit touches, the original line numbers and the lines that would replace
+ * them. This is what a pull request suggestion block carries. Edits that
+ * share a line are folded into one change so neither clobbers the other.
+ *
+ * Returns { changes: [{file, entries, startLine, endLine, before, after}], blocked }.
+ */
+export function previewLines(project, ledger) {
+  const { plan, blocked, contents } = planEdits(project, ledger);
+
+  const changes = [];
+  for (const [file, edits] of plan) {
+    const content = contents.get(file);
+    const lineAt = (off) => content.slice(0, off).split('\n').length;
+
+    // Expand each edit to whole lines, then merge any that overlap.
+    const spans = edits
+      .map((e) => ({ ...e, startLine: lineAt(e.start), endLine: lineAt(e.end) }))
+      .sort((a, b) => a.start - b.start);
+    const groups = [];
+    for (const s of spans) {
+      const last = groups[groups.length - 1];
+      if (last && s.startLine <= last.endLine) {
+        last.edits.push(s);
+        last.endLine = Math.max(last.endLine, s.endLine);
+      } else {
+        groups.push({ startLine: s.startLine, endLine: s.endLine, edits: [s] });
+      }
+    }
+
+    for (const g of groups) {
+      const from = offsetOfLine(content, g.startLine);
+      const nl = content.indexOf('\n', offsetOfLine(content, g.endLine));
+      const to = nl === -1 ? content.length : nl;
+      let text = content.slice(from, to);
+      for (const e of [...g.edits].sort((a, b) => b.start - a.start)) {
+        text = text.slice(0, e.start - from) + e.value + text.slice(e.end - from);
+      }
+      changes.push({
+        file,
+        ids: [...new Set(g.edits.map((e) => e.id))],
+        startLine: g.startLine,
+        endLine: g.endLine,
+        before: content.slice(from, to),
+        after: text,
+      });
+    }
+  }
+  return { changes, blocked };
 }
 
 /**

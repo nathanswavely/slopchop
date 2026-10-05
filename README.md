@@ -61,10 +61,17 @@ Rewriting two thousand strings once is a finite job. Keeping them rewritten is n
 So the first `sync` stamps a baseline: every unreviewed string at that moment is accepted as existing debt, and `check` fails only when a string that is not in the baseline shows up undecided. You can leave the backlog alone for a month and CI stays green. New copy has to be looked at before it merges. When the backlog reaches zero, set `"strict": true` in the ledger and the check fails on any unreviewed string at all.
 
 ```yaml
-- uses: nathanswavely/slopchop@v1
+permissions:
+  contents: read
+  pull-requests: write
+steps:
+  - uses: actions/checkout@v4
+  - uses: nathanswavely/slopchop@v1
 ```
 
 The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings in the job summary, with the file and line for each.
+
+On a pull request it also says so on the pull request: one summary comment that stays current, and a comment on each new string the diff touches. If you wrote a rewrite in the ledger and never ran `apply`, it shows up as a suggestion block, and committing the suggestion counts the same as applying it. The next `sync` sees your words in the source and records them as yours. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.
 
 ## Setting it up
 
@@ -110,7 +117,7 @@ Writeback refuses anything that would break the file it lands in (a `{` in JSX t
 
 ## What it does not do
 
-- It does not send your text anywhere. There is no server, no account, and no model call. The review page is a local process reading local files.
+- It does not send your text anywhere it was not already. There is no server, no account, and no model call. The review page is a local process reading local files, and the pull request comments go to the same GitHub that holds the code.
 - It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.
 - It does not write for you. A first pass that flags the worst AI tells and suggests a direction is coming, and it will run on your own key. A suggestion you accept without editing will be recorded as its own status, so `human` only ever means a person typed it.
 
@@ -124,6 +131,6 @@ writes `copy/REPORT.md` with the counts by status and tier, the scope and what w
 
 ## Next
 
-A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. Pull request comments listing new strings, with suggested rewrites as suggestion blocks. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves.
+A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves.
 
 To start, run `npx slopchop init` in the repo, then `sync`. The first sync stamps the baseline, so the check passes from the beginning. After that, open `slopchop review` and start with the paragraphs.
