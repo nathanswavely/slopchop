@@ -12,7 +12,7 @@ It is not an AI detector. It records what you decided, and it makes deciding fas
 
 `slopchop sync` reads the files named in `.slopchop.json` and pulls out every string a person could read: paragraphs in Markdown, text between tags, `placeholder` and `alt` attributes, message catalog values, sentence-shaped strings in your JavaScript. Identical text in twelve places becomes one entry, so you decide "Save changes" once. The result is `copy/ledger.json`, with every entry marked unreviewed.
 
-`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `⌘↵` saves what you wrote.
+`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `Ctrl+Enter` (`⌘↵` on a Mac) saves what you wrote. Tick several strings, or shift-click a run of them, and `h` or `a` decides them all at once. `?` lists the rest.
 
 `slopchop apply` writes your versions into the source files. It is a dry run until you pass `--apply`, and it edits nothing unless it finds the exact original text where the ledger says it should be. Run it on a clean tree and read the diff.
 

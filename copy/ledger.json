@@ -129,9 +129,9 @@
       ]
     },
     {
-      "id": "da51d253ae02",
-      "text": "`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `⌘↵` saves what you wrote.",
-      "words": 88,
+      "id": "c77a999d0069",
+      "text": "`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `Ctrl+Enter` (`⌘↵` on a Mac) saves what you wrote. Tick several strings, or shift-click a run of them, and `h` or `a` decides them all at once. `?` lists the rest.",
+      "words": 114,
       "tier": "prose",
       "status": "unreviewed",
       "replacement": null,
@@ -141,7 +141,7 @@
           "file": "README.md",
           "line": 15,
           "kind": "md-block",
-          "raw": "`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `⌘↵` saves what you wrote.",
+          "raw": "`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `Ctrl+Enter` (`⌘↵` on a Mac) saves what you wrote. Tick several strings, or shift-click a run of them, and `h` or `a` decides them all at once. `?` lists the rest.",
           "quote": null
         }
       ]
@@ -830,7 +830,7 @@
         },
         {
           "file": "src/ui.html",
-          "line": 121,
+          "line": 186,
           "kind": "html-text",
           "raw": "SlopChop",
           "quote": null
@@ -848,7 +848,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 123,
+          "line": 188,
           "kind": "html-text",
           "raw": "loading…",
           "quote": null
@@ -866,7 +866,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 124,
+          "line": 189,
           "kind": "html-text",
           "raw": "Apply rewrites",
           "quote": null
@@ -884,7 +884,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 124,
+          "line": 189,
           "kind": "html-attr:title",
           "raw": "Write approved rewrites into source",
           "quote": "\""
@@ -902,7 +902,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 128,
+          "line": 193,
           "kind": "html-text",
           "raw": "Unreviewed",
           "quote": null
@@ -920,7 +920,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 129,
+          "line": 194,
           "kind": "html-text",
           "raw": "All",
           "quote": null
@@ -938,7 +938,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 130,
+          "line": 195,
           "kind": "html-text",
           "raw": "Rewritten (pending apply)",
           "quote": null
@@ -956,7 +956,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 131,
+          "line": 196,
           "kind": "html-text",
           "raw": "Human",
           "quote": null
@@ -974,7 +974,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 132,
+          "line": 197,
           "kind": "html-text",
           "raw": "Left as drafted",
           "quote": null
@@ -992,7 +992,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 133,
+          "line": 198,
           "kind": "html-text",
           "raw": "Model rewrite, accepted",
           "quote": null
@@ -1000,8 +1000,8 @@
       ]
     },
     {
-      "id": "36e2aebf17a6",
-      "text": "Every tier",
+      "id": "653913ac0e67",
+      "text": "Word count",
       "words": 2,
       "tier": "label",
       "status": "unreviewed",
@@ -1010,16 +1010,106 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 136,
+          "line": 200,
+          "kind": "html-attr:aria-label",
+          "raw": "Word count",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "dea79332147f",
+      "text": "Min",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 201,
+          "kind": "html-attr:placeholder",
+          "raw": "Min",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "d2b392218b5c",
+      "text": "At least this many words",
+      "words": 5,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 201,
+          "kind": "html-attr:aria-label",
+          "raw": "At least this many words",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "a1a5936d3b0f",
+      "text": "Max",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 203,
+          "kind": "html-attr:placeholder",
+          "raw": "Max",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "cbd9de6f5e3b",
+      "text": "At most this many words",
+      "words": 5,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 203,
+          "kind": "html-attr:aria-label",
+          "raw": "At most this many words",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "dba36bffa5ca",
+      "text": "words",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 204,
           "kind": "html-text",
-          "raw": "Every tier",
+          "raw": "words",
           "quote": null
         }
       ]
     },
     {
-      "id": "7f55c8b76807",
-      "text": "Paragraphs (16+ words)",
+      "id": "d84573ae3c79",
+      "text": "Filter by file",
       "words": 3,
       "tier": "label",
       "status": "unreviewed",
@@ -1028,46 +1118,10 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 137,
-          "kind": "html-text",
-          "raw": "Paragraphs (16+ words)",
-          "quote": null
-        }
-      ]
-    },
-    {
-      "id": "d81e357d53a8",
-      "text": "Helper text (6–15)",
-      "words": 3,
-      "tier": "label",
-      "status": "unreviewed",
-      "replacement": null,
-      "note": null,
-      "occurrences": [
-        {
-          "file": "src/ui.html",
-          "line": 138,
-          "kind": "html-text",
-          "raw": "Helper text (6–15)",
-          "quote": null
-        }
-      ]
-    },
-    {
-      "id": "0a4ca47ba8ae",
-      "text": "Labels (1–5)",
-      "words": 2,
-      "tier": "label",
-      "status": "unreviewed",
-      "replacement": null,
-      "note": null,
-      "occurrences": [
-        {
-          "file": "src/ui.html",
-          "line": 139,
-          "kind": "html-text",
-          "raw": "Labels (1–5)",
-          "quote": null
+          "line": 207,
+          "kind": "html-attr:aria-label",
+          "raw": "Filter by file",
+          "quote": "\""
         }
       ]
     },
@@ -1082,16 +1136,124 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 141,
-          "kind": "html-text",
+          "line": 208,
+          "kind": "html-attr:placeholder",
           "raw": "Every file",
-          "quote": null
+          "quote": "\""
         }
       ]
     },
     {
-      "id": "761fdd9e5d85",
-      "text": "Search copy… ⌘K",
+      "id": "d6dd8afda8da",
+      "text": "Clear the file filter",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 209,
+          "kind": "html-attr:aria-label",
+          "raw": "Clear the file filter",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "abc7e9892806",
+      "text": "Files",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 210,
+          "kind": "html-attr:aria-label",
+          "raw": "Files",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "0a37cb484215",
+      "text": "Search copy…",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 212,
+          "kind": "html-attr:placeholder",
+          "raw": "Search copy…",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "076ed9e46d88",
+      "text": "Search copy",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 212,
+          "kind": "html-attr:aria-label",
+          "raw": "Search copy",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "e9bef0b0f3c2",
+      "text": "Keyboard shortcuts",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 214,
+          "kind": "html-attr:title",
+          "raw": "Keyboard shortcuts",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "19f0dd9ac406",
+      "text": "Bulk actions",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 216,
+          "kind": "html-attr:aria-label",
+          "raw": "Bulk actions",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "c4526c34c3e6",
+      "text": "Select everything shown",
       "words": 3,
       "tier": "label",
       "status": "unreviewed",
@@ -1100,9 +1262,27 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 142,
-          "kind": "html-attr:placeholder",
-          "raw": "Search copy…  ⌘K",
+          "line": 223,
+          "kind": "html-attr:title",
+          "raw": "Select everything shown",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "5b050bbf7a9d",
+      "text": "Collapse the list",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 225,
+          "kind": "html-attr:title",
+          "raw": "Collapse the list",
           "quote": "\""
         }
       ]
@@ -1118,9 +1298,45 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 150,
+          "line": 230,
           "kind": "html-text",
           "raw": "Loading…",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2316810a5de3",
+      "text": "Keyboard",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 237,
+          "kind": "html-text",
+          "raw": "Keyboard",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "21e574c51c06",
+      "text": "Esc closes this. Letter keys do nothing while you are typing.",
+      "words": 11,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 239,
+          "kind": "html-text",
+          "raw": "Esc closes this. Letter keys do nothing while you are typing.",
           "quote": null
         }
       ]

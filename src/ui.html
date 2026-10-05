@@ -21,21 +21,87 @@
   .bar { flex:1; min-width:160px; height:8px; background:var(--line); border-radius:4px; overflow:hidden; }
   .bar i { display:block; height:100%; background:var(--accent); width:0; transition:width .25s; }
   .muted { color:var(--dim); font-size:13px; }
-  select, input[type=search] {
+  .combo { position:relative; display:inline-flex; }
+  .combo input { width:220px; padding-right:24px; }
+  .combo .clear {
+    position:absolute; right:4px; top:50%; transform:translateY(-50%);
+    background:none; border:0; color:var(--dim); font-size:15px; line-height:1; cursor:pointer; padding:2px 4px;
+  }
+  .combo .clear:hover { color:var(--ink); }
+  #fileMenu {
+    position:absolute; top:calc(100% + 4px); left:0; z-index:10; margin:0; padding:4px; list-style:none;
+    min-width:100%; width:max-content; max-width:min(560px, calc(100vw - 32px)); max-height:320px; overflow:auto;
+    background:var(--panel); border:1px solid var(--line); border-radius:8px; box-shadow:0 8px 28px rgba(0,0,0,.45);
+  }
+  #fileMenu li {
+    display:flex; justify-content:space-between; gap:18px; padding:5px 8px; border-radius:5px;
+    font-family:var(--mono); font-size:12px; cursor:pointer; white-space:nowrap;
+  }
+  #fileMenu li[aria-selected=true] { background:#232833; }
+  #fileMenu li b { color:var(--accent); font-weight:600; }
+  #fileMenu li .n { color:var(--dim); }
+  #fileMenu li.none { color:var(--dim); cursor:default; }
+  .words { display:inline-flex; align-items:center; gap:6px; }
+  .words input { width:64px; }
+  select, input[type=search], input[type=number] {
     background:var(--panel); color:var(--ink); border:1px solid var(--line);
     border-radius:6px; padding:5px 8px; font:inherit; font-size:13px;
   }
-  main { flex:1; display:grid; grid-template-columns:340px 1fr; min-height:0; }
-  #queue { border-right:1px solid var(--line); overflow-y:auto; }
-  #queue button {
-    display:block; width:100%; text-align:left; background:none; color:inherit;
-    border:0; border-bottom:1px solid var(--line); padding:9px 12px; cursor:pointer;
-    font:inherit; font-size:13px;
+  main { flex:1; display:grid; grid-template-columns:320px 1fr; min-height:0; }
+  body.collapsed main { grid-template-columns:44px 1fr; }
+  #side { display:flex; flex-direction:column; min-height:0; border-right:1px solid var(--line); }
+  #sideHead {
+    display:flex; align-items:center; gap:8px; padding:6px 10px; flex:none;
+    border-bottom:1px solid var(--line); font-size:12px; color:var(--dim);
   }
-  #queue button:hover { background:#1f232a; }
-  #queue button[aria-current=true] { background:#232833; box-shadow:inset 3px 0 0 var(--accent); }
+  #sideHead .grow { flex:1; }
+  body.collapsed #sideHead { flex-direction:column; padding:8px 0; border-bottom:0; gap:10px; }
+  body.collapsed #sideHead .full, body.collapsed #queue { display:none; }
+  #railPos { display:none; writing-mode:vertical-rl; font-family:var(--mono); font-size:11px; }
+  body.collapsed #railPos { display:block; }
+  #queue { overflow-y:auto; flex:1; }
+  input[type=checkbox] { accent-color:var(--accent); width:14px; height:14px; margin:0; cursor:pointer; }
+  .item { display:flex; align-items:stretch; border-bottom:1px solid var(--line); }
+  .item:hover { background:#1f232a; }
+  .item[aria-current=true] { background:#232833; box-shadow:inset 3px 0 0 var(--accent); }
+  .item.sel { background:#1c2a26; }
+  .item.sel[aria-current=true] { background:#22332e; }
+  .item .ck { display:flex; align-items:center; padding:0 2px 0 12px; cursor:pointer; }
+  .item .open {
+    flex:1; min-width:0; text-align:left; background:none; color:inherit; border:0;
+    padding:9px 12px 9px 8px; cursor:pointer; font:inherit; font-size:13px;
+  }
   #queue .t { display:block; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   #queue .m { display:block; color:var(--dim); font-size:11px; font-family:var(--mono); margin-top:2px; }
+  /* Floats rather than sitting in the header, so selecting the first row
+     never shoves the list out from under the next click. */
+  #bulk {
+    position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:5;
+    display:none; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;
+    max-width:calc(100vw - 32px); padding:8px 12px; font-size:13px;
+    background:var(--panel); border:1px solid var(--accent); border-radius:10px;
+    box-shadow:0 8px 28px rgba(0,0,0,.45);
+  }
+  #bulk.on { display:flex; }
+  body.bulk .flash { bottom:76px; }
+  body.bulk #queue, body.bulk #detail { padding-bottom:96px; }
+  #bulk b { font-weight:600; margin-right:4px; }
+  kbd {
+    font-family:var(--mono); font-size:10px; opacity:.65; margin-left:5px;
+    border:1px solid currentColor; border-radius:3px; padding:0 3px;
+  }
+  #help {
+    position:fixed; inset:0; background:rgba(8,9,11,.6); display:none;
+    align-items:center; justify-content:center; padding:16px;
+  }
+  #help.on { display:flex; }
+  #help .card {
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:18px 22px; max-width:440px; width:100%; max-height:90vh; overflow:auto;
+  }
+  #help table { border-collapse:collapse; width:100%; font-size:13px; }
+  #help td { padding:4px 0; vertical-align:top; }
+  #help td:first-child { white-space:nowrap; padding-right:16px; font-family:var(--mono); color:var(--accent); }
   #detail { overflow-y:auto; padding:20px 24px 64px; }
   .tag {
     display:inline-block; font-size:11px; padding:1px 7px; border-radius:99px;
@@ -76,10 +142,6 @@
   button.small { padding:5px 10px; }
   .actions button:hover, button.small:hover { border-color:var(--accent); }
   .actions button.primary { background:var(--accent); color:#12211c; border-color:var(--accent); font-weight:600; }
-  .actions kbd {
-    font-family:var(--mono); font-size:10px; opacity:.65; margin-left:5px;
-    border:1px solid currentColor; border-radius:3px; padding:0 3px;
-  }
   pre.ctx {
     background:#101216; border:1px solid var(--line); border-radius:8px;
     padding:10px 12px; overflow-x:auto; font-family:var(--mono); font-size:12px;
@@ -109,8 +171,11 @@
     border:1px solid var(--warn); border-radius:8px; background:#241f16;
   }
   @media (max-width: 760px) {
-    main { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; }
-    #queue { border-right:0; border-bottom:1px solid var(--line); }
+    main, body.collapsed main { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; }
+    body.collapsed main { grid-template-rows: auto 1fr; }
+    #side { border-right:0; border-bottom:1px solid var(--line); }
+    body.collapsed #sideHead { flex-direction:row; padding:6px 10px; }
+    body.collapsed #railPos { writing-mode:horizontal-tb; }
   }
 </style>
 </head>
@@ -132,29 +197,65 @@
       <option value="ai-fine">Left as drafted</option>
       <option value="ai-revised">Model rewrite, accepted</option>
     </select>
-    <select id="fTier">
-      <option value="">Every tier</option>
-      <option value="prose">Paragraphs (16+ words)</option>
-      <option value="helper">Helper text (6–15)</option>
-      <option value="label">Labels (1–5)</option>
-    </select>
-    <select id="fFile"><option value="">Every file</option></select>
-    <input type="search" id="fText" placeholder="Search copy…  ⌘K" style="flex:1;min-width:140px">
+    <span class="words" role="group" aria-label="Word count">
+      <input type="number" id="fMin" min="1" step="1" inputmode="numeric" placeholder="Min" aria-label="At least this many words">
+      <span class="muted">–</span>
+      <input type="number" id="fMax" min="1" step="1" inputmode="numeric" placeholder="Max" aria-label="At most this many words">
+      <span class="muted">words</span>
+    </span>
+    <div class="combo">
+      <input type="text" id="fFile" role="combobox" aria-label="Filter by file" aria-autocomplete="list"
+             aria-expanded="false" aria-controls="fileMenu" placeholder="Every file" autocomplete="off" spellcheck="false">
+      <button type="button" class="clear" id="fFileClear" aria-label="Clear the file filter" hidden>×</button>
+      <ul id="fileMenu" role="listbox" aria-label="Files" hidden></ul>
+    </div>
+    <input type="search" id="fText" placeholder="Search copy…" aria-label="Search copy" style="flex:1;min-width:140px">
     <span class="muted" id="qcount"></span>
+    <button class="small" id="helpBtn" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">?</button>
   </div>
+  <div id="bulk" role="toolbar" aria-label="Bulk actions"></div>
   <div id="drafts"></div>
 </header>
 
 <main>
-  <div id="queue"></div>
+  <aside id="side">
+    <div id="sideHead">
+      <input type="checkbox" id="selAll" class="full" title="Select everything shown" aria-label="Select everything shown">
+      <span class="full grow" id="selInfo"></span>
+      <button class="small" id="sideBtn" title="Collapse the list" aria-label="Collapse the list">«</button>
+      <span id="railPos"></span>
+    </div>
+    <div id="queue" role="listbox" aria-multiselectable="true"></div>
+  </aside>
   <div id="detail"><div class="empty">Loading…</div></div>
 </main>
 
 <div class="flash" id="flash"></div>
 
+<div id="help" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="card">
+    <strong id="helpTitle">Keyboard</strong>
+    <table id="helpTable" style="margin-top:10px"></table>
+    <p class="muted" style="margin:12px 0 0">Esc closes this. Letter keys do nothing while you are typing.</p>
+  </div>
+</div>
+
 <script type="module">
 const $ = (s) => document.querySelector(s);
 let entries = [], view = [], cursor = 0, statsData = null, drafts = { checkedOut: {}, files: [] };
+let selected = new Set(), anchor = null, fileExact = false;
+
+// Ctrl on Windows and Linux, ⌘ on a Mac. Both modifiers always work; this
+// is only about what the labels say.
+const MAC = /Mac|iPhone|iPad/.test(navigator.userAgentData?.platform || navigator.platform);
+const MOD = MAC ? '⌘' : 'Ctrl+';
+const SAVE_KEY = MAC ? '⌘↵' : 'Ctrl+Enter';
+$('#fText').placeholder = `Search copy…  ${MAC ? '⌘K' : 'Ctrl+K'}`;
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { /* a preference, not state */ } },
+};
 
 const api = async (p, opts) => {
   const r = await fetch(p, { headers: { 'Content-Type': 'application/json' }, ...opts });
@@ -212,24 +313,24 @@ async function loadAll() {
   applyStats(d.stats);
   showDrafts(d.drafts);
 
-  const files = [...new Set(entries.flatMap((e) => e.occurrences.map((o) => o.file)))].sort();
-  const sel = $('#fFile');
-  const keep = sel.value;
-  sel.innerHTML = '<option value="">Every file</option>' +
-    files.map((f) => `<option value="${f}">${f}</option>`).join('');
-  sel.value = keep;
-
   refilter();
 }
 
 function refilter(keepId) {
-  const st = $('#fStatus').value, tier = $('#fTier').value;
-  const file = $('#fFile').value, q = $('#fText').value.trim().toLowerCase();
+  const st = $('#fStatus').value;
+  // Both ends inclusive; an empty box means no limit that way.
+  const num = (id) => { const n = parseInt($(id).value, 10); return Number.isFinite(n) && n > 0 ? n : null; };
+  const min = num('#fMin'), max = num('#fMax');
+  // A file picked from the list matches exactly; typed text matches any
+  // part of the path, so "about" finds content/about.md.
+  const file = $('#fFile').value.trim().toLowerCase(), q = $('#fText').value.trim().toLowerCase();
+  const inFile = (o) => (fileExact ? o.file.toLowerCase() === file : o.file.toLowerCase().includes(file));
 
   view = entries.filter((e) =>
     (!st || e.status === st) &&
-    (!tier || e.tier === tier) &&
-    (!file || e.occurrences.some((o) => o.file === file)) &&
+    (min === null || e.words >= min) &&
+    (max === null || e.words <= max) &&
+    (!file || e.occurrences.some(inFile)) &&
     (!q || e.text.toLowerCase().includes(q)));
 
   // What triage called worth rewriting first, then paragraphs: they carry
@@ -241,6 +342,10 @@ function refilter(keepId) {
     a.occurrences[0].line - b.occurrences[0].line);
 
   $('#qcount').textContent = `${view.length} shown`;
+  // A bulk action only ever touches what you can see, so a selection never
+  // outlives the filter it was made under.
+  const visible = new Set(view.map((e) => e.id));
+  selected = new Set([...selected].filter((id) => visible.has(id)));
   const i = keepId ? view.findIndex((e) => e.id === keepId) : -1;
   cursor = i >= 0 ? i : Math.min(cursor, Math.max(0, view.length - 1));
   renderQueue(); renderDetail();
@@ -250,8 +355,21 @@ function renderQueue() {
   const q = $('#queue');
   q.innerHTML = '';
   view.forEach((e, i) => {
-    const b = document.createElement('button');
-    b.setAttribute('aria-current', i === cursor);
+    const row = document.createElement('div');
+    row.className = `item${selected.has(e.id) ? ' sel' : ''}`;
+    row.setAttribute('role', 'option');
+    row.setAttribute('aria-selected', selected.has(e.id));
+    row.setAttribute('aria-current', i === cursor);
+
+    const ck = document.createElement('label'); ck.className = 'ck';
+    const box = document.createElement('input'); box.type = 'checkbox';
+    box.checked = selected.has(e.id);
+    box.setAttribute('aria-label', 'Select');
+    box.tabIndex = -1;
+    box.onclick = (ev) => { ev.preventDefault(); pick(i, ev.shiftKey ? 'range' : 'toggle'); };
+    ck.append(box);
+
+    const b = document.createElement('button'); b.className = 'open';
     const t = document.createElement('span'); t.className = 't'; t.textContent = e.text;
     const m = document.createElement('span'); m.className = 'm';
     if (e.triage && e.status === 'unreviewed') {
@@ -263,11 +381,126 @@ function renderQueue() {
     m.append(`${e.tier} · ${e.words}w · ${e.occurrences[0].file.split('/').pop()}:${e.occurrences[0].line}` +
       (e.occurrences.length > 1 ? ` +${e.occurrences.length - 1}` : ''));
     b.append(t, m);
-    b.onclick = () => { cursor = i; renderQueue(); renderDetail(); };
-    q.append(b);
+    b.onclick = (ev) => {
+      if (ev.shiftKey) return pick(i, 'range');
+      if (ev.ctrlKey || ev.metaKey) return pick(i, 'toggle');
+      cursor = i; anchor = i; renderQueue(); renderDetail();
+    };
+    row.append(ck, b);
+    q.append(row);
   });
   q.querySelector('[aria-current=true]')?.scrollIntoView({ block: 'nearest' });
+  renderSelection();
 }
+
+// ------------------------------------------------------------ selection ---
+
+/** Toggle one row, or select the run from the last row you touched. */
+function pick(i, how) {
+  const e = view[i];
+  if (!e) return;
+  if (how === 'range' && anchor !== null) {
+    const [a, b] = [Math.min(anchor, i), Math.max(anchor, i)];
+    for (let k = a; k <= b; k++) selected.add(view[k].id);
+  } else if (selected.has(e.id)) {
+    selected.delete(e.id);
+  } else {
+    selected.add(e.id);
+  }
+  anchor = i;
+  renderQueue();
+}
+
+function selectAll(on) {
+  selected = on ? new Set(view.map((e) => e.id)) : new Set();
+  renderQueue();
+}
+
+function renderSelection() {
+  const n = selected.size;
+  const all = $('#selAll');
+  all.checked = n > 0 && n === view.length;
+  all.indeterminate = n > 0 && n < view.length;
+  $('#selInfo').textContent = n ? `${n} of ${view.length} selected` : `${view.length} shown`;
+  $('#railPos').textContent = view.length ? `${cursor + 1} / ${view.length}` : '0';
+
+  const bar = $('#bulk');
+  bar.textContent = '';
+  bar.classList.toggle('on', n > 0);
+  document.body.classList.toggle('bulk', n > 0);
+  if (!n) return;
+  const words = view.filter((e) => selected.has(e.id)).reduce((w, e) => w + e.words, 0);
+  const label = document.createElement('b');
+  label.textContent = `${n} selected`;
+  const meta = document.createElement('span'); meta.className = 'muted';
+  meta.textContent = `${words.toLocaleString()} words`;
+  bar.append(label, meta);
+  const act = (text, key, fn) => {
+    const btn = document.createElement('button'); btn.className = 'small';
+    btn.append(text);
+    const k = document.createElement('kbd'); k.textContent = key; btn.append(k);
+    btn.onclick = fn; bar.append(btn);
+  };
+  act('Already mine', 'h', () => bulk('human'));
+  act('Leave as drafted', 'a', () => bulk('ai-fine'));
+  act('Back to unreviewed', 'u', () => bulk('unreviewed'));
+  act('Clear', 'Esc', () => selectAll(false));
+}
+
+const BULK_DONE = {
+  human: (n) => `${n} marked as your words.`,
+  'ai-fine': (n) => `${n} left as drafted.`,
+  unreviewed: (n) => `${n} back in the queue.`,
+};
+
+async function bulk(status, { force = false, ids = [...selected] } = {}) {
+  if (!ids.length) return;
+  const byId = new Map(entries.map((e) => [e.id, e]));
+  const pending = ids.filter((id) => byId.get(id)?.replacement);
+  if (!force && pending.length && status !== 'rewritten' &&
+      !confirm(`${pending.length} of these ${pending.length === 1 ? 'has a rewrite' : 'have rewrites'} not applied yet. ` +
+               `This throws ${pending.length === 1 ? 'it' : 'them'} away. Go ahead?`)) return;
+
+  let r;
+  try {
+    r = await api('/api/decide-many', { method: 'POST', body: JSON.stringify({ ids, status, force }) });
+  } catch (err) {
+    if (err.body?.code !== 'checked-out') return flash(err.message);
+    const held = err.body.held;
+    const files = [...new Set(held.map((h) => h.rel))].join(', ');
+    const anyway = confirm(
+      `${held.length} of these ${held.length === 1 ? 'is' : 'are'} checked out in ${files}.\n\n` +
+      `OK decides them here anyway, which orphans anything written in those draft blocks.\n` +
+      `Cancel leaves them for the draft and decides the rest.`);
+    const heldIds = new Set(held.map((h) => h.id));
+    return bulk(status, { force: anyway, ids: anyway ? ids : ids.filter((id) => !heldIds.has(id)) });
+  }
+
+  for (const fresh of r.entries) {
+    const e = byId.get(fresh.id);
+    if (!e) continue;
+    for (const k of Object.keys(e)) if (!(k in fresh)) delete e[k];
+    Object.assign(e, fresh);
+  }
+  applyStats(r.stats);
+  selected = new Set();
+  flash(BULK_DONE[status](r.entries.length));
+  refilter(view[cursor]?.id);
+}
+
+// -------------------------------------------------------------- sidebar ---
+
+function setCollapsed(on, { remember = true } = {}) {
+  document.body.classList.toggle('collapsed', on);
+  const btn = $('#sideBtn');
+  btn.textContent = on ? '»' : '«';
+  btn.title = on ? 'Show the list  [' : 'Collapse the list  [';
+  btn.setAttribute('aria-label', btn.title);
+  if (remember) store.set('slopchop.collapsed', on ? '1' : '0');
+}
+// Remembered once you choose; until then, collapsed when the window is narrow.
+const chosen = store.get('slopchop.collapsed');
+setCollapsed(chosen !== null ? chosen === '1' : innerWidth < 1100, { remember: false });
 
 async function renderDetail() {
   const d = $('#detail');
@@ -353,7 +586,7 @@ async function renderDetail() {
     if (key) { const k = document.createElement('kbd'); k.textContent = key; b.append(k); }
     b.onclick = fn; acts.append(b); return b;
   };
-  mk('Save my version', '⌘↵', 'primary', () => saveRewrite(e, ta.value));
+  mk('Save my version', SAVE_KEY, 'primary', () => saveRewrite(e, ta.value));
   mk('Already mine', 'h', '', () => setStatus(e, 'human'));
   mk('Leave as drafted', 'a', '', () => setStatus(e, 'ai-fine'));
   mk('Skip', 'j', '', () => move(1));
@@ -477,7 +710,7 @@ function marked(text, tells) {
 
 async function setStatus(e, status) {
   if (!await persist(e, { status, replacement: null })) return;
-  flash(status === 'human' ? 'Marked as your words.' : 'Left as drafted.');
+  flash(BULK_DONE[status](1).replace(/^1 /, '').replace(/^./, (c) => c.toUpperCase()));
   advance(e);
 }
 
@@ -509,27 +742,211 @@ function move(d) {
   renderQueue(); renderDetail();
 }
 
-for (const id of ['#fStatus', '#fTier', '#fFile']) $(id).onchange = () => refilter();
+$('#fStatus').onchange = () => refilter();
+for (const id of ['#fMin', '#fMax']) $(id).oninput = () => refilter();
+// `search` covers the clear button inside a search box, which skips `input`.
 $('#fText').oninput = () => refilter();
+$('#fText').addEventListener('search', () => refilter());
+
+// ---------------------------------------------------------- file picker ---
+
+// A hand-built combobox, because a native <datalist> shows nothing in some
+// browsers and cannot be styled in any of them.
+const fileBox = $('#fFile'), fileMenu = $('#fileMenu');
+let menuItems = [], menuActive = -1;
+
+function fileCounts() {
+  // Counted under the status filter, so the numbers match what you would see.
+  const st = $('#fStatus').value;
+  const counts = new Map();
+  for (const e of entries) {
+    if (st && e.status !== st) continue;
+    for (const f of new Set(e.occurrences.map((o) => o.file))) counts.set(f, (counts.get(f) || 0) + 1);
+  }
+  return counts;
+}
+
+function openFileMenu() {
+  const q = fileBox.value.trim().toLowerCase();
+  const counts = fileCounts();
+  menuItems = [...counts.keys()].sort().filter((f) => !q || fileExact || f.toLowerCase().includes(q));
+  menuActive = menuItems.length ? 0 : -1;
+  fileMenu.textContent = '';
+  if (!menuItems.length) {
+    const li = document.createElement('li'); li.className = 'none';
+    li.textContent = 'No file matches'; fileMenu.append(li);
+  }
+  menuItems.forEach((f, i) => {
+    const li = document.createElement('li');
+    li.id = `file-opt-${i}`;
+    li.setAttribute('role', 'option');
+    const name = document.createElement('span');
+    const at = q && !fileExact ? f.toLowerCase().indexOf(q) : -1;
+    if (at >= 0) {
+      const b = document.createElement('b'); b.textContent = f.slice(at, at + q.length);
+      name.append(f.slice(0, at), b, f.slice(at + q.length));
+    } else {
+      name.textContent = f;
+    }
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = counts.get(f);
+    li.append(name, n);
+    // mousedown, not click: a click would blur the box and close the menu first.
+    li.onmousedown = (ev) => { ev.preventDefault(); chooseFile(f); };
+    li.onmousemove = () => { if (menuActive !== i) { menuActive = i; markActive(); } };
+    fileMenu.append(li);
+  });
+  fileMenu.hidden = false;
+  fileBox.setAttribute('aria-expanded', 'true');
+  markActive();
+}
+
+function markActive() {
+  [...fileMenu.children].forEach((li, i) => li.setAttribute('aria-selected', i === menuActive));
+  const li = fileMenu.children[menuActive];
+  if (li?.id) { fileBox.setAttribute('aria-activedescendant', li.id); li.scrollIntoView({ block: 'nearest' }); }
+  else fileBox.removeAttribute('aria-activedescendant');
+}
+
+function closeFileMenu() {
+  fileMenu.hidden = true;
+  fileBox.setAttribute('aria-expanded', 'false');
+  fileBox.removeAttribute('aria-activedescendant');
+}
+
+function chooseFile(f) {
+  fileBox.value = f;
+  fileExact = !!f;
+  $('#fFileClear').hidden = !f;
+  closeFileMenu();
+  refilter();
+}
+
+fileBox.addEventListener('focus', () => { fileBox.select(); openFileMenu(); });
+fileBox.addEventListener('blur', closeFileMenu);
+fileBox.addEventListener('input', () => {
+  fileExact = false;
+  $('#fFileClear').hidden = !fileBox.value;
+  openFileMenu();
+  refilter();
+});
+fileBox.addEventListener('keydown', (ev) => {
+  const open = !fileMenu.hidden;
+  if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+    ev.preventDefault();
+    if (!open) return openFileMenu();
+    if (!menuItems.length) return;
+    menuActive = (menuActive + (ev.key === 'ArrowDown' ? 1 : -1) + menuItems.length) % menuItems.length;
+    markActive();
+  } else if (ev.key === 'Enter') {
+    ev.preventDefault();
+    if (open && menuActive >= 0) chooseFile(menuItems[menuActive]);
+    fileBox.blur();
+  } else if (ev.key === 'Escape' && open) {
+    // First Escape closes the list; the next one leaves the box.
+    ev.preventDefault(); ev.stopPropagation(); closeFileMenu();
+  }
+});
+$('#fFileClear').onclick = () => { chooseFile(''); fileBox.focus(); };
 $('#applyBtn').onclick = () => applyRewrites().catch((e) => flash(e.message));
+$('#selAll').onclick = (ev) => { ev.preventDefault(); selectAll(selected.size !== view.length); };
+$('#sideBtn').onclick = () => setCollapsed(!document.body.classList.contains('collapsed'));
+
+// --------------------------------------------------------------- keyboard ---
+
+const SHORTCUTS = [
+  ['j  k  ↑  ↓', 'Next and previous string'],
+  ['Shift+j  Shift+k', 'Extend the selection down or up'],
+  ['x', 'Select or unselect this string'],
+  [`${MOD}A`, 'Select everything shown'],
+  ['e  Enter', 'Write in the editor'],
+  [`${SAVE_KEY}  ${MOD}S`, 'Save what is in the editor'],
+  ['s', "Copy the model's suggestion into the editor"],
+  ['h', 'Already mine (the selection, if there is one)'],
+  ['a', 'Leave as drafted (the selection, if there is one)'],
+  ['u', 'Back to unreviewed (the selection, if there is one)'],
+  ['[', 'Collapse or show the list'],
+  [`/  ${MOD}K`, 'Search the copy'],
+  ['f', 'Filter by file'],
+  ['Esc', 'Clear the selection, leave a field, close this'],
+  ['?', 'This list'],
+];
+
+function showHelp(on) {
+  const t = $('#helpTable');
+  if (on && !t.rows.length) {
+    for (const [k, what] of SHORTCUTS) {
+      const tr = t.insertRow();
+      tr.insertCell().textContent = k;
+      tr.insertCell().textContent = what;
+    }
+  }
+  $('#help').classList.toggle('on', on);
+}
+$('#helpBtn').onclick = () => showHelp(true);
+$('#help').onclick = (ev) => { if (ev.target.id === 'help') showHelp(false); };
+
+/** Where a letter key means typing, not a command. */
+function typingIn(el) {
+  if (!el) return false;
+  if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable) return true;
+  return el.tagName === 'INPUT' && !['checkbox', 'radio', 'button'].includes(el.type);
+}
+
+/** h, a, u: the selection when there is one, otherwise the current string. */
+function decideKey(status) {
+  if (selected.size) return bulk(status);
+  const e = view[cursor];
+  if (e) setStatus(e, status);
+}
 
 addEventListener('keydown', (ev) => {
+  const mod = ev.metaKey || ev.ctrlKey;
   const editing = document.activeElement?.tagName === 'TEXTAREA';
-  if ((ev.metaKey || ev.ctrlKey) && ev.key === 'Enter' && editing) {
+  const key = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
+
+  if (mod && (key === 'Enter' || key === 's') && editing) {
     ev.preventDefault(); saveRewrite(view[cursor], $('#editor').value); return;
   }
-  if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 'k') {
-    ev.preventDefault(); $('#fText').focus(); return;
+  if (mod && key === 's') { ev.preventDefault(); return; }   // never the browser's Save Page
+  if (mod && key === 'k') { ev.preventDefault(); $('#fText').focus(); $('#fText').select(); return; }
+  if (key === 'Escape') {
+    // Leave the field as it is: a search box would otherwise clear itself.
+    if ($('#help').classList.contains('on')) showHelp(false);
+    else if (typingIn(document.activeElement)) { ev.preventDefault(); document.activeElement.blur(); }
+    else if (selected.size) selectAll(false);
+    return;
   }
-  if (ev.key === 'Escape') { document.activeElement?.blur?.(); return; }
-  if (editing || ev.target.tagName === 'INPUT' || ev.target.tagName === 'SELECT') return;
-  if (ev.key === 'j' || ev.key === 'ArrowDown') { ev.preventDefault(); move(1); }
-  else if (ev.key === 'k' || ev.key === 'ArrowUp') { ev.preventDefault(); move(-1); }
-  else if (ev.key === 'e' || ev.key === 'Enter') { ev.preventDefault(); $('#editor')?.focus(); }
-  else if (ev.key === 'h') { ev.preventDefault(); setStatus(view[cursor], 'human'); }
-  else if (ev.key === 'a') { ev.preventDefault(); setStatus(view[cursor], 'ai-fine'); }
-  else if (ev.key === 's' && view[cursor]?.suggestion) { ev.preventDefault(); useSuggestion(view[cursor]); }
+  if (typingIn(ev.target) || ev.altKey) return;
+  if (mod && key === 'a') { ev.preventDefault(); selectAll(true); return; }
+  if (mod) return;
+
+  if (key === '?' || (key === '/' && ev.shiftKey)) { ev.preventDefault(); showHelp(true); return; }
+  if ($('#help').classList.contains('on')) return;
+
+  if ((key === 'j' || key === 'ArrowDown') && ev.shiftKey) { ev.preventDefault(); extend(1); }
+  else if ((key === 'k' || key === 'ArrowUp') && ev.shiftKey) { ev.preventDefault(); extend(-1); }
+  else if (key === 'j' || key === 'ArrowDown') { ev.preventDefault(); move(1); }
+  else if (key === 'k' || key === 'ArrowUp') { ev.preventDefault(); move(-1); }
+  else if (key === 'x') { ev.preventDefault(); pick(cursor, 'toggle'); }
+  else if (key === 'e' || (key === 'Enter' && ev.target.tagName !== 'BUTTON')) { ev.preventDefault(); $('#editor')?.focus(); }
+  else if (key === 'h') { ev.preventDefault(); decideKey('human'); }
+  else if (key === 'a') { ev.preventDefault(); decideKey('ai-fine'); }
+  else if (key === 'u') { ev.preventDefault(); decideKey('unreviewed'); }
+  else if (key === 's' && view[cursor]?.suggestion) { ev.preventDefault(); useSuggestion(view[cursor]); }
+  else if (key === '[') { ev.preventDefault(); setCollapsed(!document.body.classList.contains('collapsed')); }
+  else if (key === '/') { ev.preventDefault(); $('#fText').focus(); }
+  else if (key === 'f') { ev.preventDefault(); $('#fFile').focus(); $('#fFile').select(); }
 });
+
+/** Shift+j / Shift+k: carry the selection along as the cursor moves. */
+function extend(d) {
+  if (!view.length) return;
+  selected.add(view[cursor].id);
+  cursor = Math.max(0, Math.min(view.length - 1, cursor + d));
+  selected.add(view[cursor].id);
+  anchor = cursor;
+  renderQueue(); renderDetail();
+}
 
 loadAll().catch((e) => { $('#detail').innerHTML = `<div class="empty">${e.message}</div>`; });
 </script>
