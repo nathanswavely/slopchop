@@ -97,6 +97,7 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
         const ledger = load(project);
         return json(res, 200, {
           entries: ledger.entries, stats: stats(ledger), strict: !!ledger.strict,
+          baseline: ledger.baseline || [],
           drafts: draftState(project, ledger),
           project: { name: path.basename(project.root), ledger: project.rel(project.ledgerPath) },
         });
@@ -110,7 +111,7 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
       }
 
       if (req.method === 'POST' && url.pathname === '/api/decide') {
-        const { id, status, replacement, note, force } = await readBody(req);
+        const { id, status, replacement, note, kind, force } = await readBody(req);
         const ledger = load(project);
         const entry = ledger.entries.find((e) => e.id === id);
         if (!entry) return json(res, 404, { error: 'no such entry' });
@@ -127,7 +128,7 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
           });
         }
 
-        decide(entry, { status, replacement, note });
+        decide(entry, { status, replacement, note, kind });
         save(project, ledger);
         return json(res, 200, { entry, stats: stats(ledger) });
       }

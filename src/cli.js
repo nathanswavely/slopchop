@@ -17,7 +17,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadProject, proposeConfig, CONFIG_NAME } from './config.js';
-import { load, save, sync, stats, gate, STATUSES, CHOOSABLE } from './ledger.js';
+import { load, save, sync, stats, gate, decide, STATUSES, CHOOSABLE } from './ledger.js';
 import { select, triage, suggest, settings, VERDICTS } from './advice.js';
 import { writeback, previewLines } from './writeback.js';
 import { writeReport } from './report.js';
@@ -127,6 +127,10 @@ function cmdStats() {
   for (const st of STATUSES) {
     if (!s.byStatus[st]) continue;
     console.log(`  ${st.padEnd(12)} ${s.byStatus[st]}`);
+    if (st === 'human') {
+      const a = s.byAuthorship;
+      console.log(`  ${DIM}  written ${a.written} · edited ${a.edited} · already theirs ${a.claimed}${OFF}`);
+    }
   }
 
   const byFile = new Map();
@@ -300,7 +304,7 @@ function cmdDecide() {
     console.log(`\n${YEL}dry run${OFF}. Re-run with ${GREEN}--apply${OFF} to record.`);
     return;
   }
-  for (const e of hit) { e.status = status; if (note) e.note = note; }
+  for (const e of hit) decide(e, { status, ...(note ? { note } : {}) });
   save(p, ledger);
   console.log(`\n${GREEN}recorded.${OFF}`);
 }

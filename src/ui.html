@@ -141,9 +141,13 @@
   <div class="row" style="margin-top:8px">
     <select class="lt-field" id="fStatus" aria-label="Status">
       <option value="unreviewed">Unreviewed</option>
+      <option value="new">New since baseline (blocks CI)</option>
       <option value="">All</option>
       <option value="rewritten">Rewritten (pending apply)</option>
       <option value="human">Human</option>
+      <option value="human:written">Human: rewrite</option>
+      <option value="human:edited">Human: small edits</option>
+      <option value="human:claimed">Human: already theirs</option>
       <option value="ai-fine">Left as drafted</option>
       <option value="ai-revised">Model rewrite, accepted</option>
     </select>
@@ -189,7 +193,21 @@ import { initTheme, keys, isTyping, combobox, dialog, toast } from '/lt/behavior
 
 const $ = (s) => document.querySelector(s);
 let entries = [], view = [], cursor = 0, statsData = null, drafts = { checkedOut: {}, files: [] };
-let selected = new Set(), anchor = null;
+let selected = new Set(), anchor = null, baseline = new Set();
+
+// "new" is the CI gate's view: unreviewed and not part of the debt
+// accepted at baseline. Every other value is a plain status.
+const matchesStatus = (e, st) => {
+  if (!st) return true;
+  if (st === 'new') return e.status === 'unreviewed' && !baseline.has(e.id);
+  if (st.startsWith('human:')) return e.status === 'human' && kindOf(e) === st.slice(6);
+  return e.status === st;
+};
+
+// How a human entry came to be, in the person's own words. An entry from
+// before they were asked reads the way the ledger reads it.
+const KIND_LABEL = { written: 'rewrite', edited: 'small edits', claimed: 'already theirs' };
+const kindOf = (e) => e.authorship?.kind ?? (e.previous_ai_text ? 'written' : 'claimed');
 
 const theme = initTheme({ key: 'slopchop-theme' });
 $('#themeBtn').onclick = () => theme.toggle();
@@ -197,6 +215,7 @@ $('#themeBtn').onclick = () => theme.toggle();
 // Ctrl on Windows and Linux, ⌘ on a Mac. Both modifiers always work; this
 // is only about what the labels say.
 const SAVE_KEY = keys('Mod+Enter');
+const EDIT_KEY = keys('Mod+Shift+Enter');
 $('#fText').placeholder = `Search copy…  ${keys('Mod+K')}`;
 
 // The tone each status and triage verdict reads in, shared by tags and the list.
@@ -264,6 +283,7 @@ function showDrafts(d) {
 async function loadAll() {
   const d = await api('/api/ledger');
   entries = d.entries;
+  baseline = new Set(d.baseline || []);
   if (d.project?.name) { $('#title').textContent = `SlopChop · ${d.project.name}`; document.title = `SlopChop · ${d.project.name}`; }
   applyStats(d.stats);
   showDrafts(d.drafts);
@@ -282,7 +302,7 @@ function refilter(keepId) {
   const inFile = (o) => (fileExactly() ? o.file.toLowerCase() === file : o.file.toLowerCase().includes(file));
 
   view = entries.filter((e) =>
-    (!st || e.status === st) &&
+    matchesStatus(e, st) &&
     (min === null || e.words >= min) &&
     (max === null || e.words <= max) &&
     (!file || e.occurrences.some(inFile)) &&
@@ -469,8 +489,10 @@ async function renderDetail() {
   d.innerHTML = '';
   const eyebrow = (text) => { const p = document.createElement('p'); p.className = 'lt-eyebrow'; p.textContent = text; return p; };
   const head = document.createElement('div'); head.className = 'row'; head.style.gap = '6px';
-  const statusLabel = e.status === 'rewritten' && e.replacement_source === 'model'
-    ? 'rewritten · model' : e.status;
+  const statusLabel = e.status === 'rewritten' && e.replacement_source === 'model' ? 'rewritten · model'
+    : e.status === 'rewritten' && e.authorship ? `rewritten · ${KIND_LABEL[e.authorship.kind]}`
+    : e.status === 'human' ? `human · ${KIND_LABEL[kindOf(e)]}`
+    : e.status;
   head.append(tag(e.tier, TONE[e.tier]), tag(statusLabel, TONE[e.status]));
   if (e.triage && e.status === 'unreviewed') head.append(tag(`triage: ${e.triage.verdict}`, TONE[e.triage.verdict]));
   head.append(tag(`${e.words} words`), tag(`${e.occurrences.length} place${e.occurrences.length === 1 ? '' : 's'}`));
@@ -531,6 +553,20 @@ async function renderDetail() {
   ta.addEventListener('input', checkPlaceholders);
   checkPlaceholders();
 
+  // Two ways to save, and the person says which: a rewrite, or small edits.
+  // Nothing is measured. Neither is offered until something has changed.
+  const base = (e.replacement ?? e.text).trim();
+  const saveBtns = [];
+  const syncSave = () => {
+    const text = ta.value.trim();
+    const off = !text || text === base;
+    for (const b of saveBtns) {
+      b.disabled = off;
+      b.title = off ? 'Change something first. Press h if these are already your words.' : '';
+    }
+  };
+  ta.addEventListener('input', syncSave);
+
   const acts = document.createElement('div'); acts.className = 'actions';
   const mk = (label, key, cls, fn, into = acts) => {
     const b = document.createElement('button');
@@ -539,7 +575,11 @@ async function renderDetail() {
     if (key) b.append(kbd(key));
     b.onclick = fn; into.append(b); return b;
   };
-  mk('Save my version', SAVE_KEY, 'lt-btn-primary', () => saveRewrite(e, ta.value));
+  saveBtns.push(
+    mk('Save as rewrite', SAVE_KEY, 'lt-btn-secondary', () => saveRewrite(e, ta.value, 'written')),
+    mk('Save as small edits', EDIT_KEY, 'lt-btn-secondary', () => saveRewrite(e, ta.value, 'edited')),
+  );
+  syncSave();
   mk('Already mine', 'h', '', () => setStatus(e, 'human'));
   mk('Leave as drafted', 'a', '', () => setStatus(e, 'ai-fine'));
   mk('Skip', 'j', 'lt-btn-ghost', () => move(1));
@@ -612,14 +652,17 @@ async function persist(e, body) {
   return true;
 }
 
-async function saveRewrite(e, text) {
+async function saveRewrite(e, text, kind) {
   const next = text.trim();
   if (!next) return flash('Empty. Nothing saved.');
-  if (next === e.text) { await setStatus(e, 'human'); return; }
-  if (!await persist(e, { status: 'rewritten', replacement: next })) return;
+  // Saving words nobody changed is not a decision. "Already mine" is.
+  if (next === (e.replacement ?? e.text).trim() || next === e.text) {
+    return flash('Nothing changed. Press h if these are already your words.');
+  }
+  if (!await persist(e, { status: 'rewritten', replacement: next, kind })) return;
   flash(e.replacement_source === 'model'
     ? "Saved as the model's rewrite (ai-revised once applied). Edit it to make it yours."
-    : 'Saved. Apply rewrites to write it into source.');
+    : `Saved as ${KIND_LABEL[kind]}. Apply rewrites to write it into source.`);
   advance(e);
 }
 
@@ -678,7 +721,7 @@ function advance(e) {
   const showing = $('#fStatus').value;
   // When filtering the queue by status, a decided entry leaves the list and
   // the cursor should hold its place rather than jump.
-  if (showing && e.status !== showing) refilter();
+  if (showing && !matchesStatus(e, showing)) refilter();
   else { move(1); renderQueue(); }
 }
 
@@ -705,7 +748,7 @@ function fileCounts() {
   const st = $('#fStatus').value;
   const counts = new Map();
   for (const e of entries) {
-    if (st && e.status !== st) continue;
+    if (!matchesStatus(e, st)) continue;
     for (const f of new Set(e.occurrences.map((o) => o.file))) counts.set(f, (counts.get(f) || 0) + 1);
   }
   return counts;
@@ -732,7 +775,8 @@ const SHORTCUTS = [
   ['x', 'Select or unselect this string'],
   [keys('Mod+A'), 'Select everything shown'],
   ['e  Enter', 'Write in the editor'],
-  [`${SAVE_KEY}  ${keys('Mod+S')}`, 'Save what is in the editor'],
+  [SAVE_KEY, 'Save as a rewrite'],
+  [EDIT_KEY, 'Save as small edits'],
   ['s', "Copy the model's suggestion into the editor"],
   ['h', 'Already mine (the selection, if there is one)'],
   ['a', 'Leave as drafted (the selection, if there is one)'],
@@ -767,8 +811,8 @@ addEventListener('keydown', (ev) => {
   const editing = document.activeElement?.tagName === 'TEXTAREA';
   const key = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
 
-  if (mod && (key === 'Enter' || key === 's') && editing) {
-    ev.preventDefault(); saveRewrite(view[cursor], $('#editor').value); return;
+  if (mod && key === 'Enter' && editing) {
+    ev.preventDefault(); saveRewrite(view[cursor], $('#editor').value, ev.shiftKey ? 'edited' : 'written'); return;
   }
   if (mod && key === 's') { ev.preventDefault(); return; }   // never the browser's Save Page
   if (mod && key === 'k') { ev.preventDefault(); $('#fText').focus(); $('#fText').select(); return; }
