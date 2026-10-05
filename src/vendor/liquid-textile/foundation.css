@@ -1,0 +1,576 @@
+/**
+ * Liquid Textile — Foundation
+ *
+ * The plain half of the system: semantic color, spacing, type, and the
+ * everyday controls (buttons, fields, badges, cards, tables, popovers,
+ * dialogs, toasts). Everything else in Liquid Textile is the expressive
+ * half, the stitching and resin and raw edges; this is what an app needs
+ * before any of that, and it works without it.
+ *
+ * Lifted from Patchwork's app.css, where it was proven over a large
+ * Svelte app, and renamed to the --lt- prefix. Nothing here assumes a
+ * framework or a build step.
+ *
+ * Theming: set data-theme="light" or data-theme="dark" on <html>, the same
+ * contract as the rest of Liquid Textile. behaviors.js has a three-line
+ * helper (initTheme) that picks from a saved choice or the OS setting.
+ *
+ * Overriding: every color is a custom property, so an app re-skins by
+ * redefining tokens under its own [data-theme] rules. Component selectors
+ * are single classes, so an app's own one-class rule wins on order alone.
+ */
+
+/* ================================================================
+   TOKENS — theme-independent
+   ================================================================ */
+
+:root {
+  /* Body and UI in the grotesque, for low-fatigue reading. Display in the
+     hand-lettered face, kept for big headings where it is personality and
+     not strain. Both fall back to the system UI face, so a page that loads
+     no web fonts still looks deliberate. */
+  --lt-font: 'Space Grotesk Variable', 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --lt-font-display: 'Shantell Sans Variable', 'Shantell Sans', var(--lt-font);
+  --lt-font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* A small type scale. Body is the browser default (1rem); everything
+     below it is for dense UI, never for reading. */
+  --lt-text-xs: 0.75rem;
+  --lt-text-sm: 0.8125rem;
+  --lt-text-md: 0.9rem;
+  --lt-text-lg: 1.125rem;
+
+  /* Controls get a soft corner. The textile surfaces keep their own
+     --lt-radius (square, like cut cloth); the two are separate on purpose. */
+  --lt-radius-control: 6px;
+  --lt-radius-panel: 10px;
+
+  /* Button sizing lives here, not in the button rule, so one media query
+     can retune every button at once (see the coarse-pointer block). */
+  --lt-btn-pad-y: 0.5rem;
+  --lt-btn-pad-x: 1.25rem;
+  --lt-btn-font: var(--lt-text-md);
+  --lt-btn-sm-pad-y: 0.25rem;
+  --lt-btn-sm-pad-x: 0.6rem;
+  --lt-btn-sm-font: 0.78rem;
+
+  /* ---- Layout spacing ----
+     Fluid, so there are no spacing breakpoints to fight. These govern the
+     space BETWEEN things a page composes; a component's own internal
+     padding stays local to it. */
+
+  /* Viewport edge to content. Set once, by the app shell. */
+  --lt-gutter: clamp(0.75rem, 3vw, 1.5rem);
+  /* A card or panel's own edge to its own content. Separate from the
+     gutter: tightening a phone's page edges must not squeeze the boxes. */
+  --lt-pad: clamp(1rem, 2.5vw, 1.25rem);
+  /* Between sibling blocks in flow. Near-constant on purpose: without
+     borders, vertical space is what says a section ended. */
+  --lt-stack: clamp(1.25rem, 2.5vw, 1.5rem);
+  /* Between inline siblings: chips, button rows. */
+  --lt-gap: clamp(0.5rem, 1.5vw, 0.75rem);
+
+  /* Line length. narrow for a single-column form, measure for reading,
+     wide for editors and diffs, which are not prose and want the room. */
+  --lt-measure-narrow: 54ch;
+  --lt-measure: 66ch;
+  --lt-measure-wide: 90ch;
+
+  --lt-ease: cubic-bezier(0.2, 0, 0, 1);
+  --lt-quick: 150ms;
+}
+
+/* Touch targets: small buttons become finger-sized on coarse pointers. */
+@media (pointer: coarse) {
+  :root {
+    --lt-btn-sm-pad-y: 0.45rem;
+    --lt-btn-sm-pad-x: 0.85rem;
+    --lt-btn-sm-font: 0.85rem;
+  }
+}
+
+/* ================================================================
+   TOKENS — color, per theme
+   ================================================================ */
+
+/* Light: raw cotton.
+   Contrast (WCAG AA, against --lt-color-bg unless stated):
+   text 13.4:1 · muted 5.1:1 · primary-as-text 4.5:1 · on-primary 5.2:1 ·
+   success-as-text 5.1:1 · accent-as-text 4.6:1 · error-as-text 5.2:1 ·
+   warning-text 5.2:1 (5.0:1 on warning-bg) */
+[data-theme="light"] {
+  color-scheme: light;
+  --lt-color-bg: #f4f0e8;
+  --lt-color-surface: #faf6ee;
+  --lt-color-raised: #ffffff;
+  --lt-color-text: #2a2520;
+  --lt-color-text-muted: #6b655c;
+  --lt-color-border: #ddd8cc;
+  --lt-color-border-strong: #c8c0b0;
+
+  --lt-color-primary: #0272b5;
+  --lt-color-primary-hover: #025e94;
+  --lt-color-on-primary: #ffffff;
+  --lt-color-accent: #c43d07;
+  --lt-color-on-accent: #ffffff;
+  --lt-color-error: #c02624;
+  --lt-color-on-error: #ffffff;
+  --lt-color-success: #4e6e49;
+  --lt-color-on-success: #ffffff;
+  /* The amber is a fill. As text on cream it fails, so text gets its own. */
+  --lt-color-warning: #e6a817;
+  --lt-color-on-warning: #151820;
+  --lt-color-warning-text: #855d00;
+
+  --lt-color-success-bg: #e3ede1;
+  --lt-color-info-bg: #eaf1f8;
+  --lt-color-warning-bg: #f6ecd2;
+  --lt-color-danger-bg: #f5e8ea;
+
+  --lt-color-overlay: rgba(0, 0, 0, 0.06);
+  --lt-color-overlay-hover: rgba(0, 0, 0, 0.1);
+  --lt-color-selected: rgba(2, 114, 181, 0.1);
+  --lt-color-shadow: rgba(0, 0, 0, 0.12);
+  --lt-color-scrim: rgba(0, 0, 0, 0.4);
+  --lt-color-glass: rgba(244, 240, 232, 0.92);
+}
+
+/* Dark: raw denim.
+   Contrast (WCAG AA, against --lt-color-bg unless stated):
+   text 12.9:1 · muted 5.5:1 (on surface), 5.0:1 (on raised) ·
+   primary-as-text 7.6:1 · ink-on-primary 7.6:1 · error-as-text 4.7:1 ·
+   success 7.0:1 · accent 5.9:1 · warning 8.4:1.
+   Bright fills take INK text in dark, not white:
+   white on the dark-theme primary, success, or accent fails AA badly. */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --lt-color-bg: #151820;
+  --lt-color-surface: #1c2028;
+  --lt-color-raised: #232833;
+  --lt-color-text: #e0dbd4;
+  --lt-color-text-muted: #9b958c;
+  --lt-color-border: #2a2e38;
+  --lt-color-border-strong: #3a4050;
+
+  --lt-color-primary: #39b4f6;
+  --lt-color-primary-hover: #60c4ff;
+  --lt-color-on-primary: #151820;
+  --lt-color-accent: #e8734a;
+  --lt-color-on-accent: #151820;
+  --lt-color-error: #e05555;
+  --lt-color-on-error: #151820;
+  --lt-color-success: #81ae7f;
+  --lt-color-on-success: #151820;
+  --lt-color-warning: #e6a817;
+  --lt-color-on-warning: #151820;
+  --lt-color-warning-text: #e6a817;
+
+  --lt-color-success-bg: #1d2a1d;
+  --lt-color-info-bg: #16222e;
+  --lt-color-warning-bg: #2a2416;
+  --lt-color-danger-bg: #241318;
+
+  --lt-color-overlay: rgba(255, 255, 255, 0.04);
+  --lt-color-overlay-hover: rgba(255, 255, 255, 0.08);
+  --lt-color-selected: rgba(57, 180, 246, 0.12);
+  --lt-color-shadow: rgba(0, 0, 0, 0.45);
+  --lt-color-scrim: rgba(8, 9, 11, 0.6);
+  --lt-color-glass: rgba(21, 24, 32, 0.92);
+}
+
+/* The hidden attribute means hidden. Without this, any class below that
+   sets display (a button is inline-flex) quietly wins over it. */
+[class*="lt-"][hidden] { display: none !important; }
+
+/* ================================================================
+   BUTTONS
+   ================================================================ */
+
+.lt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: var(--lt-btn-pad-y) var(--lt-btn-pad-x);
+  border: 1px solid var(--lt-color-border);
+  border-radius: var(--lt-radius-control);
+  background: var(--lt-color-surface);
+  color: var(--lt-color-text);
+  font: inherit;
+  font-size: var(--lt-btn-font);
+  font-weight: 500;
+  /* Explicit, so <a class="lt-btn"> is the same height as a <button>. */
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--lt-quick) ease, border-color var(--lt-quick) ease, color var(--lt-quick) ease;
+}
+.lt-btn:hover:not(:disabled) { border-color: var(--lt-color-primary); }
+.lt-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.lt-btn-sm {
+  padding: var(--lt-btn-sm-pad-y) var(--lt-btn-sm-pad-x);
+  font-size: var(--lt-btn-sm-font);
+  gap: 0.35rem;
+}
+
+.lt-btn-primary {
+  background: var(--lt-color-primary);
+  border-color: var(--lt-color-primary);
+  color: var(--lt-color-on-primary);
+  font-weight: 600;
+}
+.lt-btn-primary:hover:not(:disabled) {
+  background: var(--lt-color-primary-hover);
+  border-color: var(--lt-color-primary-hover);
+}
+
+.lt-btn-secondary {
+  background: transparent;
+  color: var(--lt-color-primary);
+}
+.lt-btn-secondary:hover:not(:disabled) { background: var(--lt-color-bg); }
+
+.lt-btn-danger {
+  background: transparent;
+  color: var(--lt-color-error);
+  border-color: var(--lt-color-error);
+}
+.lt-btn-danger:hover:not(:disabled) {
+  background: var(--lt-color-danger-bg);
+  border-color: var(--lt-color-error);
+}
+
+.lt-btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--lt-color-text-muted);
+}
+.lt-btn-ghost:hover:not(:disabled) {
+  background: var(--lt-color-overlay);
+  border-color: transparent;
+  color: var(--lt-color-text);
+}
+
+/* Text-shaped. Used alone, without .lt-btn. */
+.lt-btn-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--lt-color-primary);
+  font: inherit;
+  font-size: var(--lt-text-sm);
+  cursor: pointer;
+}
+.lt-btn-link:hover:not(:disabled) { text-decoration: underline; }
+
+/* Square, for a single glyph. */
+.lt-btn-icon {
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+}
+.lt-btn-icon.lt-btn-sm { width: 1.6rem; height: 1.6rem; }
+
+/* ================================================================
+   FIELDS
+   Opt-in by class, so the library never restyles an app's inputs
+   behind its back. base.css applies the same look to bare elements
+   for apps that want it.
+   ================================================================ */
+
+.lt-field {
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--lt-color-border);
+  border-radius: var(--lt-radius-control);
+  background: var(--lt-color-surface);
+  color: var(--lt-color-text);
+  font: inherit;
+  font-size: var(--lt-text-sm);
+  line-height: 1.4;
+  transition: border-color var(--lt-quick) ease;
+}
+.lt-field::placeholder { color: var(--lt-color-text-muted); opacity: 0.8; }
+.lt-field:focus {
+  outline: 2px solid var(--lt-color-primary);
+  outline-offset: 1px;
+  border-color: var(--lt-color-primary);
+}
+textarea.lt-field { font-size: inherit; line-height: 1.55; resize: vertical; }
+
+/* ================================================================
+   BADGES, TAGS, KEYS
+   ================================================================ */
+
+/* A pill for status and counts. */
+.lt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--lt-color-border);
+  border-radius: 999px;
+  background: var(--lt-color-bg);
+  color: var(--lt-color-text-muted);
+  font-size: var(--lt-text-xs);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* A badge in mono, for machine words: statuses, kinds, counts. */
+.lt-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.45rem;
+  border: 1px solid var(--lt-color-border);
+  border-radius: 999px;
+  color: var(--lt-color-text-muted);
+  font-family: var(--lt-font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* Tones recolor any badge, tag, or text. Each one passes AA as text in
+   both themes; warning uses its text token, not the fill. */
+.lt-tone-primary { color: var(--lt-color-primary); border-color: currentColor; }
+.lt-tone-accent { color: var(--lt-color-accent); border-color: currentColor; }
+.lt-tone-success { color: var(--lt-color-success); border-color: currentColor; }
+.lt-tone-warning { color: var(--lt-color-warning-text); border-color: currentColor; }
+.lt-tone-error { color: var(--lt-color-error); border-color: currentColor; }
+.lt-tone-muted { color: var(--lt-color-text-muted); }
+
+.lt-kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 0.3em;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  font-family: var(--lt-font-mono);
+  font-size: 0.625rem;
+  line-height: 1.5;
+  text-align: center;
+  opacity: 0.7;
+}
+.lt-btn .lt-kbd { margin-left: 0.15rem; }
+
+/* ================================================================
+   SURFACES
+   ================================================================ */
+
+/* A card holds something that could MOVE: an item that would still make
+   sense on another page. A page's own sections are not cards; they get
+   .lt-section. The one other thing that earns a border is an
+   interruption: a warning, a danger zone, an unsaved-changes banner. */
+.lt-card {
+  background: var(--lt-color-surface);
+  border: 1px solid var(--lt-color-border);
+  border-radius: var(--lt-radius-control);
+  padding: var(--lt-pad);
+}
+
+/* A page section: separates with a rule and space rather than a box,
+   which on a phone is the difference between ~285px and ~350px of text.
+   The rule sits between siblings only. */
+.lt-section + .lt-section {
+  margin-top: var(--lt-stack);
+  padding-top: var(--lt-stack);
+  border-top: 1px solid var(--lt-color-border);
+}
+
+/* A quoted block of content: what was written, set apart from the UI. */
+.lt-quote {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: var(--lt-color-surface);
+  border-left: 3px solid var(--lt-color-border-strong);
+  border-radius: 0 var(--lt-radius-control) var(--lt-radius-control) 0;
+  white-space: pre-wrap;
+}
+
+/* An interruption that sits in the flow. Pair with a tone. */
+.lt-callout {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--lt-color-border);
+  border-left-width: 3px;
+  border-radius: 0 var(--lt-radius-control) var(--lt-radius-control) 0;
+  background: var(--lt-color-surface);
+  font-size: var(--lt-text-sm);
+}
+.lt-callout.lt-tone-warning { background: var(--lt-color-warning-bg); }
+.lt-callout.lt-tone-error { background: var(--lt-color-danger-bg); }
+.lt-callout.lt-tone-success { background: var(--lt-color-success-bg); }
+.lt-callout.lt-tone-primary { background: var(--lt-color-info-bg); }
+
+/* Something that floats above the page: a menu, a toolbar, a toast. */
+.lt-popover {
+  background: var(--lt-color-raised);
+  border: 1px solid var(--lt-color-border);
+  border-radius: var(--lt-radius-panel);
+  box-shadow: 0 8px 28px var(--lt-color-shadow);
+  color: var(--lt-color-text);
+}
+
+/* ================================================================
+   MENUS — the list inside a popover (combobox, dropdown, picker)
+   ================================================================ */
+
+.lt-menu {
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 320px;
+  overflow: auto;
+}
+.lt-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: var(--lt-text-sm);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.lt-menu-item[aria-selected="true"],
+.lt-menu-item:focus-visible { background: var(--lt-color-selected); outline: none; }
+.lt-menu-item mark { background: none; color: var(--lt-color-primary); font-weight: 600; }
+.lt-menu-item .lt-menu-meta { color: var(--lt-color-text-muted); font-size: var(--lt-text-xs); }
+.lt-menu-empty { padding: 5px 8px; color: var(--lt-color-text-muted); font-size: var(--lt-text-sm); }
+
+/* ================================================================
+   DIALOG — use with <dialog> and behaviors.js dialog()
+   ================================================================ */
+
+.lt-dialog {
+  max-width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: var(--lt-pad);
+  border: 1px solid var(--lt-color-border);
+  border-radius: var(--lt-radius-panel);
+  background: var(--lt-color-raised);
+  color: var(--lt-color-text);
+  box-shadow: 0 16px 48px var(--lt-color-shadow);
+  overflow: auto;
+}
+.lt-dialog::backdrop { background: var(--lt-color-scrim); }
+
+/* ================================================================
+   TOAST — behaviors.js toast() places and times it
+   ================================================================ */
+
+.lt-toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + var(--lt-toast-lift, 0px));
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.lt-toast {
+  padding: 0.55rem 1rem;
+  font-size: var(--lt-text-sm);
+  max-width: min(36rem, calc(100vw - 2rem));
+  animation: lt-toast-in var(--lt-quick) var(--lt-ease);
+}
+.lt-toast.is-leaving { opacity: 0; transition: opacity 200ms ease; }
+@keyframes lt-toast-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ================================================================
+   TABLES — .lt-table-wrap around .lt-table; neither works alone
+   A table cannot reflow, and the browser's fallback is to squeeze the
+   interactive columns first. So the table is as wide as its columns
+   need and the wrapper scrolls, with edge shadows that say there is
+   more while the table is still.
+   ================================================================ */
+
+.lt-table-wrap {
+  --lt-table-fade: var(--lt-color-bg);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  background:
+    linear-gradient(to right, var(--lt-table-fade), transparent) 0 0 / 2rem 100% no-repeat local,
+    linear-gradient(to left, var(--lt-table-fade), transparent) 100% 0 / 2rem 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, var(--lt-color-scrim), transparent) 0 0 / 1rem 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, var(--lt-color-scrim), transparent) 100% 0 / 1rem 100% no-repeat scroll;
+}
+.lt-table {
+  width: 100%;
+  min-width: max-content;
+  border-collapse: collapse;
+  font-size: var(--lt-text-md);
+}
+.lt-table th,
+.lt-table td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--lt-color-border);
+}
+.lt-table th {
+  font-size: 0.8rem;
+  color: var(--lt-color-text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.lt-table td { max-width: 22rem; }
+.lt-table td:has(button, select, input) { white-space: nowrap; }
+
+/* ================================================================
+   TEXT AND SMALL UTILITIES
+   ================================================================ */
+
+.lt-muted { color: var(--lt-color-text-muted); }
+.lt-error-text { color: var(--lt-color-error); font-size: var(--lt-text-sm); }
+.lt-success-text { color: var(--lt-color-success); font-size: var(--lt-text-sm); }
+.lt-mono { font-family: var(--lt-font-mono); }
+
+/* An all-caps label above a group. */
+.lt-eyebrow {
+  margin: 0;
+  font-size: var(--lt-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--lt-color-text-muted);
+}
+
+/* Visually hidden, still read aloud. */
+.lt-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.lt-fade-in { animation: lt-fade-in var(--lt-quick) ease; }
+@keyframes lt-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lt-fade-in, .lt-toast { animation: none; }
+}
+
+@media (max-width: 640px) {
+  /* iOS zooms the page when a focused field is under 16px. */
+  .lt-field { font-size: 16px; }
+  .lt-btn { min-height: 44px; min-width: 44px; }
+  .lt-btn-icon { width: 44px; height: 44px; }
+  .lt-table th, .lt-table td { padding: 0.5rem 0.6rem; }
+}

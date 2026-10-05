@@ -9,14 +9,22 @@
 //   decide    bulk-decide a file or tier
 //   apply     write approved replacements into source (dry run by default)
 //   check     CI gate: fails on copy that entered source unreviewed
+//   comment   explain the gate on a pull request, with rewrites as suggestions
+//   triage    ask a model which strings are worth your writing time (your key)
+//   suggest   ask a model for rewrites to start from (your key)
 //   report    render the ledger as a publishable summary, plus a badge
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadProject, proposeConfig, CONFIG_NAME } from './config.js';
-import { load, save, sync, stats, gate, STATUSES } from './ledger.js';
-import { writeback } from './writeback.js';
+import { load, save, sync, stats, gate, decide, STATUSES, CHOOSABLE } from './ledger.js';
+import { select, triage, suggest, settings, VERDICTS } from './advice.js';
+import { writeback, previewLines } from './writeback.js';
 import { writeReport } from './report.js';
+import {
+  renderVerdict, summaryBody, planComments, publish, apiClient,
+  repoPrefix, localDiff, pullDiff, pullFromEvent,
+} from './github.js';
 import {
   writeDrafts, pullDrafts, pruneDrafts, outstandingDrafts, rescueOrphans, draftDirLabel,
 } from './drafts.js';
@@ -79,7 +87,7 @@ function cmdInit() {
 function cmdSync() {
   const p = project();
   const before = load(p);
-  const { ledger, added, removed } = sync(p, before);
+  const { ledger, added, removed, landed } = sync(p, before);
 
   if (flag('rebaseline') || !before.baseline) {
     ledger.baseline = ledger.entries
@@ -94,7 +102,9 @@ function cmdSync() {
   const s = stats(ledger);
   console.log(`${GREEN}synced${OFF} ${p.rel(p.ledgerPath)}: ${s.total} entries, ${s.words.toLocaleString()} words, ${p.sourceFiles().length} files`);
   if (added.length) console.log(`  ${added.length} new`);
-  if (removed.length) console.log(`  ${removed.length} no longer in source`);
+  if (landed.length) console.log(`  ${landed.length} rewrite${landed.length === 1 ? '' : 's'} found in source without apply, recorded as yours`);
+  const gone = removed.filter((e) => !landed.includes(e));
+  if (gone.length) console.log(`  ${gone.length} no longer in source`);
 }
 
 // ----------------------------------------------------------------- stats ---
@@ -117,6 +127,10 @@ function cmdStats() {
   for (const st of STATUSES) {
     if (!s.byStatus[st]) continue;
     console.log(`  ${st.padEnd(12)} ${s.byStatus[st]}`);
+    if (st === 'human') {
+      const a = s.byAuthorship;
+      console.log(`  ${DIM}  written ${a.written} · edited ${a.edited} · already theirs ${a.claimed}${OFF}`);
+    }
   }
 
   const byFile = new Map();
@@ -252,18 +266,23 @@ function cmdDecide() {
   const status = val('status');
   const file = val('file');
   const tier = val('tier');
+  const verdict = val('triage');
   const note = val('note');
   const maxWords = val('max-words') ? Number(val('max-words')) : null;
   if (maxWords !== null && !Number.isInteger(maxWords)) {
     console.error('--max-words takes a whole number');
     process.exit(1);
   }
-  if (!STATUSES.includes(status)) {
-    console.error(`--status must be one of: ${STATUSES.join(', ')}`);
+  if (!CHOOSABLE.includes(status)) {
+    console.error(`--status must be one of: ${CHOOSABLE.join(', ')}`);
     process.exit(1);
   }
-  if (!file && !tier && maxWords === null) {
-    console.error('refusing to touch every entry. Pass --file, --tier and/or --max-words');
+  if (verdict && !VERDICTS.includes(verdict)) {
+    console.error(`--triage must be one of: ${VERDICTS.join(', ')}`);
+    process.exit(1);
+  }
+  if (!file && !tier && !verdict && maxWords === null) {
+    console.error('refusing to touch every entry. Pass --file, --tier, --triage and/or --max-words');
     process.exit(1);
   }
 
@@ -271,6 +290,7 @@ function cmdDecide() {
   const hit = ledger.entries.filter((e) =>
     (!file || e.occurrences.some((o) => o.file === file)) &&
     (!tier || e.tier === tier) &&
+    (!verdict || e.triage?.verdict === verdict) &&
     (maxWords === null || e.words < maxWords) &&
     (flag('force') || e.status === 'unreviewed'));
 
@@ -284,7 +304,7 @@ function cmdDecide() {
     console.log(`\n${YEL}dry run${OFF}. Re-run with ${GREEN}--apply${OFF} to record.`);
     return;
   }
-  for (const e of hit) { e.status = status; if (note) e.note = note; }
+  for (const e of hit) decide(e, { status, ...(note ? { note } : {}) });
   save(p, ledger);
   console.log(`\n${GREEN}recorded.${OFF}`);
 }
@@ -390,27 +410,76 @@ function cmdCheck() {
 function writeSummary(p, g, s) {
   const target = process.env.GITHUB_STEP_SUMMARY;
   if (!target) return;
-  const L = ['## SlopChop', ''];
-  if (g.unledgered.length) {
-    L.push(`**${g.unledgered.length} new string${g.unledgered.length === 1 ? '' : 's'}** entered the source without a recorded author.`);
-    L.push('');
-    L.push('| Where | Text |');
-    L.push('|---|---|');
-    for (const e of g.unledgered.slice(0, 50)) {
-      const o = e.occurrences[0];
-      L.push(`| \`${o.file}:${o.line}\` | ${e.text.replace(/\|/g, '\\|').slice(0, 120)} |`);
-    }
-    if (g.unledgered.length > 50) L.push(`| … | and ${g.unledgered.length - 50} more |`);
-    L.push('');
-    L.push('Run `slopchop sync` then `slopchop review` locally, decide each one, and commit the ledger.');
-  } else {
-    L.push('Every string in source has an author on record.');
-  }
-  L.push('');
-  L.push(`${s.done}/${s.total} strings decided (${pct(s.done, s.total)}) · ${pct(s.byStatus.human, s.total)} written by a person` +
-    (g.backlog.length ? ` · ${g.backlog.length} in the grandfathered backlog` : ''));
-  L.push('');
+  const L = ['## SlopChop', '', ...renderVerdict(g, s), ''];
   try { fs.appendFileSync(target, L.join('\n')); } catch { /* a summary is a nicety */ }
+}
+
+// --------------------------------------------------------------- comment ---
+
+// The gate's verdict, said on the pull request. Never fails the job: a
+// fork's read-only token or a GitHub hiccup costs a comment, not a build.
+async function cmdComment() {
+  const p = project();
+  if (!fs.existsSync(p.ledgerPath)) {
+    console.error(`${RED}no ledger${OFF} at ${p.rel(p.ledgerPath)}. Run: slopchop sync`);
+    process.exit(1);
+  }
+  const onDisk = load(p);
+  const { ledger: fresh } = sync(p, onDisk);
+  const g = gate(onDisk, fresh);
+  const s = stats(fresh);
+  const { changes } = previewLines(p, fresh);
+  const prefix = repoPrefix(p.root);
+  const key = prefix || '.';
+  const warn = (m) => console.log(process.env.GITHUB_ACTIONS ? `::warning title=SlopChop::${m}` : `${YEL}${m}${OFF}`);
+
+  // Local preview: the same plan against `git diff`, printed, nothing sent.
+  const base = val('base');
+  if (base) {
+    let diff;
+    try { diff = localDiff(p.root, base); }
+    catch (e) { console.error(`${RED}git diff against ${base} failed:${OFF} ${e.message}`); process.exit(1); }
+    const plan = planComments({ unledgered: g.unledgered, changes, diff, entries: fresh.entries, prefix });
+    console.log(summaryBody(key, g, s, { pending: g.pendingApply }));
+    for (const c of plan.inline) {
+      console.log(`${DIM}──${OFF} ${GREEN}${c.path}:${c.start_line ? `${c.start_line}-` : ''}${c.line}${OFF}`);
+      console.log(c.body.split('\n').slice(1).join('\n'));
+    }
+    if (plan.dropped) console.log(`${DIM}…and ${plan.dropped} more not posted this run${OFF}`);
+    if (plan.outsideDiff.length) console.log(`${DIM}${plan.outsideDiff.length} new string(s) sit outside the diff; the summary lists them.${OFF}`);
+    return;
+  }
+
+  const pr = pullFromEvent();
+  const token = process.env.GITHUB_TOKEN;
+  const repo = process.env.GITHUB_REPOSITORY;
+  if (!pr || !token || !repo) {
+    console.error('Not a pull request run. Pass --base <ref> to preview the comments locally.');
+    console.error(`${DIM}On GitHub Actions this needs GITHUB_TOKEN, GITHUB_REPOSITORY and a pull_request event.${OFF}`);
+    process.exit(process.env.GITHUB_ACTIONS ? 0 : 1);
+  }
+
+  const server = process.env.GITHUB_SERVER_URL || 'https://github.com';
+  const link = (file, line) => `${server}/${repo}/blob/${pr.sha}/${prefix ? `${prefix}/` : ''}${file}#L${line}`;
+  const gh = apiClient({ token, api: process.env.GITHUB_API_URL || 'https://api.github.com' });
+
+  try {
+    const diff = await pullDiff(gh, repo, pr.number);
+    const existing = await gh.all(`/repos/${repo}/pulls/${pr.number}/comments`);
+    const plan = planComments({ unledgered: g.unledgered, changes, diff, entries: fresh.entries, prefix, existing });
+    const summary = summaryBody(key, g, s, { link, pending: g.pendingApply });
+    const hasNews = g.unledgered.length > 0 || plan.inline.length > 0;
+    const log = await publish({ gh, repo, pr: pr.number, sha: pr.sha, key: prefix, summary, plan, hasNews });
+    for (const line of log) console.log(line);
+    if (!log.length) console.log('Nothing new to say on this pull request.');
+    if (plan.dropped) console.log(`${plan.dropped} more held back; they go up as earlier ones are settled.`);
+  } catch (e) {
+    if (e.status === 403 || e.status === 404) {
+      warn('Could not comment on this pull request. A fork\'s token is read-only; elsewhere, grant the job `pull-requests: write`.');
+    } else {
+      warn(`Commenting failed: ${e.message}`);
+    }
+  }
 }
 
 // ---------------------------------------------------------------- report ---
@@ -432,9 +501,80 @@ async function cmdReview() {
 
 // ------------------------------------------------------------------------ ---
 
+// ---------------------------------------------------------- triage/suggest ---
+
+// The only commands that send text anywhere, and only to Anthropic, under
+// the key in ANTHROPIC_API_KEY. Dry runs until --apply, like everything else
+// that costs something.
+async function cmdAdvise(mode) {
+  const p = project();
+  const ledger = load(p);
+  const limit = val('limit') ? Number(val('limit')) : null;
+  if (limit !== null && !(Number.isInteger(limit) && limit > 0)) {
+    console.error('--limit takes a positive whole number');
+    process.exit(1);
+  }
+  const picked = select(ledger, mode, { file: val('file'), tier: val('tier'), id: val('id'), limit, redo: flag('redo') });
+  const { model, effort } = settings(p, { model: val('model'), effort: val('effort') });
+
+  if (!picked.length) {
+    if (mode === 'suggest' && !val('file') && !val('tier') && !val('id')) {
+      console.log('Nothing triaged as rewrite is waiting for a suggestion.');
+      console.log(`${DIM}Run slopchop triage first, or narrow with --file, --tier or --id.${OFF}`);
+    } else {
+      console.log('Nothing to send. Every matching unreviewed string already has an answer (--redo asks again).');
+    }
+    return;
+  }
+
+  const words = picked.reduce((n, e) => n + e.words, 0);
+  const size = val('batch') ? Number(val('batch')) : mode === 'triage' ? 20 : 8;
+  const requests = Math.ceil(picked.length / size);
+  console.log(`${picked.length} string${picked.length === 1 ? '' : 's'} · ${words.toLocaleString()} words · about ${requests} request${requests === 1 ? '' : 's'} to ${model} (effort ${effort})`);
+  for (const e of picked.slice(0, 5)) console.log(`  ${DIM}${e.text.replace(/\s+/g, ' ').slice(0, 76)}${OFF}`);
+  if (picked.length > 5) console.log(`  ${DIM}…and ${picked.length - 5} more${OFF}`);
+
+  if (!flag('apply')) {
+    console.log(`\n${YEL}dry run${OFF}. The text of these strings goes to Anthropic under your ANTHROPIC_API_KEY.`);
+    console.log(`Re-run with ${GREEN}--apply${OFF} to send it.`);
+    return;
+  }
+
+  let done = 0;
+  const onBatch = () => { save(p, ledger); done++; if (TTY) process.stdout.write(`\r  ${done}/${requests} batches`); };
+  const opts = { model, effort, size, onBatch };
+  let r;
+  try { r = mode === 'triage' ? await triage(p, picked, opts) : await suggest(p, picked, opts); }
+  catch (e) { console.error(`${RED}${e.message}${OFF}`); process.exit(1); }
+  save(p, ledger);
+  if (TTY) process.stdout.write('\n');
+
+  if (mode === 'triage') {
+    console.log(`${GREEN}${r.rewrite} worth writing yourself${OFF} · ${r.glance} worth a glance · ${r.fine} fine as drafted`);
+  } else {
+    console.log(`${GREEN}${r.suggested} suggestion${r.suggested === 1 ? '' : 's'}${OFF}${r.unchanged ? ` · ${r.unchanged} left as they were` : ''}`);
+    for (const x of r.refused.slice(0, 10)) console.log(`  ${YEL}dropped${OFF} "${x.entry.text.slice(0, 50)}…": ${x.reason}`);
+  }
+  if (r.failed.length) {
+    const reasons = [...new Set(r.failed.map((f) => f.reason))];
+    console.log(`${RED}${r.failed.length} got no answer:${OFF} ${reasons.slice(0, 3).join('; ')}`);
+    console.log(`${DIM}Run the same command again to retry just those.${OFF}`);
+  }
+
+  if (mode === 'triage') {
+    console.log(`\nNext: ${GREEN}slopchop review${OFF} puts the rewrite pile first and marks the tells.`);
+    if (r.fine) console.log(`${DIM}To leave the fine ones as drafted: slopchop decide --triage fine --status ai-fine${OFF}`);
+  } else if (r.suggested) {
+    console.log(`\nNext: ${GREEN}slopchop review${OFF}. A suggestion taken without edits is recorded as ai-revised, not as yours.`);
+  }
+  process.exit(r.failed.length ? 1 : 0);
+}
+
 const COMMANDS = {
   init: cmdInit, sync: cmdSync, stats: cmdStats, apply: cmdApply, check: cmdCheck,
   report: cmdReport, decide: cmdDecide, draft: cmdDraft, pull: cmdPull, review: cmdReview,
+  comment: cmdComment,
+  triage: () => cmdAdvise('triage'), suggest: () => cmdAdvise('suggest'),
 };
 
 if (!COMMANDS[cmd]) {

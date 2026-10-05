@@ -10,6 +10,16 @@ import { writeback } from './writeback.js';
 import { outstandingDrafts, draftDirLabel } from './drafts.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+const BULK_STATUSES = ['human', 'ai-fine', 'unreviewed'];
+
+// The page's design system, vendored so the review page has no network
+// dependency. Served by name from a fixed list, never by path.
+const VENDOR = path.join(HERE, 'vendor', 'liquid-textile');
+const VENDORED = {
+  'foundation.css': 'text/css; charset=utf-8',
+  'base.css': 'text/css; charset=utf-8',
+  'behaviors.js': 'text/javascript; charset=utf-8',
+};
 
 function json(res, code, body) {
   const payload = JSON.stringify(body);
@@ -76,10 +86,18 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
         return res.end(html);
       }
 
+      if (req.method === 'GET' && url.pathname.startsWith('/lt/')) {
+        const name = url.pathname.slice(4);
+        if (!Object.hasOwn(VENDORED, name)) return json(res, 404, { error: 'not found' });
+        res.writeHead(200, { 'Content-Type': VENDORED[name], 'Cache-Control': 'no-store' });
+        return res.end(fs.readFileSync(path.join(VENDOR, name)));
+      }
+
       if (req.method === 'GET' && url.pathname === '/api/ledger') {
         const ledger = load(project);
         return json(res, 200, {
           entries: ledger.entries, stats: stats(ledger), strict: !!ledger.strict,
+          baseline: ledger.baseline || [],
           drafts: draftState(project, ledger),
           project: { name: path.basename(project.root), ledger: project.rel(project.ledgerPath) },
         });
@@ -93,7 +111,7 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
       }
 
       if (req.method === 'POST' && url.pathname === '/api/decide') {
-        const { id, status, replacement, note, force } = await readBody(req);
+        const { id, status, replacement, note, kind, force } = await readBody(req);
         const ledger = load(project);
         const entry = ledger.entries.find((e) => e.id === id);
         if (!entry) return json(res, 404, { error: 'no such entry' });
@@ -110,9 +128,36 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
           });
         }
 
-        decide(entry, { status, replacement, note });
+        decide(entry, { status, replacement, note, kind });
         save(project, ledger);
         return json(res, 200, { entry, stats: stats(ledger) });
+      }
+
+      // Many strings, one answer. Only the plain statuses: a rewrite is
+      // always one string at a time. Nothing changes if any of them is
+      // checked out in a draft, unless the caller says to go ahead anyway.
+      if (req.method === 'POST' && url.pathname === '/api/decide-many') {
+        const { ids, status, force } = await readBody(req);
+        if (!Array.isArray(ids) || !ids.length) return json(res, 400, { error: 'ids required' });
+        if (!BULK_STATUSES.includes(status)) {
+          return json(res, 400, { error: `status must be one of: ${BULK_STATUSES.join(', ')}` });
+        }
+        const ledger = load(project);
+        const byId = new Map(ledger.entries.map((e) => [e.id, e]));
+        const missing = ids.filter((id) => !byId.has(id));
+        if (missing.length) return json(res, 404, { error: `${missing.length} no longer in the ledger; reload` });
+
+        if (!force) {
+          const held = [];
+          for (const d of outstandingDrafts(project, ledger)) {
+            for (const id of d.ids) if (ids.includes(id)) held.push({ id, rel: d.rel, source: d.source });
+          }
+          if (held.length) return json(res, 409, { error: `${held.length} checked out in drafts`, code: 'checked-out', held });
+        }
+
+        const changed = ids.map((id) => decide(byId.get(id), { status, replacement: null }));
+        save(project, ledger);
+        return json(res, 200, { entries: changed, stats: stats(ledger) });
       }
 
       if (req.method === 'POST' && url.pathname === '/api/apply') {
