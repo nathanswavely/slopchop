@@ -830,7 +830,7 @@
         },
         {
           "file": "src/ui.html",
-          "line": 186,
+          "line": 135,
           "kind": "html-text",
           "raw": "SlopChop",
           "quote": null
@@ -848,7 +848,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 188,
+          "line": 137,
           "kind": "html-text",
           "raw": "loading…",
           "quote": null
@@ -866,7 +866,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 189,
+          "line": 138,
           "kind": "html-text",
           "raw": "Apply rewrites",
           "quote": null
@@ -884,9 +884,45 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 189,
+          "line": 138,
           "kind": "html-attr:title",
           "raw": "Write approved rewrites into source",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "b16624340a4b",
+      "text": "Switch theme",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 139,
+          "kind": "html-attr:title",
+          "raw": "Switch theme",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "920e413c7d41",
+      "text": "Status",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 142,
+          "kind": "html-attr:aria-label",
+          "raw": "Status",
           "quote": "\""
         }
       ]
@@ -902,7 +938,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 193,
+          "line": 143,
           "kind": "html-text",
           "raw": "Unreviewed",
           "quote": null
@@ -920,7 +956,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 194,
+          "line": 144,
           "kind": "html-text",
           "raw": "All",
           "quote": null
@@ -938,7 +974,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 195,
+          "line": 145,
           "kind": "html-text",
           "raw": "Rewritten (pending apply)",
           "quote": null
@@ -956,7 +992,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 196,
+          "line": 146,
           "kind": "html-text",
           "raw": "Human",
           "quote": null
@@ -974,7 +1010,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 197,
+          "line": 147,
           "kind": "html-text",
           "raw": "Left as drafted",
           "quote": null
@@ -992,7 +1028,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 198,
+          "line": 148,
           "kind": "html-text",
           "raw": "Model rewrite, accepted",
           "quote": null
@@ -1010,7 +1046,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 200,
+          "line": 150,
           "kind": "html-attr:aria-label",
           "raw": "Word count",
           "quote": "\""
@@ -1028,7 +1064,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 201,
+          "line": 151,
           "kind": "html-attr:placeholder",
           "raw": "Min",
           "quote": "\""
@@ -1046,7 +1082,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 201,
+          "line": 151,
           "kind": "html-attr:aria-label",
           "raw": "At least this many words",
           "quote": "\""
@@ -1064,7 +1100,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 203,
+          "line": 153,
           "kind": "html-attr:placeholder",
           "raw": "Max",
           "quote": "\""
@@ -1082,7 +1118,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 203,
+          "line": 153,
           "kind": "html-attr:aria-label",
           "raw": "At most this many words",
           "quote": "\""
@@ -1100,28 +1136,10 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 204,
+          "line": 154,
           "kind": "html-text",
           "raw": "words",
           "quote": null
-        }
-      ]
-    },
-    {
-      "id": "d84573ae3c79",
-      "text": "Filter by file",
-      "words": 3,
-      "tier": "label",
-      "status": "unreviewed",
-      "replacement": null,
-      "note": null,
-      "occurrences": [
-        {
-          "file": "src/ui.html",
-          "line": 207,
-          "kind": "html-attr:aria-label",
-          "raw": "Filter by file",
-          "quote": "\""
         }
       ]
     },
@@ -1136,9 +1154,27 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 208,
+          "line": 157,
           "kind": "html-attr:placeholder",
           "raw": "Every file",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "d84573ae3c79",
+      "text": "Filter by file",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 157,
+          "kind": "html-attr:aria-label",
+          "raw": "Filter by file",
           "quote": "\""
         }
       ]
@@ -1154,27 +1190,9 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 209,
+          "line": 158,
           "kind": "html-attr:aria-label",
           "raw": "Clear the file filter",
-          "quote": "\""
-        }
-      ]
-    },
-    {
-      "id": "abc7e9892806",
-      "text": "Files",
-      "words": 1,
-      "tier": "label",
-      "status": "unreviewed",
-      "replacement": null,
-      "note": null,
-      "occurrences": [
-        {
-          "file": "src/ui.html",
-          "line": 210,
-          "kind": "html-attr:aria-label",
-          "raw": "Files",
           "quote": "\""
         }
       ]
@@ -1190,7 +1208,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 212,
+          "line": 160,
           "kind": "html-attr:placeholder",
           "raw": "Search copy…",
           "quote": "\""
@@ -1208,7 +1226,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 212,
+          "line": 160,
           "kind": "html-attr:aria-label",
           "raw": "Search copy",
           "quote": "\""
@@ -1226,7 +1244,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 214,
+          "line": 162,
           "kind": "html-attr:title",
           "raw": "Keyboard shortcuts",
           "quote": "\""
@@ -1244,7 +1262,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 216,
+          "line": 164,
           "kind": "html-attr:aria-label",
           "raw": "Bulk actions",
           "quote": "\""
@@ -1262,7 +1280,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 223,
+          "line": 171,
           "kind": "html-attr:title",
           "raw": "Select everything shown",
           "quote": "\""
@@ -1280,7 +1298,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 225,
+          "line": 173,
           "kind": "html-attr:title",
           "raw": "Collapse the list",
           "quote": "\""
@@ -1298,7 +1316,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 230,
+          "line": 178,
           "kind": "html-text",
           "raw": "Loading…",
           "quote": null
@@ -1316,7 +1334,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 237,
+          "line": 182,
           "kind": "html-text",
           "raw": "Keyboard",
           "quote": null
@@ -1334,7 +1352,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 239,
+          "line": 184,
           "kind": "html-text",
           "raw": "Esc closes this. Letter keys do nothing while you are typing.",
           "quote": null

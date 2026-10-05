@@ -4,178 +4,127 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SlopChop</title>
+<!-- Theme before first paint, so a light-mode reader never sees a dark flash.
+     behaviors.js initTheme() takes over from here with the same key. -->
+<script>
+  try {
+    document.documentElement.dataset.theme = localStorage.getItem('slopchop-theme')
+      || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  } catch { document.documentElement.dataset.theme = 'dark'; }
+</script>
+<link rel="stylesheet" href="/lt/foundation.css">
+<link rel="stylesheet" href="/lt/base.css">
 <style>
-  :root {
-    --bg:#14161a; --panel:#1b1e24; --line:#2a2f38; --ink:#e6e8ec; --dim:#8b93a1;
-    --accent:#7ab8a0; --warn:#d9a55f; --bad:#d97070; --ok:#7ab87a;
-    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* SlopChop's own green, in place of Liquid Textile's blue. Measured:
+     light 5.6:1 on bg, white on it 6.4:1; dark 7.8:1 on bg, ink on it 7.3:1. */
+  [data-theme="light"] {
+    --lt-color-primary: #2d6a55; --lt-color-primary-hover: #245a48; --lt-color-on-primary: #ffffff;
+    --lt-color-selected: rgba(45, 106, 85, 0.12);
   }
-  * { box-sizing:border-box; }
+  [data-theme="dark"] {
+    --lt-color-primary: #7ab8a0; --lt-color-primary-hover: #96cbb6; --lt-color-on-primary: #12211c;
+    --lt-color-selected: rgba(122, 184, 160, 0.14);
+  }
+
   body {
-    margin:0; background:var(--bg); color:var(--ink); height:100vh;
-    display:flex; flex-direction:column;
-    font:15px/1.55 ui-sans-serif, system-ui, -apple-system, sans-serif;
+    height: 100vh; display: flex; flex-direction: column;
+    font-size: 15px; line-height: 1.55;
   }
-  header { border-bottom:1px solid var(--line); padding:10px 16px; flex:none; }
-  .row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-  .bar { flex:1; min-width:160px; height:8px; background:var(--line); border-radius:4px; overflow:hidden; }
-  .bar i { display:block; height:100%; background:var(--accent); width:0; transition:width .25s; }
-  .muted { color:var(--dim); font-size:13px; }
-  .combo { position:relative; display:inline-flex; }
-  .combo input { width:220px; padding-right:24px; }
-  .combo .clear {
-    position:absolute; right:4px; top:50%; transform:translateY(-50%);
-    background:none; border:0; color:var(--dim); font-size:15px; line-height:1; cursor:pointer; padding:2px 4px;
-  }
-  .combo .clear:hover { color:var(--ink); }
-  #fileMenu {
-    position:absolute; top:calc(100% + 4px); left:0; z-index:10; margin:0; padding:4px; list-style:none;
-    min-width:100%; width:max-content; max-width:min(560px, calc(100vw - 32px)); max-height:320px; overflow:auto;
-    background:var(--panel); border:1px solid var(--line); border-radius:8px; box-shadow:0 8px 28px rgba(0,0,0,.45);
-  }
-  #fileMenu li {
-    display:flex; justify-content:space-between; gap:18px; padding:5px 8px; border-radius:5px;
-    font-family:var(--mono); font-size:12px; cursor:pointer; white-space:nowrap;
-  }
-  #fileMenu li[aria-selected=true] { background:#232833; }
-  #fileMenu li b { color:var(--accent); font-weight:600; }
-  #fileMenu li .n { color:var(--dim); }
-  #fileMenu li.none { color:var(--dim); cursor:default; }
-  .words { display:inline-flex; align-items:center; gap:6px; }
-  .words input { width:64px; }
-  select, input[type=search], input[type=number] {
-    background:var(--panel); color:var(--ink); border:1px solid var(--line);
-    border-radius:6px; padding:5px 8px; font:inherit; font-size:13px;
-  }
-  main { flex:1; display:grid; grid-template-columns:320px 1fr; min-height:0; }
-  body.collapsed main { grid-template-columns:44px 1fr; }
-  #side { display:flex; flex-direction:column; min-height:0; border-right:1px solid var(--line); }
+  header { border-bottom: 1px solid var(--lt-color-border); padding: 10px 16px; flex: none; }
+  .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .grow { flex: 1; }
+  .bar { flex: 1; min-width: 160px; height: 8px; background: var(--lt-color-border); border-radius: 4px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--lt-color-primary); width: 0; transition: width .25s; }
+  .small { font-size: var(--lt-text-sm); }
+
+  .combo { position: relative; display: inline-flex; }
+  .combo input { width: 220px; padding-right: 24px; }
+  .combo .clear { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); }
+  .combo .lt-menu-item { font-family: var(--lt-font-mono); font-size: 12px; }
+  .words { display: inline-flex; align-items: center; gap: 6px; }
+  .words input { width: 64px; }
+
+  main { flex: 1; display: grid; grid-template-columns: 320px 1fr; min-height: 0; }
+  body.collapsed main { grid-template-columns: 44px 1fr; }
+  #side { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--lt-color-border); }
   #sideHead {
-    display:flex; align-items:center; gap:8px; padding:6px 10px; flex:none;
-    border-bottom:1px solid var(--line); font-size:12px; color:var(--dim);
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px; flex: none;
+    border-bottom: 1px solid var(--lt-color-border); font-size: 12px; color: var(--lt-color-text-muted);
   }
-  #sideHead .grow { flex:1; }
-  body.collapsed #sideHead { flex-direction:column; padding:8px 0; border-bottom:0; gap:10px; }
-  body.collapsed #sideHead .full, body.collapsed #queue { display:none; }
-  #railPos { display:none; writing-mode:vertical-rl; font-family:var(--mono); font-size:11px; }
-  body.collapsed #railPos { display:block; }
-  #queue { overflow-y:auto; flex:1; }
-  input[type=checkbox] { accent-color:var(--accent); width:14px; height:14px; margin:0; cursor:pointer; }
-  .item { display:flex; align-items:stretch; border-bottom:1px solid var(--line); }
-  .item:hover { background:#1f232a; }
-  .item[aria-current=true] { background:#232833; box-shadow:inset 3px 0 0 var(--accent); }
-  .item.sel { background:#1c2a26; }
-  .item.sel[aria-current=true] { background:#22332e; }
-  .item .ck { display:flex; align-items:center; padding:0 2px 0 12px; cursor:pointer; }
+  body.collapsed #sideHead { flex-direction: column; padding: 8px 0; border-bottom: 0; gap: 10px; }
+  body.collapsed #sideHead .full, body.collapsed #queue { display: none; }
+  #railPos { display: none; writing-mode: vertical-rl; font-family: var(--lt-font-mono); font-size: 11px; }
+  body.collapsed #railPos { display: block; }
+
+  #queue { overflow-y: auto; flex: 1; }
+  .item { display: flex; align-items: stretch; border-bottom: 1px solid var(--lt-color-border); }
+  .item:hover { background: var(--lt-color-overlay); }
+  .item[aria-current=true] { background: var(--lt-color-overlay-hover); box-shadow: inset 3px 0 0 var(--lt-color-primary); }
+  .item.sel { background: var(--lt-color-selected); }
+  .item .ck { display: flex; align-items: center; padding: 0 2px 0 12px; cursor: pointer; }
   .item .open {
-    flex:1; min-width:0; text-align:left; background:none; color:inherit; border:0;
-    padding:9px 12px 9px 8px; cursor:pointer; font:inherit; font-size:13px;
+    flex: 1; min-width: 0; text-align: left; background: none; border: 0;
+    padding: 9px 12px 9px 8px; font-size: var(--lt-text-sm);
   }
-  #queue .t { display:block; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  #queue .m { display:block; color:var(--dim); font-size:11px; font-family:var(--mono); margin-top:2px; }
+  #queue .t { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #queue .m { display: block; color: var(--lt-color-text-muted); font-size: 11px; font-family: var(--lt-font-mono); margin-top: 2px; }
+  #queue .v { font-family: var(--lt-font-mono); }
+
   /* Floats rather than sitting in the header, so selecting the first row
      never shoves the list out from under the next click. */
   #bulk {
-    position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:5;
-    display:none; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;
-    max-width:calc(100vw - 32px); padding:8px 12px; font-size:13px;
-    background:var(--panel); border:1px solid var(--accent); border-radius:10px;
-    box-shadow:0 8px 28px rgba(0,0,0,.45);
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 5;
+    display: none; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;
+    /* max-content: with left: 50%, shrink-to-fit only gets half the screen. */
+    width: max-content; max-width: calc(100vw - 32px); padding: 8px 12px; font-size: var(--lt-text-sm);
+    border-color: var(--lt-color-primary);
   }
-  #bulk.on { display:flex; }
-  body.bulk .flash { bottom:76px; }
-  body.bulk #queue, body.bulk #detail { padding-bottom:96px; }
-  #bulk b { font-weight:600; margin-right:4px; }
-  kbd {
-    font-family:var(--mono); font-size:10px; opacity:.65; margin-left:5px;
-    border:1px solid currentColor; border-radius:3px; padding:0 3px;
+  #bulk.on { display: flex; }
+  #bulk b { font-weight: 600; margin-right: 4px; }
+  body.bulk { --lt-toast-lift: 58px; }
+  body.bulk #queue, body.bulk #detail { padding-bottom: 96px; }
+
+  #help table { border-collapse: collapse; width: 100%; font-size: var(--lt-text-sm); margin-top: 10px; }
+  #help td { padding: 4px 0; vertical-align: top; }
+  #help td:first-child { white-space: nowrap; padding-right: 16px; font-family: var(--lt-font-mono); color: var(--lt-color-primary); }
+
+  #detail { overflow-y: auto; padding: 20px 24px 64px; }
+  #detail .lt-quote { margin: 14px 0; }
+  #detail .lt-eyebrow { margin: 26px 0 6px; }
+  #detail .lt-callout { margin-top: 12px; }
+  #editor { width: 100%; min-height: 130px; }
+  .actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+  mark.tell {
+    background: none; color: inherit;
+    text-decoration: underline wavy var(--lt-color-error); text-underline-offset: 4px;
   }
-  #help {
-    position:fixed; inset:0; background:rgba(8,9,11,.6); display:none;
-    align-items:center; justify-content:center; padding:16px;
-  }
-  #help.on { display:flex; }
-  #help .card {
-    background:var(--panel); border:1px solid var(--line); border-radius:10px;
-    padding:18px 22px; max-width:440px; width:100%; max-height:90vh; overflow:auto;
-  }
-  #help table { border-collapse:collapse; width:100%; font-size:13px; }
-  #help td { padding:4px 0; vertical-align:top; }
-  #help td:first-child { white-space:nowrap; padding-right:16px; font-family:var(--mono); color:var(--accent); }
-  #detail { overflow-y:auto; padding:20px 24px 64px; }
-  .tag {
-    display:inline-block; font-size:11px; padding:1px 7px; border-radius:99px;
-    border:1px solid var(--line); color:var(--dim); font-family:var(--mono);
-  }
-  .tag.prose { color:var(--accent); border-color:var(--accent); }
-  .tag.human { color:var(--ok); border-color:var(--ok); }
-  .tag.unreviewed { color:var(--warn); border-color:var(--warn); }
-  .tag.rewritten { color:var(--accent); border-color:var(--accent); }
-  .tag.ai-revised, .tag.v-glance { color:var(--warn); border-color:var(--line); }
-  .tag.v-rewrite { color:var(--bad); border-color:var(--bad); }
-  .tag.v-fine { color:var(--dim); }
-  #queue .v { font-family:var(--mono); }
-  #queue .v.rewrite { color:var(--bad); }
-  #queue .v.glance { color:var(--warn); }
-  mark { background:none; color:inherit; text-decoration:underline wavy var(--bad); text-underline-offset:4px; }
-  ul.tells { margin:6px 0 0; padding-left:18px; font-size:13px; }
-  ul.tells li { margin:3px 0; }
-  ul.tells q { color:var(--ink); }
-  ul.tells span { color:var(--dim); }
-  .advice { color:var(--dim); font-size:13px; margin:6px 0 0; }
-  blockquote.suggestion { border-left-color:var(--warn); }
-  blockquote {
-    margin:14px 0; padding:12px 16px; background:var(--panel);
-    border-left:3px solid var(--line); border-radius:0 6px 6px 0; white-space:pre-wrap;
-  }
-  textarea {
-    width:100%; min-height:130px; background:var(--panel); color:var(--ink);
-    border:1px solid var(--line); border-radius:8px; padding:12px;
-    font:inherit; line-height:1.55; resize:vertical;
-  }
-  textarea:focus { outline:2px solid var(--accent); outline-offset:-1px; }
-  .actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-  .actions button, button.small {
-    background:var(--panel); color:var(--ink); border:1px solid var(--line);
-    border-radius:7px; padding:7px 13px; font:inherit; font-size:13px; cursor:pointer;
-  }
-  button.small { padding:5px 10px; }
-  .actions button:hover, button.small:hover { border-color:var(--accent); }
-  .actions button.primary { background:var(--accent); color:#12211c; border-color:var(--accent); font-weight:600; }
+  ul.tells { margin: 6px 0 0; padding-left: 18px; font-size: var(--lt-text-sm); }
+  ul.tells li { margin: 3px 0; }
+  ul.tells span { color: var(--lt-color-text-muted); }
+  .advice { color: var(--lt-color-text-muted); font-size: var(--lt-text-sm); margin: 6px 0 0; }
+  .lt-quote.suggestion { border-left-color: var(--lt-color-warning); }
+
   pre.ctx {
-    background:#101216; border:1px solid var(--line); border-radius:8px;
-    padding:10px 12px; overflow-x:auto; font-family:var(--mono); font-size:12px;
-    line-height:1.6; color:var(--dim); margin:8px 0 0;
+    background: var(--lt-color-surface); border: 1px solid var(--lt-color-border); border-radius: var(--lt-radius-control);
+    padding: 10px 12px; overflow-x: auto; font-size: 12px; line-height: 1.6;
+    color: var(--lt-color-text-muted); margin: 8px 0 0;
   }
-  pre.ctx b { color:var(--ink); font-weight:600; }
-  h3 { font-size:12px; text-transform:uppercase; letter-spacing:.07em; color:var(--dim);
-       margin:26px 0 6px; font-weight:600; }
-  .occ { font-family:var(--mono); font-size:12px; color:var(--dim); margin:2px 0; }
-  .flash { position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
-           background:var(--panel); border:1px solid var(--line); border-radius:8px;
-           padding:9px 16px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; }
-  .flash.on { opacity:1; }
-  .warn { color:var(--warn); font-size:13px; margin-top:8px; }
-  .empty { color:var(--dim); text-align:center; padding:64px 20px; }
-  #drafts {
-    display:none; margin-top:8px; padding:7px 11px; font-size:13px;
-    border:1px solid var(--warn); border-left-width:3px; border-radius:0 6px 6px 0;
-    color:var(--warn); background:#241f16;
-  }
-  #drafts.on { display:block; }
-  #drafts b { font-weight:600; }
-  #drafts code { font-family:var(--mono); font-size:12px; }
-  #drafts .files { color:var(--dim); }
-  .heldout {
-    margin:12px 0 0; padding:10px 14px; font-size:13px; color:var(--warn);
-    border:1px solid var(--warn); border-radius:8px; background:#241f16;
-  }
+  pre.ctx b { color: var(--lt-color-text); font-weight: 600; }
+  .occ { font-family: var(--lt-font-mono); font-size: 12px; color: var(--lt-color-text-muted); margin: 2px 0; }
+  .warn { color: var(--lt-color-warning-text); font-size: var(--lt-text-sm); margin-top: 8px; }
+  .empty { color: var(--lt-color-text-muted); text-align: center; padding: 64px 20px; }
+
+  #drafts { display: none; margin-top: 8px; }
+  #drafts.on { display: block; }
+  #drafts .files { color: var(--lt-color-text-muted); }
+
   @media (max-width: 760px) {
     main, body.collapsed main { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; }
     body.collapsed main { grid-template-rows: auto 1fr; }
-    #side { border-right:0; border-bottom:1px solid var(--line); }
-    body.collapsed #sideHead { flex-direction:row; padding:6px 10px; }
-    body.collapsed #railPos { writing-mode:horizontal-tb; }
+    #side { border-right: 0; border-bottom: 1px solid var(--lt-color-border); }
+    body.collapsed #sideHead { flex-direction: row; padding: 6px 10px; }
+    body.collapsed #railPos { writing-mode: horizontal-tb; }
   }
 </style>
 </head>
@@ -185,11 +134,12 @@
   <div class="row">
     <strong style="font-size:14px" id="title">SlopChop</strong>
     <div class="bar"><i id="progress"></i></div>
-    <span class="muted" id="counts">loading…</span>
-    <button class="small" id="applyBtn" title="Write approved rewrites into source">Apply rewrites</button>
+    <span class="lt-muted small" id="counts">loading…</span>
+    <button class="lt-btn lt-btn-sm lt-btn-primary" id="applyBtn" title="Write approved rewrites into source">Apply rewrites</button>
+    <button class="lt-btn lt-btn-sm lt-btn-icon" id="themeBtn" title="Switch theme" aria-label="Switch theme">◐</button>
   </div>
   <div class="row" style="margin-top:8px">
-    <select id="fStatus">
+    <select class="lt-field" id="fStatus" aria-label="Status">
       <option value="unreviewed">Unreviewed</option>
       <option value="">All</option>
       <option value="rewritten">Rewritten (pending apply)</option>
@@ -198,23 +148,21 @@
       <option value="ai-revised">Model rewrite, accepted</option>
     </select>
     <span class="words" role="group" aria-label="Word count">
-      <input type="number" id="fMin" min="1" step="1" inputmode="numeric" placeholder="Min" aria-label="At least this many words">
-      <span class="muted">–</span>
-      <input type="number" id="fMax" min="1" step="1" inputmode="numeric" placeholder="Max" aria-label="At most this many words">
-      <span class="muted">words</span>
+      <input class="lt-field" type="number" id="fMin" min="1" step="1" inputmode="numeric" placeholder="Min" aria-label="At least this many words">
+      <span class="lt-muted">–</span>
+      <input class="lt-field" type="number" id="fMax" min="1" step="1" inputmode="numeric" placeholder="Max" aria-label="At most this many words">
+      <span class="lt-muted small">words</span>
     </span>
     <div class="combo">
-      <input type="text" id="fFile" role="combobox" aria-label="Filter by file" aria-autocomplete="list"
-             aria-expanded="false" aria-controls="fileMenu" placeholder="Every file" autocomplete="off" spellcheck="false">
-      <button type="button" class="clear" id="fFileClear" aria-label="Clear the file filter" hidden>×</button>
-      <ul id="fileMenu" role="listbox" aria-label="Files" hidden></ul>
+      <input class="lt-field" type="text" id="fFile" aria-label="Filter by file" placeholder="Every file" spellcheck="false">
+      <button type="button" class="clear lt-btn lt-btn-ghost lt-btn-sm lt-btn-icon" id="fFileClear" aria-label="Clear the file filter" hidden>×</button>
     </div>
-    <input type="search" id="fText" placeholder="Search copy…" aria-label="Search copy" style="flex:1;min-width:140px">
-    <span class="muted" id="qcount"></span>
-    <button class="small" id="helpBtn" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">?</button>
+    <input class="lt-field" type="search" id="fText" placeholder="Search copy…" aria-label="Search copy" style="flex:1;min-width:140px">
+    <span class="lt-muted small" id="qcount"></span>
+    <button class="lt-btn lt-btn-sm lt-btn-icon" id="helpBtn" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">?</button>
   </div>
-  <div id="bulk" role="toolbar" aria-label="Bulk actions"></div>
-  <div id="drafts"></div>
+  <div id="bulk" class="lt-popover" role="toolbar" aria-label="Bulk actions"></div>
+  <div id="drafts" class="lt-callout lt-tone-warning"></div>
 </header>
 
 <main>
@@ -222,7 +170,7 @@
     <div id="sideHead">
       <input type="checkbox" id="selAll" class="full" title="Select everything shown" aria-label="Select everything shown">
       <span class="full grow" id="selInfo"></span>
-      <button class="small" id="sideBtn" title="Collapse the list" aria-label="Collapse the list">«</button>
+      <button class="lt-btn lt-btn-sm lt-btn-icon lt-btn-ghost" id="sideBtn" title="Collapse the list" aria-label="Collapse the list">«</button>
       <span id="railPos"></span>
     </div>
     <div id="queue" role="listbox" aria-multiselectable="true"></div>
@@ -230,27 +178,39 @@
   <div id="detail"><div class="empty">Loading…</div></div>
 </main>
 
-<div class="flash" id="flash"></div>
-
-<div id="help" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-  <div class="card">
-    <strong id="helpTitle">Keyboard</strong>
-    <table id="helpTable" style="margin-top:10px"></table>
-    <p class="muted" style="margin:12px 0 0">Esc closes this. Letter keys do nothing while you are typing.</p>
-  </div>
-</div>
+<dialog class="lt-dialog" id="help" aria-labelledby="helpTitle">
+  <strong id="helpTitle">Keyboard</strong>
+  <table id="helpTable"></table>
+  <p class="lt-muted small" style="margin:12px 0 0">Esc closes this. Letter keys do nothing while you are typing.</p>
+</dialog>
 
 <script type="module">
+import { initTheme, keys, isTyping, combobox, dialog, toast } from '/lt/behaviors.js';
+
 const $ = (s) => document.querySelector(s);
 let entries = [], view = [], cursor = 0, statsData = null, drafts = { checkedOut: {}, files: [] };
-let selected = new Set(), anchor = null, fileExact = false;
+let selected = new Set(), anchor = null;
+
+const theme = initTheme({ key: 'slopchop-theme' });
+$('#themeBtn').onclick = () => theme.toggle();
 
 // Ctrl on Windows and Linux, ⌘ on a Mac. Both modifiers always work; this
 // is only about what the labels say.
-const MAC = /Mac|iPhone|iPad/.test(navigator.userAgentData?.platform || navigator.platform);
-const MOD = MAC ? '⌘' : 'Ctrl+';
-const SAVE_KEY = MAC ? '⌘↵' : 'Ctrl+Enter';
-$('#fText').placeholder = `Search copy…  ${MAC ? '⌘K' : 'Ctrl+K'}`;
+const SAVE_KEY = keys('Mod+Enter');
+$('#fText').placeholder = `Search copy…  ${keys('Mod+K')}`;
+
+// The tone each status and triage verdict reads in, shared by tags and the list.
+const TONE = {
+  human: 'success', rewritten: 'primary', unreviewed: 'warning', 'ai-revised': 'warning', 'ai-fine': 'muted',
+  prose: 'primary', rewrite: 'error', glance: 'warning', fine: 'muted',
+};
+const tag = (text, tone) => {
+  const s = document.createElement('span');
+  s.className = `lt-tag${tone ? ` lt-tone-${tone}` : ''}`;
+  s.textContent = text;
+  return s;
+};
+const kbd = (text) => { const k = document.createElement('span'); k.className = 'lt-kbd'; k.textContent = text; return k; };
 
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
@@ -268,12 +228,7 @@ const api = async (p, opts) => {
   return r.json();
 };
 
-function flash(msg) {
-  const f = $('#flash');
-  f.textContent = msg; f.classList.add('on');
-  clearTimeout(flash._t);
-  flash._t = setTimeout(() => f.classList.remove('on'), 2200);
-}
+const flash = (msg) => toast(msg);
 
 function applyStats(s) {
   statsData = s;
@@ -324,7 +279,7 @@ function refilter(keepId) {
   // A file picked from the list matches exactly; typed text matches any
   // part of the path, so "about" finds content/about.md.
   const file = $('#fFile').value.trim().toLowerCase(), q = $('#fText').value.trim().toLowerCase();
-  const inFile = (o) => (fileExact ? o.file.toLowerCase() === file : o.file.toLowerCase().includes(file));
+  const inFile = (o) => (fileExactly() ? o.file.toLowerCase() === file : o.file.toLowerCase().includes(file));
 
   view = entries.filter((e) =>
     (!st || e.status === st) &&
@@ -374,7 +329,7 @@ function renderQueue() {
     const m = document.createElement('span'); m.className = 'm';
     if (e.triage && e.status === 'unreviewed') {
       const v = document.createElement('span');
-      v.className = `v ${e.triage.verdict}`;
+      v.className = `v lt-tone-${TONE[e.triage.verdict]}`;
       v.textContent = `${e.triage.verdict}${e.suggestion ? ' + suggestion' : ''} · `;
       m.append(v);
     }
@@ -432,13 +387,12 @@ function renderSelection() {
   const words = view.filter((e) => selected.has(e.id)).reduce((w, e) => w + e.words, 0);
   const label = document.createElement('b');
   label.textContent = `${n} selected`;
-  const meta = document.createElement('span'); meta.className = 'muted';
+  const meta = document.createElement('span'); meta.className = 'lt-muted';
   meta.textContent = `${words.toLocaleString()} words`;
   bar.append(label, meta);
   const act = (text, key, fn) => {
-    const btn = document.createElement('button'); btn.className = 'small';
-    btn.append(text);
-    const k = document.createElement('kbd'); k.textContent = key; btn.append(k);
+    const btn = document.createElement('button'); btn.className = 'lt-btn lt-btn-sm';
+    btn.append(text, kbd(key));
     btn.onclick = fn; bar.append(btn);
   };
   act('Already mine', 'h', () => bulk('human'));
@@ -483,7 +437,9 @@ async function bulk(status, { force = false, ids = [...selected] } = {}) {
     Object.assign(e, fresh);
   }
   applyStats(r.stats);
-  selected = new Set();
+  // Only what was just decided: anything ticked while the request was in
+  // flight is a new selection and stays.
+  for (const id of ids) selected.delete(id);
   flash(BULK_DONE[status](r.entries.length));
   refilter(view[cursor]?.id);
 }
@@ -506,23 +462,21 @@ async function renderDetail() {
   const d = $('#detail');
   const e = view[cursor];
   if (!e) {
-    d.innerHTML = '<div class="empty">Nothing matches these filters.<br><span class="muted">Change the status filter to see decided copy.</span></div>';
+    d.innerHTML = '<div class="empty">Nothing matches these filters.<br><span class="lt-muted small">Change the status filter to see decided copy.</span></div>';
     return;
   }
 
   d.innerHTML = '';
-  const head = document.createElement('div'); head.className = 'row';
+  const eyebrow = (text) => { const p = document.createElement('p'); p.className = 'lt-eyebrow'; p.textContent = text; return p; };
+  const head = document.createElement('div'); head.className = 'row'; head.style.gap = '6px';
   const statusLabel = e.status === 'rewritten' && e.replacement_source === 'model'
     ? 'rewritten · model' : e.status;
-  const tags = [[e.tier, e.tier], [e.status, statusLabel], ['', `${e.words} words`],
-                ['', `${e.occurrences.length} place${e.occurrences.length === 1 ? '' : 's'}`]];
-  if (e.triage && e.status === 'unreviewed') tags.splice(2, 0, [`v-${e.triage.verdict}`, `triage: ${e.triage.verdict}`]);
-  for (const [cls, txt] of tags) {
-    const s = document.createElement('span'); s.className = `tag ${cls}`; s.textContent = txt; head.append(s);
-  }
+  head.append(tag(e.tier, TONE[e.tier]), tag(statusLabel, TONE[e.status]));
+  if (e.triage && e.status === 'unreviewed') head.append(tag(`triage: ${e.triage.verdict}`, TONE[e.triage.verdict]));
+  head.append(tag(`${e.words} words`), tag(`${e.occurrences.length} place${e.occurrences.length === 1 ? '' : 's'}`));
   d.append(head);
 
-  const bq = document.createElement('blockquote');
+  const bq = document.createElement('blockquote'); bq.className = 'lt-quote';
   bq.append(...marked(e.text, e.status === 'unreviewed' ? e.triage?.tells : null));
   d.append(bq);
 
@@ -546,7 +500,7 @@ async function renderDetail() {
   const heldIn = drafts.checkedOut[e.id];
   if (heldIn) {
     const held = document.createElement('div');
-    held.className = 'heldout';
+    held.className = 'lt-callout lt-tone-warning';
     const where = document.createElement('code'); where.textContent = heldIn;
     held.append('This string is checked out in ', where, '. Write it there and ' +
       'run slopchop pull. A decision here retires its marker, and whatever ' +
@@ -555,19 +509,18 @@ async function renderDetail() {
   }
 
   if (e.previous_ai_text) {
-    const h = document.createElement('h3'); h.textContent = 'Replaced draft';
-    const p = document.createElement('blockquote');
+    const p = document.createElement('blockquote'); p.className = 'lt-quote';
     p.style.opacity = '.6'; p.textContent = e.previous_ai_text;
-    d.append(h, p);
+    d.append(eyebrow('Replaced draft'), p);
   }
 
-  const h1 = document.createElement('h3'); h1.textContent = 'Your version';
   const ta = document.createElement('textarea');
-  ta.id = 'editor';
+  ta.id = 'editor'; ta.className = 'lt-field';
+  ta.setAttribute('aria-label', 'Your version');
   ta.value = e.replacement ?? e.text;
-  d.append(h1, ta);
+  d.append(eyebrow('Your version'), ta);
 
-  const warn = document.createElement('div'); warn.className = 'warn'; d.append(warn);
+  const warn = document.createElement('div'); warn.className = 'warn'; warn.setAttribute('role', 'status'); d.append(warn);
   const checkPlaceholders = () => {
     const want = [...e.text.matchAll(/\{\{?[^{}]+\}?\}|%[sd]|%\{[^}]+\}|\$\{[^}]+\}/g)].map((m) => m[0]);
     const missing = want.filter((p) => !ta.value.includes(p));
@@ -579,44 +532,38 @@ async function renderDetail() {
   checkPlaceholders();
 
   const acts = document.createElement('div'); acts.className = 'actions';
-  const mk = (label, key, cls, fn) => {
+  const mk = (label, key, cls, fn, into = acts) => {
     const b = document.createElement('button');
-    if (cls) b.className = cls;
-    b.append(document.createTextNode(label));
-    if (key) { const k = document.createElement('kbd'); k.textContent = key; b.append(k); }
-    b.onclick = fn; acts.append(b); return b;
+    b.className = `lt-btn lt-btn-sm${cls ? ` ${cls}` : ''}`;
+    b.append(label);
+    if (key) b.append(kbd(key));
+    b.onclick = fn; into.append(b); return b;
   };
-  mk('Save my version', SAVE_KEY, 'primary', () => saveRewrite(e, ta.value));
+  mk('Save my version', SAVE_KEY, 'lt-btn-primary', () => saveRewrite(e, ta.value));
   mk('Already mine', 'h', '', () => setStatus(e, 'human'));
   mk('Leave as drafted', 'a', '', () => setStatus(e, 'ai-fine'));
-  mk('Skip', 'j', '', () => move(1));
+  mk('Skip', 'j', 'lt-btn-ghost', () => move(1));
   d.append(acts);
 
   // The suggestion sits below your own box on purpose: write first, borrow
   // second. Taken without a single edit it is recorded as the model's.
   if (e.suggestion && e.status === 'unreviewed') {
-    const hs = document.createElement('h3'); hs.textContent = "A model's suggestion";
-    const sq = document.createElement('blockquote'); sq.className = 'suggestion';
+    const sq = document.createElement('blockquote'); sq.className = 'lt-quote suggestion';
     sq.textContent = e.suggestion.text;
-    d.append(hs, sq);
+    d.append(eyebrow("A model's suggestion"), sq);
     if (e.suggestion.why) {
       const p = document.createElement('p'); p.className = 'advice';
       p.textContent = e.suggestion.why; d.append(p);
     }
     const sa = document.createElement('div'); sa.className = 'actions';
-    const b = document.createElement('button');
-    b.append('Start from this');
-    const k = document.createElement('kbd'); k.textContent = 's'; b.append(k);
-    b.onclick = () => useSuggestion(e);
-    sa.append(b);
-    const note = document.createElement('span'); note.className = 'muted';
+    mk('Start from this', 's', '', () => useSuggestion(e), sa);
+    const note = document.createElement('span'); note.className = 'lt-muted small';
     note.textContent = 'Saved unedited, it counts as ai-revised, not yours.';
     sa.append(note);
     d.append(sa);
   }
 
-  const h2 = document.createElement('h3'); h2.textContent = 'Where it appears';
-  d.append(h2);
+  d.append(eyebrow('Where it appears'));
   for (const o of e.occurrences) {
     const p = document.createElement('div'); p.className = 'occ';
     p.textContent = `${o.file}:${o.line}  ·  ${o.kind}${o.at ? `  ·  ${o.at}` : ''}`;
@@ -627,7 +574,6 @@ async function renderDetail() {
   try {
     const { context } = await api(`/api/context?file=${encodeURIComponent(o0.file)}&line=${o0.line}`);
     if (context && view[cursor]?.id === e.id) {
-      const h4 = document.createElement('h3'); h4.textContent = 'In context';
       const pre = document.createElement('pre'); pre.className = 'ctx';
       context.lines.forEach((ln, i) => {
         const n = context.from + i;
@@ -635,7 +581,7 @@ async function renderDetail() {
         el.textContent = `${String(n).padStart(4)}  ${ln}\n`;
         pre.append(el);
       });
-      d.append(h4, pre);
+      d.append(eyebrow('In context'), pre);
     }
   } catch { /* context is a nicety; never block review on it */ }
 }
@@ -698,7 +644,7 @@ function marked(text, tells) {
   let i = 0;
   for (const s of spans) {
     if (s.start > i) out.push(document.createTextNode(text.slice(i, s.start)));
-    const m = document.createElement('mark');
+    const m = document.createElement('mark'); m.className = 'tell';
     m.textContent = text.slice(s.start, s.end);
     m.title = s.why;
     out.push(m);
@@ -750,10 +696,9 @@ $('#fText').addEventListener('search', () => refilter());
 
 // ---------------------------------------------------------- file picker ---
 
-// A hand-built combobox, because a native <datalist> shows nothing in some
-// browsers and cannot be styled in any of them.
-const fileBox = $('#fFile'), fileMenu = $('#fileMenu');
-let menuItems = [], menuActive = -1;
+// Liquid Textile's combobox, because a native <datalist> shows nothing in
+// some browsers and cannot be styled in any of them.
+const fileBox = $('#fFile');
 
 function fileCounts() {
   // Counted under the status filter, so the numbers match what you would see.
@@ -766,87 +711,15 @@ function fileCounts() {
   return counts;
 }
 
-function openFileMenu() {
-  const q = fileBox.value.trim().toLowerCase();
-  const counts = fileCounts();
-  menuItems = [...counts.keys()].sort().filter((f) => !q || fileExact || f.toLowerCase().includes(q));
-  menuActive = menuItems.length ? 0 : -1;
-  fileMenu.textContent = '';
-  if (!menuItems.length) {
-    const li = document.createElement('li'); li.className = 'none';
-    li.textContent = 'No file matches'; fileMenu.append(li);
-  }
-  menuItems.forEach((f, i) => {
-    const li = document.createElement('li');
-    li.id = `file-opt-${i}`;
-    li.setAttribute('role', 'option');
-    const name = document.createElement('span');
-    const at = q && !fileExact ? f.toLowerCase().indexOf(q) : -1;
-    if (at >= 0) {
-      const b = document.createElement('b'); b.textContent = f.slice(at, at + q.length);
-      name.append(f.slice(0, at), b, f.slice(at + q.length));
-    } else {
-      name.textContent = f;
-    }
-    const n = document.createElement('span'); n.className = 'n'; n.textContent = counts.get(f);
-    li.append(name, n);
-    // mousedown, not click: a click would blur the box and close the menu first.
-    li.onmousedown = (ev) => { ev.preventDefault(); chooseFile(f); };
-    li.onmousemove = () => { if (menuActive !== i) { menuActive = i; markActive(); } };
-    fileMenu.append(li);
-  });
-  fileMenu.hidden = false;
-  fileBox.setAttribute('aria-expanded', 'true');
-  markActive();
-}
-
-function markActive() {
-  [...fileMenu.children].forEach((li, i) => li.setAttribute('aria-selected', i === menuActive));
-  const li = fileMenu.children[menuActive];
-  if (li?.id) { fileBox.setAttribute('aria-activedescendant', li.id); li.scrollIntoView({ block: 'nearest' }); }
-  else fileBox.removeAttribute('aria-activedescendant');
-}
-
-function closeFileMenu() {
-  fileMenu.hidden = true;
-  fileBox.setAttribute('aria-expanded', 'false');
-  fileBox.removeAttribute('aria-activedescendant');
-}
-
-function chooseFile(f) {
-  fileBox.value = f;
-  fileExact = !!f;
-  $('#fFileClear').hidden = !f;
-  closeFileMenu();
-  refilter();
-}
-
-fileBox.addEventListener('focus', () => { fileBox.select(); openFileMenu(); });
-fileBox.addEventListener('blur', closeFileMenu);
-fileBox.addEventListener('input', () => {
-  fileExact = false;
-  $('#fFileClear').hidden = !fileBox.value;
-  openFileMenu();
-  refilter();
+const filePicker = combobox(fileBox, {
+  options: () => [...fileCounts()].sort(([a], [b]) => a.localeCompare(b)).map(([f, n]) => ({ value: f, meta: String(n) })),
+  onChoose: (f) => { $('#fFileClear').hidden = !f; refilter(); },
+  onType: (text) => { $('#fFileClear').hidden = !text; refilter(); },
+  empty: 'No file matches',
 });
-fileBox.addEventListener('keydown', (ev) => {
-  const open = !fileMenu.hidden;
-  if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
-    ev.preventDefault();
-    if (!open) return openFileMenu();
-    if (!menuItems.length) return;
-    menuActive = (menuActive + (ev.key === 'ArrowDown' ? 1 : -1) + menuItems.length) % menuItems.length;
-    markActive();
-  } else if (ev.key === 'Enter') {
-    ev.preventDefault();
-    if (open && menuActive >= 0) chooseFile(menuItems[menuActive]);
-    fileBox.blur();
-  } else if (ev.key === 'Escape' && open) {
-    // First Escape closes the list; the next one leaves the box.
-    ev.preventDefault(); ev.stopPropagation(); closeFileMenu();
-  }
-});
-$('#fFileClear').onclick = () => { chooseFile(''); fileBox.focus(); };
+const fileExactly = () => filePicker.picked;
+
+$('#fFileClear').onclick = () => { filePicker.choose(''); fileBox.focus(); };
 $('#applyBtn').onclick = () => applyRewrites().catch((e) => flash(e.message));
 $('#selAll').onclick = (ev) => { ev.preventDefault(); selectAll(selected.size !== view.length); };
 $('#sideBtn').onclick = () => setCollapsed(!document.body.classList.contains('collapsed'));
@@ -857,40 +730,29 @@ const SHORTCUTS = [
   ['j  k  ↑  ↓', 'Next and previous string'],
   ['Shift+j  Shift+k', 'Extend the selection down or up'],
   ['x', 'Select or unselect this string'],
-  [`${MOD}A`, 'Select everything shown'],
+  [keys('Mod+A'), 'Select everything shown'],
   ['e  Enter', 'Write in the editor'],
-  [`${SAVE_KEY}  ${MOD}S`, 'Save what is in the editor'],
+  [`${SAVE_KEY}  ${keys('Mod+S')}`, 'Save what is in the editor'],
   ['s', "Copy the model's suggestion into the editor"],
   ['h', 'Already mine (the selection, if there is one)'],
   ['a', 'Leave as drafted (the selection, if there is one)'],
   ['u', 'Back to unreviewed (the selection, if there is one)'],
   ['[', 'Collapse or show the list'],
-  [`/  ${MOD}K`, 'Search the copy'],
+  [`/  ${keys('Mod+K')}`, 'Search the copy'],
   ['f', 'Filter by file'],
+  ['t', 'Switch between light and dark'],
   ['Esc', 'Clear the selection, leave a field, close this'],
   ['?', 'This list'],
 ];
 
-function showHelp(on) {
-  const t = $('#helpTable');
-  if (on && !t.rows.length) {
-    for (const [k, what] of SHORTCUTS) {
-      const tr = t.insertRow();
-      tr.insertCell().textContent = k;
-      tr.insertCell().textContent = what;
-    }
-  }
-  $('#help').classList.toggle('on', on);
+for (const [k, what] of SHORTCUTS) {
+  const tr = $('#helpTable').insertRow();
+  tr.insertCell().textContent = k;
+  tr.insertCell().textContent = what;
 }
-$('#helpBtn').onclick = () => showHelp(true);
-$('#help').onclick = (ev) => { if (ev.target.id === 'help') showHelp(false); };
-
-/** Where a letter key means typing, not a command. */
-function typingIn(el) {
-  if (!el) return false;
-  if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable) return true;
-  return el.tagName === 'INPUT' && !['checkbox', 'radio', 'button'].includes(el.type);
-}
+// A native <dialog>: the browser holds focus inside it and closes it on Escape.
+const help = dialog($('#help'));
+$('#helpBtn').onclick = () => help.open();
 
 /** h, a, u: the selection when there is one, otherwise the current string. */
 function decideKey(status) {
@@ -900,6 +762,7 @@ function decideKey(status) {
 }
 
 addEventListener('keydown', (ev) => {
+  if (help.isOpen) return;
   const mod = ev.metaKey || ev.ctrlKey;
   const editing = document.activeElement?.tagName === 'TEXTAREA';
   const key = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
@@ -911,17 +774,15 @@ addEventListener('keydown', (ev) => {
   if (mod && key === 'k') { ev.preventDefault(); $('#fText').focus(); $('#fText').select(); return; }
   if (key === 'Escape') {
     // Leave the field as it is: a search box would otherwise clear itself.
-    if ($('#help').classList.contains('on')) showHelp(false);
-    else if (typingIn(document.activeElement)) { ev.preventDefault(); document.activeElement.blur(); }
+    if (isTyping(document.activeElement)) { ev.preventDefault(); document.activeElement.blur(); }
     else if (selected.size) selectAll(false);
     return;
   }
-  if (typingIn(ev.target) || ev.altKey) return;
+  if (isTyping(ev.target) || ev.altKey) return;
   if (mod && key === 'a') { ev.preventDefault(); selectAll(true); return; }
   if (mod) return;
 
-  if (key === '?' || (key === '/' && ev.shiftKey)) { ev.preventDefault(); showHelp(true); return; }
-  if ($('#help').classList.contains('on')) return;
+  if (key === '?' || (key === '/' && ev.shiftKey)) { ev.preventDefault(); help.open(); return; }
 
   if ((key === 'j' || key === 'ArrowDown') && ev.shiftKey) { ev.preventDefault(); extend(1); }
   else if ((key === 'k' || key === 'ArrowUp') && ev.shiftKey) { ev.preventDefault(); extend(-1); }
@@ -935,7 +796,8 @@ addEventListener('keydown', (ev) => {
   else if (key === 's' && view[cursor]?.suggestion) { ev.preventDefault(); useSuggestion(view[cursor]); }
   else if (key === '[') { ev.preventDefault(); setCollapsed(!document.body.classList.contains('collapsed')); }
   else if (key === '/') { ev.preventDefault(); $('#fText').focus(); }
-  else if (key === 'f') { ev.preventDefault(); $('#fFile').focus(); $('#fFile').select(); }
+  else if (key === 'f') { ev.preventDefault(); fileBox.focus(); }
+  else if (key === 't') { ev.preventDefault(); theme.toggle(); }
 });
 
 /** Shift+j / Shift+k: carry the selection along as the cursor moves. */

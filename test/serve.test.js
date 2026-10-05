@@ -19,6 +19,7 @@ async function running(project, fn) {
       const r = await fetch(base + path, { method: 'POST', body: JSON.stringify(body) });
       return { status: r.status, body: await r.json() };
     };
+    post.get = (path) => fetch(base + path);
     return await fn(post);
   } finally {
     console.log = log;
@@ -53,6 +54,22 @@ test('decide-many records one answer for many strings', async () => {
 
     const after = load(project);
     assert.deepEqual(after.entries.map((e) => e.status), ['ai-fine', 'ai-fine', 'unreviewed']);
+  });
+});
+
+test('the vendored design system is served by name, and nothing else is', async () => {
+  await withProject(files, async (project) => {
+    await running(project, async (post) => {
+      const css = await post.get('/lt/foundation.css');
+      assert.equal(css.status, 200);
+      assert.match(css.headers.get('content-type'), /text\/css/);
+      assert.match(await css.text(), /--lt-color-primary/);
+      const js = await post.get('/lt/behaviors.js');
+      assert.match(js.headers.get('content-type'), /javascript/);
+      for (const bad of ['/lt/LICENSE', '/lt/README.md', '/lt/../serve.js', '/lt/%2e%2e/serve.js', '/lt/']) {
+        assert.equal((await post.get(bad)).status, 404, bad);
+      }
+    });
   });
 });
 

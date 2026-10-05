@@ -12,6 +12,15 @@ import { outstandingDrafts, draftDirLabel } from './drafts.js';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BULK_STATUSES = ['human', 'ai-fine', 'unreviewed'];
 
+// The page's design system, vendored so the review page has no network
+// dependency. Served by name from a fixed list, never by path.
+const VENDOR = path.join(HERE, 'vendor', 'liquid-textile');
+const VENDORED = {
+  'foundation.css': 'text/css; charset=utf-8',
+  'base.css': 'text/css; charset=utf-8',
+  'behaviors.js': 'text/javascript; charset=utf-8',
+};
+
 function json(res, code, body) {
   const payload = JSON.stringify(body);
   res.writeHead(code, {
@@ -75,6 +84,13 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
         const html = fs.readFileSync(path.join(HERE, 'ui.html'));
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
         return res.end(html);
+      }
+
+      if (req.method === 'GET' && url.pathname.startsWith('/lt/')) {
+        const name = url.pathname.slice(4);
+        if (!Object.hasOwn(VENDORED, name)) return json(res, 404, { error: 'not found' });
+        res.writeHead(200, { 'Content-Type': VENDORED[name], 'Cache-Control': 'no-store' });
+        return res.end(fs.readFileSync(path.join(VENDOR, name)));
       }
 
       if (req.method === 'GET' && url.pathname === '/api/ledger') {
