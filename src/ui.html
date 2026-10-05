@@ -4,100 +4,127 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SlopChop</title>
+<!-- Theme before first paint, so a light-mode reader never sees a dark flash.
+     behaviors.js initTheme() takes over from here with the same key. -->
+<script>
+  try {
+    document.documentElement.dataset.theme = localStorage.getItem('slopchop-theme')
+      || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  } catch { document.documentElement.dataset.theme = 'dark'; }
+</script>
+<link rel="stylesheet" href="/lt/foundation.css">
+<link rel="stylesheet" href="/lt/base.css">
 <style>
-  :root {
-    --bg:#14161a; --panel:#1b1e24; --line:#2a2f38; --ink:#e6e8ec; --dim:#8b93a1;
-    --accent:#7ab8a0; --warn:#d9a55f; --bad:#d97070; --ok:#7ab87a;
-    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* SlopChop's own green, in place of Liquid Textile's blue. Measured:
+     light 5.6:1 on bg, white on it 6.4:1; dark 7.8:1 on bg, ink on it 7.3:1. */
+  [data-theme="light"] {
+    --lt-color-primary: #2d6a55; --lt-color-primary-hover: #245a48; --lt-color-on-primary: #ffffff;
+    --lt-color-selected: rgba(45, 106, 85, 0.12);
   }
-  * { box-sizing:border-box; }
+  [data-theme="dark"] {
+    --lt-color-primary: #7ab8a0; --lt-color-primary-hover: #96cbb6; --lt-color-on-primary: #12211c;
+    --lt-color-selected: rgba(122, 184, 160, 0.14);
+  }
+
   body {
-    margin:0; background:var(--bg); color:var(--ink); height:100vh;
-    display:flex; flex-direction:column;
-    font:15px/1.55 ui-sans-serif, system-ui, -apple-system, sans-serif;
+    height: 100vh; display: flex; flex-direction: column;
+    font-size: 15px; line-height: 1.55;
   }
-  header { border-bottom:1px solid var(--line); padding:10px 16px; flex:none; }
-  .row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-  .bar { flex:1; min-width:160px; height:8px; background:var(--line); border-radius:4px; overflow:hidden; }
-  .bar i { display:block; height:100%; background:var(--accent); width:0; transition:width .25s; }
-  .muted { color:var(--dim); font-size:13px; }
-  select, input[type=search] {
-    background:var(--panel); color:var(--ink); border:1px solid var(--line);
-    border-radius:6px; padding:5px 8px; font:inherit; font-size:13px;
+  header { border-bottom: 1px solid var(--lt-color-border); padding: 10px 16px; flex: none; }
+  .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .grow { flex: 1; }
+  .bar { flex: 1; min-width: 160px; height: 8px; background: var(--lt-color-border); border-radius: 4px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--lt-color-primary); width: 0; transition: width .25s; }
+  .small { font-size: var(--lt-text-sm); }
+
+  .combo { position: relative; display: inline-flex; }
+  .combo input { width: 220px; padding-right: 24px; }
+  .combo .clear { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); }
+  .combo .lt-menu-item { font-family: var(--lt-font-mono); font-size: 12px; }
+  .words { display: inline-flex; align-items: center; gap: 6px; }
+  .words input { width: 64px; }
+
+  main { flex: 1; display: grid; grid-template-columns: 320px 1fr; min-height: 0; }
+  body.collapsed main { grid-template-columns: 44px 1fr; }
+  #side { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--lt-color-border); }
+  #sideHead {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px; flex: none;
+    border-bottom: 1px solid var(--lt-color-border); font-size: 12px; color: var(--lt-color-text-muted);
   }
-  main { flex:1; display:grid; grid-template-columns:340px 1fr; min-height:0; }
-  #queue { border-right:1px solid var(--line); overflow-y:auto; }
-  #queue button {
-    display:block; width:100%; text-align:left; background:none; color:inherit;
-    border:0; border-bottom:1px solid var(--line); padding:9px 12px; cursor:pointer;
-    font:inherit; font-size:13px;
+  body.collapsed #sideHead { flex-direction: column; padding: 8px 0; border-bottom: 0; gap: 10px; }
+  body.collapsed #sideHead .full, body.collapsed #queue { display: none; }
+  #railPos { display: none; writing-mode: vertical-rl; font-family: var(--lt-font-mono); font-size: 11px; }
+  body.collapsed #railPos { display: block; }
+
+  #queue { overflow-y: auto; flex: 1; }
+  .item { display: flex; align-items: stretch; border-bottom: 1px solid var(--lt-color-border); }
+  .item:hover { background: var(--lt-color-overlay); }
+  .item[aria-current=true] { background: var(--lt-color-overlay-hover); box-shadow: inset 3px 0 0 var(--lt-color-primary); }
+  .item.sel { background: var(--lt-color-selected); }
+  .item .ck { display: flex; align-items: center; padding: 0 2px 0 12px; cursor: pointer; }
+  .item .open {
+    flex: 1; min-width: 0; text-align: left; background: none; border: 0;
+    padding: 9px 12px 9px 8px; font-size: var(--lt-text-sm);
   }
-  #queue button:hover { background:#1f232a; }
-  #queue button[aria-current=true] { background:#232833; box-shadow:inset 3px 0 0 var(--accent); }
-  #queue .t { display:block; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  #queue .m { display:block; color:var(--dim); font-size:11px; font-family:var(--mono); margin-top:2px; }
-  #detail { overflow-y:auto; padding:20px 24px 64px; }
-  .tag {
-    display:inline-block; font-size:11px; padding:1px 7px; border-radius:99px;
-    border:1px solid var(--line); color:var(--dim); font-family:var(--mono);
+  #queue .t { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #queue .m { display: block; color: var(--lt-color-text-muted); font-size: 11px; font-family: var(--lt-font-mono); margin-top: 2px; }
+  #queue .v { font-family: var(--lt-font-mono); }
+
+  /* Floats rather than sitting in the header, so selecting the first row
+     never shoves the list out from under the next click. */
+  #bulk {
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 5;
+    display: none; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;
+    /* max-content: with left: 50%, shrink-to-fit only gets half the screen. */
+    width: max-content; max-width: calc(100vw - 32px); padding: 8px 12px; font-size: var(--lt-text-sm);
+    border-color: var(--lt-color-primary);
   }
-  .tag.prose { color:var(--accent); border-color:var(--accent); }
-  .tag.human { color:var(--ok); border-color:var(--ok); }
-  .tag.unreviewed { color:var(--warn); border-color:var(--warn); }
-  .tag.rewritten { color:var(--accent); border-color:var(--accent); }
-  blockquote {
-    margin:14px 0; padding:12px 16px; background:var(--panel);
-    border-left:3px solid var(--line); border-radius:0 6px 6px 0; white-space:pre-wrap;
+  #bulk.on { display: flex; }
+  #bulk b { font-weight: 600; margin-right: 4px; }
+  body.bulk { --lt-toast-lift: 58px; }
+  body.bulk #queue, body.bulk #detail { padding-bottom: 96px; }
+
+  #help table { border-collapse: collapse; width: 100%; font-size: var(--lt-text-sm); margin-top: 10px; }
+  #help td { padding: 4px 0; vertical-align: top; }
+  #help td:first-child { white-space: nowrap; padding-right: 16px; font-family: var(--lt-font-mono); color: var(--lt-color-primary); }
+
+  #detail { overflow-y: auto; padding: 20px 24px 64px; }
+  #detail .lt-quote { margin: 14px 0; }
+  #detail .lt-eyebrow { margin: 26px 0 6px; }
+  #detail .lt-callout { margin-top: 12px; }
+  #editor { width: 100%; min-height: 130px; }
+  .actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+  mark.tell {
+    background: none; color: inherit;
+    text-decoration: underline wavy var(--lt-color-error); text-underline-offset: 4px;
   }
-  textarea {
-    width:100%; min-height:130px; background:var(--panel); color:var(--ink);
-    border:1px solid var(--line); border-radius:8px; padding:12px;
-    font:inherit; line-height:1.55; resize:vertical;
-  }
-  textarea:focus { outline:2px solid var(--accent); outline-offset:-1px; }
-  .actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-  .actions button, button.small {
-    background:var(--panel); color:var(--ink); border:1px solid var(--line);
-    border-radius:7px; padding:7px 13px; font:inherit; font-size:13px; cursor:pointer;
-  }
-  button.small { padding:5px 10px; }
-  .actions button:hover, button.small:hover { border-color:var(--accent); }
-  .actions button.primary { background:var(--accent); color:#12211c; border-color:var(--accent); font-weight:600; }
-  .actions kbd {
-    font-family:var(--mono); font-size:10px; opacity:.65; margin-left:5px;
-    border:1px solid currentColor; border-radius:3px; padding:0 3px;
-  }
+  ul.tells { margin: 6px 0 0; padding-left: 18px; font-size: var(--lt-text-sm); }
+  ul.tells li { margin: 3px 0; }
+  ul.tells span { color: var(--lt-color-text-muted); }
+  .advice { color: var(--lt-color-text-muted); font-size: var(--lt-text-sm); margin: 6px 0 0; }
+  .lt-quote.suggestion { border-left-color: var(--lt-color-warning); }
+
   pre.ctx {
-    background:#101216; border:1px solid var(--line); border-radius:8px;
-    padding:10px 12px; overflow-x:auto; font-family:var(--mono); font-size:12px;
-    line-height:1.6; color:var(--dim); margin:8px 0 0;
+    background: var(--lt-color-surface); border: 1px solid var(--lt-color-border); border-radius: var(--lt-radius-control);
+    padding: 10px 12px; overflow-x: auto; font-size: 12px; line-height: 1.6;
+    color: var(--lt-color-text-muted); margin: 8px 0 0;
   }
-  pre.ctx b { color:var(--ink); font-weight:600; }
-  h3 { font-size:12px; text-transform:uppercase; letter-spacing:.07em; color:var(--dim);
-       margin:26px 0 6px; font-weight:600; }
-  .occ { font-family:var(--mono); font-size:12px; color:var(--dim); margin:2px 0; }
-  .flash { position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
-           background:var(--panel); border:1px solid var(--line); border-radius:8px;
-           padding:9px 16px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; }
-  .flash.on { opacity:1; }
-  .warn { color:var(--warn); font-size:13px; margin-top:8px; }
-  .empty { color:var(--dim); text-align:center; padding:64px 20px; }
-  #drafts {
-    display:none; margin-top:8px; padding:7px 11px; font-size:13px;
-    border:1px solid var(--warn); border-left-width:3px; border-radius:0 6px 6px 0;
-    color:var(--warn); background:#241f16;
-  }
-  #drafts.on { display:block; }
-  #drafts b { font-weight:600; }
-  #drafts code { font-family:var(--mono); font-size:12px; }
-  #drafts .files { color:var(--dim); }
-  .heldout {
-    margin:12px 0 0; padding:10px 14px; font-size:13px; color:var(--warn);
-    border:1px solid var(--warn); border-radius:8px; background:#241f16;
-  }
+  pre.ctx b { color: var(--lt-color-text); font-weight: 600; }
+  .occ { font-family: var(--lt-font-mono); font-size: 12px; color: var(--lt-color-text-muted); margin: 2px 0; }
+  .warn { color: var(--lt-color-warning-text); font-size: var(--lt-text-sm); margin-top: 8px; }
+  .empty { color: var(--lt-color-text-muted); text-align: center; padding: 64px 20px; }
+
+  #drafts { display: none; margin-top: 8px; }
+  #drafts.on { display: block; }
+  #drafts .files { color: var(--lt-color-text-muted); }
+
   @media (max-width: 760px) {
-    main { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; }
-    #queue { border-right:0; border-bottom:1px solid var(--line); }
+    main, body.collapsed main { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; }
+    body.collapsed main { grid-template-rows: auto 1fr; }
+    #side { border-right: 0; border-bottom: 1px solid var(--lt-color-border); }
+    body.collapsed #sideHead { flex-direction: row; padding: 6px 10px; }
+    body.collapsed #railPos { writing-mode: horizontal-tb; }
   }
 </style>
 </head>
@@ -107,40 +134,116 @@
   <div class="row">
     <strong style="font-size:14px" id="title">SlopChop</strong>
     <div class="bar"><i id="progress"></i></div>
-    <span class="muted" id="counts">loading…</span>
-    <button class="small" id="applyBtn" title="Write approved rewrites into source">Apply rewrites</button>
+    <span class="lt-muted small" id="counts">loading…</span>
+    <button class="lt-btn lt-btn-sm lt-btn-primary" id="applyBtn" title="Write approved rewrites into source">Apply rewrites</button>
+    <button class="lt-btn lt-btn-sm lt-btn-icon" id="themeBtn" title="Switch theme" aria-label="Switch theme">◐</button>
   </div>
   <div class="row" style="margin-top:8px">
-    <select id="fStatus">
+    <select class="lt-field" id="fStatus" aria-label="Status">
       <option value="unreviewed">Unreviewed</option>
+      <option value="new">New since baseline (blocks CI)</option>
       <option value="">All</option>
       <option value="rewritten">Rewritten (pending apply)</option>
       <option value="human">Human</option>
+      <option value="human:written">Human: rewrite</option>
+      <option value="human:edited">Human: small edits</option>
+      <option value="human:claimed">Human: already theirs</option>
       <option value="ai-fine">Left as drafted</option>
+      <option value="ai-revised">Model rewrite, accepted</option>
     </select>
-    <select id="fTier">
-      <option value="">Every tier</option>
-      <option value="prose">Paragraphs (16+ words)</option>
-      <option value="helper">Helper text (6–15)</option>
-      <option value="label">Labels (1–5)</option>
-    </select>
-    <select id="fFile"><option value="">Every file</option></select>
-    <input type="search" id="fText" placeholder="Search copy…  ⌘K" style="flex:1;min-width:140px">
-    <span class="muted" id="qcount"></span>
+    <span class="words" role="group" aria-label="Word count">
+      <input class="lt-field" type="number" id="fMin" min="1" step="1" inputmode="numeric" placeholder="Min" aria-label="At least this many words">
+      <span class="lt-muted">–</span>
+      <input class="lt-field" type="number" id="fMax" min="1" step="1" inputmode="numeric" placeholder="Max" aria-label="At most this many words">
+      <span class="lt-muted small">words</span>
+    </span>
+    <div class="combo">
+      <input class="lt-field" type="text" id="fFile" aria-label="Filter by file" placeholder="Every file" spellcheck="false">
+      <button type="button" class="clear lt-btn lt-btn-ghost lt-btn-sm lt-btn-icon" id="fFileClear" aria-label="Clear the file filter" hidden>×</button>
+    </div>
+    <input class="lt-field" type="search" id="fText" placeholder="Search copy…" aria-label="Search copy" style="flex:1;min-width:140px">
+    <span class="lt-muted small" id="qcount"></span>
+    <button class="lt-btn lt-btn-sm lt-btn-icon" id="helpBtn" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">?</button>
   </div>
-  <div id="drafts"></div>
+  <div id="bulk" class="lt-popover" role="toolbar" aria-label="Bulk actions"></div>
+  <div id="drafts" class="lt-callout lt-tone-warning"></div>
 </header>
 
 <main>
-  <div id="queue"></div>
+  <aside id="side">
+    <div id="sideHead">
+      <input type="checkbox" id="selAll" class="full" title="Select everything shown" aria-label="Select everything shown">
+      <span class="full grow" id="selInfo"></span>
+      <button class="lt-btn lt-btn-sm lt-btn-icon lt-btn-ghost" id="sideBtn" title="Collapse the list" aria-label="Collapse the list">«</button>
+      <span id="railPos"></span>
+    </div>
+    <div id="queue" role="listbox" aria-multiselectable="true"></div>
+  </aside>
   <div id="detail"><div class="empty">Loading…</div></div>
 </main>
 
-<div class="flash" id="flash"></div>
+<dialog class="lt-dialog" id="ask" aria-labelledby="askTitle">
+  <strong id="askTitle"></strong>
+  <div id="askBody" class="small" style="margin:8px 0 14px; white-space:pre-line"></div>
+  <div class="actions">
+    <button type="button" class="lt-btn lt-btn-sm lt-btn-primary" id="askYes"></button>
+    <button type="button" class="lt-btn lt-btn-sm" id="askNo"></button>
+  </div>
+</dialog>
+
+<dialog class="lt-dialog" id="help" aria-labelledby="helpTitle">
+  <strong id="helpTitle">Keyboard</strong>
+  <table id="helpTable"></table>
+  <p class="lt-muted small" style="margin:12px 0 0">Esc closes this. Letter keys do nothing while you are typing.</p>
+</dialog>
 
 <script type="module">
+import { initTheme, keys, isTyping, combobox, dialog, toast } from '/lt/behaviors.js';
+
 const $ = (s) => document.querySelector(s);
 let entries = [], view = [], cursor = 0, statsData = null, drafts = { checkedOut: {}, files: [] };
+let selected = new Set(), anchor = null, baseline = new Set();
+
+// "new" is the CI gate's view: unreviewed and not part of the debt
+// accepted at baseline. Every other value is a plain status.
+const matchesStatus = (e, st) => {
+  if (!st) return true;
+  if (st === 'new') return e.status === 'unreviewed' && !baseline.has(e.id);
+  if (st.startsWith('human:')) return e.status === 'human' && kindOf(e) === st.slice(6);
+  return e.status === st;
+};
+
+// How a human entry came to be, in the person's own words. An entry from
+// before they were asked reads the way the ledger reads it.
+const KIND_LABEL = { written: 'rewrite', edited: 'small edits', claimed: 'already theirs' };
+const kindOf = (e) => e.authorship?.kind ?? (e.previous_ai_text ? 'written' : 'claimed');
+
+const theme = initTheme({ key: 'slopchop-theme' });
+$('#themeBtn').onclick = () => theme.toggle();
+
+// Ctrl on Windows and Linux, ⌘ on a Mac. Both modifiers always work; this
+// is only about what the labels say.
+const SAVE_KEY = keys('Mod+Enter');
+const EDIT_KEY = keys('Mod+Shift+Enter');
+$('#fText').placeholder = `Search copy…  ${keys('Mod+K')}`;
+
+// The tone each status and triage verdict reads in, shared by tags and the list.
+const TONE = {
+  human: 'success', rewritten: 'primary', unreviewed: 'warning', 'ai-revised': 'warning', 'ai-fine': 'muted',
+  prose: 'primary', rewrite: 'error', glance: 'warning', fine: 'muted',
+};
+const tag = (text, tone) => {
+  const s = document.createElement('span');
+  s.className = `lt-tag${tone ? ` lt-tone-${tone}` : ''}`;
+  s.textContent = text;
+  return s;
+};
+const kbd = (text) => { const k = document.createElement('span'); k.className = 'lt-kbd'; k.textContent = text; return k; };
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { /* a preference, not state */ } },
+};
 
 const api = async (p, opts) => {
   const r = await fetch(p, { headers: { 'Content-Type': 'application/json' }, ...opts });
@@ -153,11 +256,33 @@ const api = async (p, opts) => {
   return r.json();
 };
 
-function flash(msg) {
-  const f = $('#flash');
-  f.textContent = msg; f.classList.add('on');
-  clearTimeout(flash._t);
-  flash._t = setTimeout(() => f.classList.remove('on'), 2200);
+const flash = (msg) => toast(msg);
+
+// Questions are asked in the page. A browser's confirm() can be switched
+// off (some embedded browsers do), and then it answers "no" without asking,
+// which made Apply rewrites look broken.
+const askBox = dialog($('#ask'));
+function ask(title, body, { yes = 'Go ahead', no = 'Cancel' } = {}) {
+  $('#askTitle').textContent = title;
+  $('#askBody').textContent = body;
+  $('#askYes').textContent = yes;
+  $('#askNo').textContent = no;
+  return new Promise((resolve) => {
+    // Answer from the button itself. Some embedded browsers delay a dialog's
+    // close event indefinitely, so it is only the fallback, for Escape.
+    let done = false;
+    const finish = (answer) => {
+      if (done) return;
+      done = true;
+      askBox.close();
+      resolve(answer);
+    };
+    $('#askYes').onclick = () => finish(true);
+    $('#askNo').onclick = () => finish(false);
+    $('#ask').addEventListener('close', () => finish(false), { once: true });
+    askBox.open();
+    $('#askYes').focus();
+  });
 }
 
 function applyStats(s) {
@@ -194,37 +319,44 @@ function showDrafts(d) {
 async function loadAll() {
   const d = await api('/api/ledger');
   entries = d.entries;
+  baseline = new Set(d.baseline || []);
   if (d.project?.name) { $('#title').textContent = `SlopChop · ${d.project.name}`; document.title = `SlopChop · ${d.project.name}`; }
   applyStats(d.stats);
   showDrafts(d.drafts);
-
-  const files = [...new Set(entries.flatMap((e) => e.occurrences.map((o) => o.file)))].sort();
-  const sel = $('#fFile');
-  const keep = sel.value;
-  sel.innerHTML = '<option value="">Every file</option>' +
-    files.map((f) => `<option value="${f}">${f}</option>`).join('');
-  sel.value = keep;
 
   refilter();
 }
 
 function refilter(keepId) {
-  const st = $('#fStatus').value, tier = $('#fTier').value;
-  const file = $('#fFile').value, q = $('#fText').value.trim().toLowerCase();
+  const st = $('#fStatus').value;
+  // Both ends inclusive; an empty box means no limit that way.
+  const num = (id) => { const n = parseInt($(id).value, 10); return Number.isFinite(n) && n > 0 ? n : null; };
+  const min = num('#fMin'), max = num('#fMax');
+  // A file picked from the list matches exactly; typed text matches any
+  // part of the path, so "about" finds content/about.md.
+  const file = $('#fFile').value.trim().toLowerCase(), q = $('#fText').value.trim().toLowerCase();
+  const inFile = (o) => (fileExactly() ? o.file.toLowerCase() === file : o.file.toLowerCase().includes(file));
 
   view = entries.filter((e) =>
-    (!st || e.status === st) &&
-    (!tier || e.tier === tier) &&
-    (!file || e.occurrences.some((o) => o.file === file)) &&
+    matchesStatus(e, st) &&
+    (min === null || e.words >= min) &&
+    (max === null || e.words <= max) &&
+    (!file || e.occurrences.some(inFile)) &&
     (!q || e.text.toLowerCase().includes(q)));
 
-  // Paragraphs first: they carry the most voice per unit of effort.
+  // What triage called worth rewriting first, then paragraphs: they carry
+  // the most voice per unit of effort. Untriaged sits above "fine as drafted".
   const rank = { prose: 0, helper: 1, label: 2 };
-  view.sort((a, b) => rank[a.tier] - rank[b.tier] ||
+  const urgency = (e) => ({ rewrite: 0, glance: 1, fine: 3 }[e.triage?.verdict] ?? 2);
+  view.sort((a, b) => urgency(a) - urgency(b) || rank[a.tier] - rank[b.tier] ||
     a.occurrences[0].file.localeCompare(b.occurrences[0].file) ||
     a.occurrences[0].line - b.occurrences[0].line);
 
   $('#qcount').textContent = `${view.length} shown`;
+  // A bulk action only ever touches what you can see, so a selection never
+  // outlives the filter it was made under.
+  const visible = new Set(view.map((e) => e.id));
+  selected = new Set([...selected].filter((id) => visible.has(id)));
   const i = keepId ? view.findIndex((e) => e.id === keepId) : -1;
   cursor = i >= 0 ? i : Math.min(cursor, Math.max(0, view.length - 1));
   renderQueue(); renderDetail();
@@ -234,41 +366,201 @@ function renderQueue() {
   const q = $('#queue');
   q.innerHTML = '';
   view.forEach((e, i) => {
-    const b = document.createElement('button');
-    b.setAttribute('aria-current', i === cursor);
+    const row = document.createElement('div');
+    row.className = `item${selected.has(e.id) ? ' sel' : ''}`;
+    row.setAttribute('role', 'option');
+    row.setAttribute('aria-selected', selected.has(e.id));
+    row.setAttribute('aria-current', i === cursor);
+
+    const ck = document.createElement('label'); ck.className = 'ck';
+    const box = document.createElement('input'); box.type = 'checkbox';
+    box.checked = selected.has(e.id);
+    box.setAttribute('aria-label', 'Select');
+    box.tabIndex = -1;
+    box.onclick = (ev) => { ev.preventDefault(); pick(i, ev.shiftKey ? 'range' : 'toggle'); };
+    ck.append(box);
+
+    const b = document.createElement('button'); b.className = 'open';
     const t = document.createElement('span'); t.className = 't'; t.textContent = e.text;
     const m = document.createElement('span'); m.className = 'm';
-    m.textContent = `${e.tier} · ${e.words}w · ${e.occurrences[0].file.split('/').pop()}:${e.occurrences[0].line}` +
-      (e.occurrences.length > 1 ? ` +${e.occurrences.length - 1}` : '');
+    if (e.triage && e.status === 'unreviewed') {
+      const v = document.createElement('span');
+      v.className = `v lt-tone-${TONE[e.triage.verdict]}`;
+      v.textContent = `${e.triage.verdict}${e.suggestion ? ' + suggestion' : ''} · `;
+      m.append(v);
+    }
+    m.append(`${e.tier} · ${e.words}w · ${e.occurrences[0].file.split('/').pop()}:${e.occurrences[0].line}` +
+      (e.occurrences.length > 1 ? ` +${e.occurrences.length - 1}` : ''));
     b.append(t, m);
-    b.onclick = () => { cursor = i; renderQueue(); renderDetail(); };
-    q.append(b);
+    b.onclick = (ev) => {
+      if (ev.shiftKey) return pick(i, 'range');
+      if (ev.ctrlKey || ev.metaKey) return pick(i, 'toggle');
+      cursor = i; anchor = i; renderQueue(); renderDetail();
+    };
+    row.append(ck, b);
+    q.append(row);
   });
   q.querySelector('[aria-current=true]')?.scrollIntoView({ block: 'nearest' });
+  renderSelection();
 }
+
+// ------------------------------------------------------------ selection ---
+
+/** Toggle one row, or select the run from the last row you touched. */
+function pick(i, how) {
+  const e = view[i];
+  if (!e) return;
+  if (how === 'range' && anchor !== null) {
+    const [a, b] = [Math.min(anchor, i), Math.max(anchor, i)];
+    for (let k = a; k <= b; k++) selected.add(view[k].id);
+  } else if (selected.has(e.id)) {
+    selected.delete(e.id);
+  } else {
+    selected.add(e.id);
+  }
+  anchor = i;
+  renderQueue();
+}
+
+function selectAll(on) {
+  selected = on ? new Set(view.map((e) => e.id)) : new Set();
+  renderQueue();
+}
+
+function renderSelection() {
+  const n = selected.size;
+  const all = $('#selAll');
+  all.checked = n > 0 && n === view.length;
+  all.indeterminate = n > 0 && n < view.length;
+  $('#selInfo').textContent = n ? `${n} of ${view.length} selected` : `${view.length} shown`;
+  $('#railPos').textContent = view.length ? `${cursor + 1} / ${view.length}` : '0';
+
+  const bar = $('#bulk');
+  bar.textContent = '';
+  bar.classList.toggle('on', n > 0);
+  document.body.classList.toggle('bulk', n > 0);
+  if (!n) return;
+  const words = view.filter((e) => selected.has(e.id)).reduce((w, e) => w + e.words, 0);
+  const label = document.createElement('b');
+  label.textContent = `${n} selected`;
+  const meta = document.createElement('span'); meta.className = 'lt-muted';
+  meta.textContent = `${words.toLocaleString()} words`;
+  bar.append(label, meta);
+  const act = (text, key, fn) => {
+    const btn = document.createElement('button'); btn.className = 'lt-btn lt-btn-sm';
+    btn.append(text, kbd(key));
+    btn.onclick = fn; bar.append(btn);
+  };
+  act('Already mine', 'h', () => bulk('human'));
+  act('Leave as drafted', 'a', () => bulk('ai-fine'));
+  act('Back to unreviewed', 'u', () => bulk('unreviewed'));
+  act('Clear', 'Esc', () => selectAll(false));
+}
+
+const BULK_DONE = {
+  human: (n) => `${n} marked as your words.`,
+  'ai-fine': (n) => `${n} left as drafted.`,
+  unreviewed: (n) => `${n} back in the queue.`,
+};
+
+async function bulk(status, { force = false, ids = [...selected] } = {}) {
+  if (!ids.length) return;
+  const byId = new Map(entries.map((e) => [e.id, e]));
+  const pending = ids.filter((id) => byId.get(id)?.replacement);
+  if (!force && pending.length && status !== 'rewritten' &&
+      !await ask('Throw away unapplied rewrites?',
+        `${pending.length} of these ${pending.length === 1 ? 'has a rewrite' : 'have rewrites'} not applied yet. ` +
+        `Deciding them this way throws ${pending.length === 1 ? 'it' : 'them'} away.`,
+        { yes: 'Throw away and decide', no: 'Keep them' })) return;
+
+  let r;
+  try {
+    r = await api('/api/decide-many', { method: 'POST', body: JSON.stringify({ ids, status, force }) });
+  } catch (err) {
+    if (err.body?.code !== 'checked-out') return flash(err.message);
+    const held = err.body.held;
+    const files = [...new Set(held.map((h) => h.rel))].join(', ');
+    const anyway = await ask(`${held.length} checked out in a draft`,
+      `${held.length} of these ${held.length === 1 ? 'is' : 'are'} checked out in ${files}. ` +
+      `Deciding them here orphans anything written in those draft blocks.`,
+      { yes: 'Decide them here anyway', no: 'Leave them for the draft' });
+    const heldIds = new Set(held.map((h) => h.id));
+    return bulk(status, { force: anyway, ids: anyway ? ids : ids.filter((id) => !heldIds.has(id)) });
+  }
+
+  for (const fresh of r.entries) {
+    const e = byId.get(fresh.id);
+    if (!e) continue;
+    for (const k of Object.keys(e)) if (!(k in fresh)) delete e[k];
+    Object.assign(e, fresh);
+  }
+  applyStats(r.stats);
+  // Only what was just decided: anything ticked while the request was in
+  // flight is a new selection and stays.
+  for (const id of ids) selected.delete(id);
+  flash(BULK_DONE[status](r.entries.length));
+  refilter(view[cursor]?.id);
+}
+
+// -------------------------------------------------------------- sidebar ---
+
+function setCollapsed(on, { remember = true } = {}) {
+  document.body.classList.toggle('collapsed', on);
+  const btn = $('#sideBtn');
+  btn.textContent = on ? '»' : '«';
+  btn.title = on ? 'Show the list  [' : 'Collapse the list  [';
+  btn.setAttribute('aria-label', btn.title);
+  if (remember) store.set('slopchop.collapsed', on ? '1' : '0');
+}
+// Remembered once you choose; until then, collapsed when the window is narrow.
+const chosen = store.get('slopchop.collapsed');
+setCollapsed(chosen !== null ? chosen === '1' : innerWidth < 1100, { remember: false });
 
 async function renderDetail() {
   const d = $('#detail');
   const e = view[cursor];
   if (!e) {
-    d.innerHTML = '<div class="empty">Nothing matches these filters.<br><span class="muted">Change the status filter to see decided copy.</span></div>';
+    d.innerHTML = '<div class="empty">Nothing matches these filters.<br><span class="lt-muted small">Change the status filter to see decided copy.</span></div>';
     return;
   }
 
   d.innerHTML = '';
-  const head = document.createElement('div'); head.className = 'row';
-  for (const [cls, txt] of [[e.tier, e.tier], [e.status, e.status], ['', `${e.words} words`],
-                            ['', `${e.occurrences.length} place${e.occurrences.length === 1 ? '' : 's'}`]]) {
-    const s = document.createElement('span'); s.className = `tag ${cls}`; s.textContent = txt; head.append(s);
-  }
+  const eyebrow = (text) => { const p = document.createElement('p'); p.className = 'lt-eyebrow'; p.textContent = text; return p; };
+  const head = document.createElement('div'); head.className = 'row'; head.style.gap = '6px';
+  const statusLabel = e.status === 'rewritten' && e.replacement_source === 'model' ? 'rewritten · model'
+    : e.status === 'rewritten' && e.authorship ? `rewritten · ${KIND_LABEL[e.authorship.kind]}`
+    : e.status === 'human' ? `human · ${KIND_LABEL[kindOf(e)]}`
+    : e.status;
+  head.append(tag(e.tier, TONE[e.tier]), tag(statusLabel, TONE[e.status]));
+  if (e.triage && e.status === 'unreviewed') head.append(tag(`triage: ${e.triage.verdict}`, TONE[e.triage.verdict]));
+  head.append(tag(`${e.words} words`), tag(`${e.occurrences.length} place${e.occurrences.length === 1 ? '' : 's'}`));
   d.append(head);
 
-  const bq = document.createElement('blockquote'); bq.textContent = e.text; d.append(bq);
+  const bq = document.createElement('blockquote'); bq.className = 'lt-quote';
+  bq.append(...marked(e.text, e.status === 'unreviewed' ? e.triage?.tells : null));
+  d.append(bq);
+
+  if (e.triage && e.status === 'unreviewed' && (e.triage.tells.length || e.triage.note)) {
+    if (e.triage.tells.length) {
+      const ul = document.createElement('ul'); ul.className = 'tells';
+      for (const t of e.triage.tells) {
+        const li = document.createElement('li');
+        const q = document.createElement('q'); q.textContent = t.quote;
+        const why = document.createElement('span'); why.textContent = ` ${t.why}`;
+        li.append(q, why); ul.append(li);
+      }
+      d.append(ul);
+    }
+    if (e.triage.note) {
+      const p = document.createElement('p'); p.className = 'advice';
+      p.textContent = e.triage.note; d.append(p);
+    }
+  }
 
   const heldIn = drafts.checkedOut[e.id];
   if (heldIn) {
     const held = document.createElement('div');
-    held.className = 'heldout';
+    held.className = 'lt-callout lt-tone-warning';
     const where = document.createElement('code'); where.textContent = heldIn;
     held.append('This string is checked out in ', where, '. Write it there and ' +
       'run slopchop pull. A decision here retires its marker, and whatever ' +
@@ -277,19 +569,20 @@ async function renderDetail() {
   }
 
   if (e.previous_ai_text) {
-    const h = document.createElement('h3'); h.textContent = 'Replaced draft';
-    const p = document.createElement('blockquote');
+    const p = document.createElement('blockquote'); p.className = 'lt-quote';
     p.style.opacity = '.6'; p.textContent = e.previous_ai_text;
-    d.append(h, p);
+    d.append(eyebrow('Replaced draft'), p);
   }
 
-  const h1 = document.createElement('h3'); h1.textContent = 'Your version';
   const ta = document.createElement('textarea');
-  ta.id = 'editor';
+  ta.id = 'editor'; ta.className = 'lt-field';
+  ta.setAttribute('aria-label', 'Your version');
   ta.value = e.replacement ?? e.text;
-  d.append(h1, ta);
+  const label = eyebrow('Your version');
+  label.append(' ', kbd('e'));
+  d.append(label, ta);
 
-  const warn = document.createElement('div'); warn.className = 'warn'; d.append(warn);
+  const warn = document.createElement('div'); warn.className = 'warn'; warn.setAttribute('role', 'status'); d.append(warn);
   const checkPlaceholders = () => {
     const want = [...e.text.matchAll(/\{\{?[^{}]+\}?\}|%[sd]|%\{[^}]+\}|\$\{[^}]+\}/g)].map((m) => m[0]);
     const missing = want.filter((p) => !ta.value.includes(p));
@@ -300,22 +593,57 @@ async function renderDetail() {
   ta.addEventListener('input', checkPlaceholders);
   checkPlaceholders();
 
-  const acts = document.createElement('div'); acts.className = 'actions';
-  const mk = (label, key, cls, fn) => {
-    const b = document.createElement('button');
-    if (cls) b.className = cls;
-    b.append(document.createTextNode(label));
-    if (key) { const k = document.createElement('kbd'); k.textContent = key; b.append(k); }
-    b.onclick = fn; acts.append(b); return b;
+  // Two ways to save, and the person says which: a rewrite, or small edits.
+  // Nothing is measured. Neither is offered until something has changed.
+  const base = (e.replacement ?? e.text).trim();
+  const saveBtns = [];
+  const syncSave = () => {
+    const text = ta.value.trim();
+    const off = !text || text === base;
+    for (const b of saveBtns) {
+      b.disabled = off;
+      b.title = off ? 'Change something first. Press h if these are already your words.' : '';
+    }
   };
-  mk('Save my version', '⌘↵', 'primary', () => saveRewrite(e, ta.value));
+  ta.addEventListener('input', syncSave);
+
+  const acts = document.createElement('div'); acts.className = 'actions';
+  const mk = (label, key, cls, fn, into = acts) => {
+    const b = document.createElement('button');
+    b.className = `lt-btn lt-btn-sm${cls ? ` ${cls}` : ''}`;
+    b.append(label);
+    if (key) b.append(kbd(key));
+    b.onclick = fn; into.append(b); return b;
+  };
+  saveBtns.push(
+    mk('Save as rewrite', SAVE_KEY, 'lt-btn-secondary', () => saveRewrite(e, ta.value, 'written')),
+    mk('Save as small edits', EDIT_KEY, 'lt-btn-secondary', () => saveRewrite(e, ta.value, 'edited')),
+  );
+  syncSave();
   mk('Already mine', 'h', '', () => setStatus(e, 'human'));
   mk('Leave as drafted', 'a', '', () => setStatus(e, 'ai-fine'));
-  mk('Skip', 'j', '', () => move(1));
+  mk('Skip', 'j', 'lt-btn-ghost', () => move(1));
   d.append(acts);
 
-  const h2 = document.createElement('h3'); h2.textContent = 'Where it appears';
-  d.append(h2);
+  // The suggestion sits below your own box on purpose: write first, borrow
+  // second. Taken without a single edit it is recorded as the model's.
+  if (e.suggestion && e.status === 'unreviewed') {
+    const sq = document.createElement('blockquote'); sq.className = 'lt-quote suggestion';
+    sq.textContent = e.suggestion.text;
+    d.append(eyebrow("A model's suggestion"), sq);
+    if (e.suggestion.why) {
+      const p = document.createElement('p'); p.className = 'advice';
+      p.textContent = e.suggestion.why; d.append(p);
+    }
+    const sa = document.createElement('div'); sa.className = 'actions';
+    mk('Start from this', 's', '', () => useSuggestion(e), sa);
+    const note = document.createElement('span'); note.className = 'lt-muted small';
+    note.textContent = 'Saved unedited, it counts as ai-revised, not yours.';
+    sa.append(note);
+    d.append(sa);
+  }
+
+  d.append(eyebrow('Where it appears'));
   for (const o of e.occurrences) {
     const p = document.createElement('div'); p.className = 'occ';
     p.textContent = `${o.file}:${o.line}  ·  ${o.kind}${o.at ? `  ·  ${o.at}` : ''}`;
@@ -326,7 +654,6 @@ async function renderDetail() {
   try {
     const { context } = await api(`/api/context?file=${encodeURIComponent(o0.file)}&line=${o0.line}`);
     if (context && view[cursor]?.id === e.id) {
-      const h4 = document.createElement('h3'); h4.textContent = 'In context';
       const pre = document.createElement('pre'); pre.className = 'ctx';
       context.lines.forEach((ln, i) => {
         const n = context.from + i;
@@ -334,7 +661,7 @@ async function renderDetail() {
         el.textContent = `${String(n).padStart(4)}  ${ln}\n`;
         pre.append(el);
       });
-      d.append(h4, pre);
+      d.append(eyebrow('In context'), pre);
     }
   } catch { /* context is a nicety; never block review on it */ }
 }
@@ -348,45 +675,83 @@ async function persist(e, body) {
   } catch (err) {
     if (err.body?.code !== 'checked-out') throw err;
     const where = err.body.draft.rel;
-    const ok = confirm(
-      `"${e.text.slice(0, 90)}"\n\nis checked out in ${where}.\n\n` +
-      `Deciding it here retires its marker, so anything written in that block ` +
-      `will have nowhere to go when you run slopchop pull.\n\n` +
-      `Decide it here anyway?`);
+    const ok = await ask(`Checked out in ${where}`,
+      `"${e.text.slice(0, 90)}"\n\nDeciding it here retires its marker, so anything written in that ` +
+      `block will have nowhere to go when you run slopchop pull.`,
+      { yes: 'Decide it here anyway', no: 'Leave it for the draft' });
     if (!ok) { flash(`Left for ${err.body.draft.source}.`); return false; }
     r = await api('/api/decide', {
       method: 'POST', body: JSON.stringify({ id: e.id, ...body, force: true }),
     });
   }
+  // The server's copy is the truth, including fields it dropped.
+  for (const k of Object.keys(e)) if (!(k in r.entry)) delete e[k];
   Object.assign(e, r.entry);
   applyStats(r.stats);
   return true;
 }
 
-async function saveRewrite(e, text) {
+async function saveRewrite(e, text, kind) {
   const next = text.trim();
   if (!next) return flash('Empty. Nothing saved.');
-  if (next === e.text) { await setStatus(e, 'human'); return; }
-  if (!await persist(e, { status: 'rewritten', replacement: next })) return;
-  flash('Saved. Apply rewrites to write it into source.');
+  // Saving words nobody changed is not a decision. "Already mine" is.
+  if (next === (e.replacement ?? e.text).trim() || next === e.text) {
+    return flash('Nothing changed. Press h if these are already your words.');
+  }
+  if (!await persist(e, { status: 'rewritten', replacement: next, kind })) return;
+  flash(e.replacement_source === 'model'
+    ? "Saved as the model's rewrite (ai-revised once applied). Edit it to make it yours."
+    : `Saved as ${KIND_LABEL[kind]}. Apply rewrites to write it into source.`);
   advance(e);
+}
+
+function useSuggestion(e) {
+  if (!e?.suggestion) return;
+  const ta = $('#editor');
+  ta.value = e.suggestion.text;
+  ta.dispatchEvent(new Event('input'));
+  ta.focus();
+}
+
+/** Text as nodes, with each quoted tell underlined. Only the first hit of each. */
+function marked(text, tells) {
+  const spans = [];
+  for (const t of tells || []) {
+    const at = text.indexOf(t.quote);
+    if (at === -1 || spans.some((s) => at < s.end && at + t.quote.length > s.start)) continue;
+    spans.push({ start: at, end: at + t.quote.length, why: t.why });
+  }
+  spans.sort((a, b) => a.start - b.start);
+  const out = [];
+  let i = 0;
+  for (const s of spans) {
+    if (s.start > i) out.push(document.createTextNode(text.slice(i, s.start)));
+    const m = document.createElement('mark'); m.className = 'tell';
+    m.textContent = text.slice(s.start, s.end);
+    m.title = s.why;
+    out.push(m);
+    i = s.end;
+  }
+  out.push(document.createTextNode(text.slice(i)));
+  return out;
 }
 
 async function setStatus(e, status) {
   if (!await persist(e, { status, replacement: null })) return;
-  flash(status === 'human' ? 'Marked as your words.' : 'Left as drafted.');
+  flash(BULK_DONE[status](1).replace(/^1 /, '').replace(/^./, (c) => c.toUpperCase()));
   advance(e);
 }
 
 async function applyRewrites() {
   const dry = await api('/api/apply', { method: 'POST', body: JSON.stringify({ dryRun: true }) });
   if (!dry.entries && !dry.blocked.length) return flash('Nothing to apply.');
-  let msg = `${dry.entries} entr${dry.entries === 1 ? 'y' : 'ies'} across ${dry.occurrences} occurrence${dry.occurrences === 1 ? '' : 's'} in ${dry.files.length} file${dry.files.length === 1 ? '' : 's'}.`;
+  let msg = `${dry.entries} entr${dry.entries === 1 ? 'y' : 'ies'} across ${dry.occurrences} occurrence${dry.occurrences === 1 ? '' : 's'} in ${dry.files.map((f) => f.file).join(', ')}.`;
   if (dry.blocked.length) {
     msg += `\n\n${dry.blocked.length} blocked:\n` + dry.blocked.map((b) => `• "${b.text.slice(0, 60)}"\n  ${b.reason}`).join('\n');
   }
-  msg += '\n\nThis edits source files. Write them now?';
-  if (!confirm(msg)) return;
+  msg += '\n\nThis edits source files. Review the diff before you commit.';
+  if (!dry.entries) { await ask('Nothing can be applied', msg, { yes: 'OK', no: 'Close' }); return; }
+  if (!await ask('Write your rewrites into source?', msg, { yes: 'Apply rewrites', no: 'Not yet' })) return;
   const r = await api('/api/apply', { method: 'POST', body: JSON.stringify({ dryRun: false }) });
   flash(`Applied ${r.entries}. Review the diff before committing.`);
   await loadAll();
@@ -396,7 +761,7 @@ function advance(e) {
   const showing = $('#fStatus').value;
   // When filtering the queue by status, a decided entry leaves the list and
   // the cursor should hold its place rather than jump.
-  if (showing && e.status !== showing) refilter();
+  if (showing && !matchesStatus(e, showing)) refilter();
   else { move(1); renderQueue(); }
 }
 
@@ -406,26 +771,161 @@ function move(d) {
   renderQueue(); renderDetail();
 }
 
-for (const id of ['#fStatus', '#fTier', '#fFile']) $(id).onchange = () => refilter();
+$('#fStatus').onchange = () => refilter();
+for (const id of ['#fMin', '#fMax']) $(id).oninput = () => refilter();
+// `search` covers the clear button inside a search box, which skips `input`.
 $('#fText').oninput = () => refilter();
+$('#fText').addEventListener('search', () => refilter());
+
+// ---------------------------------------------------------- file picker ---
+
+// Liquid Textile's combobox, because a native <datalist> shows nothing in
+// some browsers and cannot be styled in any of them.
+const fileBox = $('#fFile');
+
+function fileCounts() {
+  // Counted under the status filter, so the numbers match what you would see.
+  const st = $('#fStatus').value;
+  const counts = new Map();
+  for (const e of entries) {
+    if (!matchesStatus(e, st)) continue;
+    for (const f of new Set(e.occurrences.map((o) => o.file))) counts.set(f, (counts.get(f) || 0) + 1);
+  }
+  return counts;
+}
+
+const filePicker = combobox(fileBox, {
+  options: () => [...fileCounts()].sort(([a], [b]) => a.localeCompare(b)).map(([f, n]) => ({ value: f, meta: String(n) })),
+  onChoose: (f) => { $('#fFileClear').hidden = !f; refilter(); },
+  onType: (text) => { $('#fFileClear').hidden = !text; refilter(); },
+  empty: 'No file matches',
+});
+const fileExactly = () => filePicker.picked;
+
+$('#fFileClear').onclick = () => { filePicker.choose(''); fileBox.focus(); };
 $('#applyBtn').onclick = () => applyRewrites().catch((e) => flash(e.message));
+$('#selAll').onclick = (ev) => { ev.preventDefault(); selectAll(selected.size !== view.length); };
+$('#sideBtn').onclick = () => setCollapsed(!document.body.classList.contains('collapsed'));
+
+// --------------------------------------------------------------- keyboard ---
+
+const SHORTCUTS = [
+  ['j  k  ↑  ↓', 'Next and previous string'],
+  ['Shift+j  Shift+k', 'Extend the selection down or up'],
+  ['x', 'Select or unselect this string'],
+  [keys('Mod+A'), 'Select everything shown'],
+  ['e  Enter', 'Into the editor'],
+  [`${keys('Alt+J')}  ${keys('Alt+K')}`, 'Next and previous, without leaving the editor'],
+  [`${keys('Alt+H')}  ${keys('Alt+A')}  ${keys('Alt+U')}  ${keys('Alt+S')}`, 'h, a, u and s, without leaving the editor'],
+  ['Esc', 'Out of the editor or a field'],
+  [SAVE_KEY, 'Save as a rewrite'],
+  [EDIT_KEY, 'Save as small edits'],
+  ['s', "Copy the model's suggestion into the editor"],
+  ['h', 'Already mine (the selection, if there is one)'],
+  ['a', 'Leave as drafted (the selection, if there is one)'],
+  ['u', 'Back to unreviewed (the selection, if there is one)'],
+  ['[', 'Collapse or show the list'],
+  [`/  ${keys('Mod+K')}`, 'Search the copy'],
+  ['f', 'Filter by file'],
+  ['t', 'Switch between light and dark'],
+  ['Esc again', 'Clear the selection, close this'],
+  ['?', 'This list'],
+];
+
+for (const [k, what] of SHORTCUTS) {
+  const tr = $('#helpTable').insertRow();
+  tr.insertCell().textContent = k;
+  tr.insertCell().textContent = what;
+}
+// A native <dialog>: the browser holds focus inside it and closes it on Escape.
+const help = dialog($('#help'));
+$('#helpBtn').onclick = () => help.open();
+
+/** h, a, u: the selection when there is one, otherwise the current string. */
+function decideKey(status) {
+  if (selected.size) return bulk(status);
+  const e = view[cursor];
+  if (e) setStatus(e, status);
+}
+
+/** The cursor in "Your version", at the end of what is there. */
+function focusEditor() {
+  const ta = $('#editor');
+  if (!ta) return;
+  ta.focus({ preventScroll: true });
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+}
 
 addEventListener('keydown', (ev) => {
+  if (help.isOpen || askBox.isOpen) return;
+  const mod = ev.metaKey || ev.ctrlKey;
   const editing = document.activeElement?.tagName === 'TEXTAREA';
-  if ((ev.metaKey || ev.ctrlKey) && ev.key === 'Enter' && editing) {
-    ev.preventDefault(); saveRewrite(view[cursor], $('#editor').value); return;
+  const key = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
+
+  // The cursor never moves into the editor by itself: the single keys below
+  // are what you review with. Once you are in it (e, Enter, a click), Alt
+  // plus the same letters still move and decide without leaving it.
+  // ev.code, because on a Mac Option+J arrives as the character ∆.
+  if (ev.altKey && !mod && !ev.shiftKey) {
+    const alt = { KeyJ: 'next', ArrowDown: 'next', KeyK: 'prev', ArrowUp: 'prev', KeyH: 'human', KeyA: 'ai-fine', KeyU: 'unreviewed', KeyS: 'suggest' }[ev.code];
+    if (alt) {
+      ev.preventDefault();
+      const stay = editing;
+      if (alt === 'next') move(1);
+      else if (alt === 'prev') move(-1);
+      else if (alt === 'suggest') { if (view[cursor]?.suggestion) useSuggestion(view[cursor]); }
+      else decideKey(alt);
+      // Moving re-renders the pane; whoever was writing keeps writing.
+      if (stay && (alt === 'next' || alt === 'prev' || alt === 'suggest')) focusEditor();
+      return;
+    }
   }
-  if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 'k') {
-    ev.preventDefault(); $('#fText').focus(); return;
+
+  if (mod && key === 'Enter' && editing) {
+    ev.preventDefault(); saveRewrite(view[cursor], $('#editor').value, ev.shiftKey ? 'edited' : 'written'); return;
   }
-  if (ev.key === 'Escape') { document.activeElement?.blur?.(); return; }
-  if (editing || ev.target.tagName === 'INPUT' || ev.target.tagName === 'SELECT') return;
-  if (ev.key === 'j' || ev.key === 'ArrowDown') { ev.preventDefault(); move(1); }
-  else if (ev.key === 'k' || ev.key === 'ArrowUp') { ev.preventDefault(); move(-1); }
-  else if (ev.key === 'e' || ev.key === 'Enter') { ev.preventDefault(); $('#editor')?.focus(); }
-  else if (ev.key === 'h') { ev.preventDefault(); setStatus(view[cursor], 'human'); }
-  else if (ev.key === 'a') { ev.preventDefault(); setStatus(view[cursor], 'ai-fine'); }
+  if (mod && key === 's') { ev.preventDefault(); return; }   // never the browser's Save Page
+  if (mod && key === 'k') { ev.preventDefault(); $('#fText').focus(); $('#fText').select(); return; }
+  if (key === 'Escape') {
+    // Leave the field as it is: a search box would otherwise clear itself.
+    if (isTyping(document.activeElement)) {
+      ev.preventDefault();
+      document.activeElement.blur();
+    }
+    else if (selected.size) selectAll(false);
+    return;
+  }
+  if (isTyping(ev.target) || ev.altKey) return;
+  if (mod && key === 'a') { ev.preventDefault(); selectAll(true); return; }
+  if (mod) return;
+
+  if (key === '?' || (key === '/' && ev.shiftKey)) { ev.preventDefault(); help.open(); return; }
+
+  if ((key === 'j' || key === 'ArrowDown') && ev.shiftKey) { ev.preventDefault(); extend(1); }
+  else if ((key === 'k' || key === 'ArrowUp') && ev.shiftKey) { ev.preventDefault(); extend(-1); }
+  else if (key === 'j' || key === 'ArrowDown') { ev.preventDefault(); move(1); }
+  else if (key === 'k' || key === 'ArrowUp') { ev.preventDefault(); move(-1); }
+  else if (key === 'x') { ev.preventDefault(); pick(cursor, 'toggle'); }
+  else if (key === 'e' || (key === 'Enter' && ev.target.tagName !== 'BUTTON')) { ev.preventDefault(); focusEditor(); }
+  else if (key === 'h') { ev.preventDefault(); decideKey('human'); }
+  else if (key === 'a') { ev.preventDefault(); decideKey('ai-fine'); }
+  else if (key === 'u') { ev.preventDefault(); decideKey('unreviewed'); }
+  else if (key === 's' && view[cursor]?.suggestion) { ev.preventDefault(); useSuggestion(view[cursor]); }
+  else if (key === '[') { ev.preventDefault(); setCollapsed(!document.body.classList.contains('collapsed')); }
+  else if (key === '/') { ev.preventDefault(); $('#fText').focus(); }
+  else if (key === 'f') { ev.preventDefault(); fileBox.focus(); }
+  else if (key === 't') { ev.preventDefault(); theme.toggle(); }
 });
+
+/** Shift+j / Shift+k: carry the selection along as the cursor moves. */
+function extend(d) {
+  if (!view.length) return;
+  selected.add(view[cursor].id);
+  cursor = Math.max(0, Math.min(view.length - 1, cursor + d));
+  selected.add(view[cursor].id);
+  anchor = cursor;
+  renderQueue(); renderDetail();
+}
 
 loadAll().catch((e) => { $('#detail').innerHTML = `<div class="empty">${e.message}</div>`; });
 </script>

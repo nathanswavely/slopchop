@@ -8,7 +8,7 @@ import test from 'node:test';
 import {
   commentableLines, splitUnifiedDiff, planComments, publish, summaryBody,
 } from '../src/github.js';
-import { previewLines } from '../src/writeback.js';
+import { previewLines, writeback } from '../src/writeback.js';
 import { sync, load, save, gate, decide, merge } from '../src/ledger.js';
 import { idFor } from '../src/extract/index.js';
 import { withProject, read } from './helpers.js';
@@ -147,6 +147,42 @@ test('a rewrite committed as a suggestion is recorded as the person\'s, and pass
     assert.equal(fresh.retired.length, 0);
     assert.equal(gate(onDisk, fresh).unledgered.length, 0);
   });
+});
+
+test('a rewrite that splits a paragraph in two keeps both halves as the person\'s', async () => {
+  await withProject({ 'a.md': '# Title\n\nOne long drafted paragraph that tries to say two things at once and says neither.\n' }, (project, dir) => {
+    const { ledger } = sync(project, load(project));
+    ledger.baseline = ledger.entries.map((e) => e.id);
+    const para = ledger.entries.find((e) => e.text.startsWith('One long'));
+    decide(para, { status: 'rewritten', replacement: 'The first thing, said plainly.\n\nThe second thing, on its own.' });
+
+    // By apply.
+    writeback(project, ledger, { apply: true });
+    save(project, ledger);
+    assert.match(read(dir, 'a.md'), /plainly\.\n\nThe second/);
+    const onDisk = load(project);
+    const { ledger: fresh, added } = sync(project, onDisk);
+    assert.equal(added.length, 0);
+    const halves = fresh.entries.filter((e) => e.text.startsWith('The '));
+    assert.deepEqual(halves.map((e) => e.status), ['human', 'human']);
+    assert.ok(halves.every((e) => e.previous_ai_text.startsWith('One long')));
+    assert.equal(fresh.retired.length, 0);
+    assert.equal(gate(onDisk, fresh).unledgered.length, 0);
+
+    // And it holds on the sync after that.
+    save(project, fresh);
+    const again = sync(project, load(project)).ledger;
+    assert.deepEqual(again.entries.filter((e) => e.text.startsWith('The ')).map((e) => e.status), ['human', 'human']);
+  });
+});
+
+test('a split rewrite committed as a suggestion lands both halves', () => {
+  const draft = { ...entry('One long drafted paragraph.', 'a.md', 3), status: 'rewritten', replacement: 'First half.\n\nSecond half.' };
+  const { ledger, added, landed } = merge({ version: 1, retired: [], entries: [draft] },
+    [entry('First half.', 'a.md', 3), entry('Second half.', 'a.md', 5)]);
+  assert.equal(added.length, 0);
+  assert.equal(landed.length, 1);
+  assert.deepEqual(ledger.entries.map((e) => e.status), ['human', 'human']);
 });
 
 test('a rewrite that landed in one place of two leaves the other pending', () => {

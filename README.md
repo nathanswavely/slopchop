@@ -1,31 +1,32 @@
 # SlopChop
 
-SlopChop is copy review for a site or app you built with AI. It finds every string a visitor can read, puts the paragraphs in front of you one at a time so you can write them yourself, and lets you wave through the labels and error messages that were never going to sound like anyone. Each decision is recorded in a file next to the code, and a CI check keeps the next AI session from quietly undoing your work.
+SlopChop is copy review for a site or app you are building with AI coding tools. It finds every string a visitor can read, puts the paragraphs in front of you one at a time so you can either rewrite them or allow them as drafted. Each decision is recorded in a file next to the code, and a CI check keeps the next AI session from quietly undoing your work.
 
 ## Why this exists
 
-Patchwork, the community platform I run, was built with a lot of AI assistance, and most of its copy was drafted the same way. The build went quickly, and most of the words on the site were not mine. There were about two thousand strings, so "I will go through and fix it sometime" was never going to happen. What I needed was a way to find the couple hundred paragraphs that carried the voice, skip the labels that did not, and keep a record so I would not have to make the same call twice. This is that tool with the Patchwork-specific parts turned into configuration.
+I've been building a lot with AI. AI code doesnt bother me, but AI copy gives me the ick. Even as the models get better, there is something that irks me about reading words that have my name on them but weren't written by me. But it's very difficult to parse through the copy and edit it without going back to pre-ai coding workflows. What I needed was a way to parse through the couple hundred paragraphs that need rewriting, skip the labels that did not, and keep a record so I would not have to make the same call twice. As an added bonus, open source projects have a transparent way of communicating to users which copy is human authored and which is not.
 
-It is not an AI detector. It records what you decided, and it makes deciding fast.
+It is not built to be an AI detector or a "policing" service. It is self-reported and records what the reviewer decides. And, most importantly, it makes deciding possible, efficient, and simple.
 
 ## How it works
 
 `slopchop sync` reads the files named in `.slopchop.json` and pulls out every string a person could read: paragraphs in Markdown, text between tags, `placeholder` and `alt` attributes, message catalog values, sentence-shaped strings in your JavaScript. Identical text in twelve places becomes one entry, so you decide "Save changes" once. The result is `copy/ledger.json`, with every entry marked unreviewed.
 
-`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `⌘↵` saves what you wrote.
+`slopchop review` opens a page on localhost that allows you to review your repo's copy and clear it for release, either by rewriting it in your voice, marking it as already yours, or leaving as "ai." Built in keyboard shortcuts make the process smooth.
 
 `slopchop apply` writes your versions into the source files. It is a dry run until you pass `--apply`, and it edits nothing unless it finds the exact original text where the ledger says it should be. Run it on a clean tree and read the diff.
 
 `slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it.
 
-## The four decisions
+## The decisions
 
 | Status | Means |
 |---|---|
-| `unreviewed` | A model drafted it and nobody has looked. The default. |
+| `unreviewed` | A model drafted it and nobody has reviewed. The default. |
 | `rewritten` | You wrote a replacement and `apply` has not written it yet. |
 | `human` | The text in source is your words. |
 | `ai-fine` | You looked, and it is fine as drafted. |
+| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |
 
 `ai-fine` is the one that makes this bearable. "Failed to load comments" does not need your voice, and neither do most of the labels around it. Marking them is one keystroke each, or one command for a whole file. The report counts them separately from `human`, so the number you end up with is honest about which is which.
 
@@ -54,9 +55,27 @@ Each string sits between `<!-- copy:ID -->` markers. Write between them. A block
 
 A draft is a checkout. While one exists, decide that file in the draft and not in the review page, because the page can rewrite a string out from under a marker and then your writing has nowhere to land. The page refuses a decision on a checked-out string and names the file. `pull` never records a block you did not touch. If the source moves anyway, `pull --redraft` saves any stranded writing to a file beside the draft and cuts a fresh one. `SLOPCHOP_DRAFTS_DIR` points the drafts at a private repo, so the half-finished sentences stay out of a public one.
 
+## A first pass from a model
+
+Two hundred paragraphs is still a lot to sort by hand. `triage` sends the unreviewed strings to Claude on your own key and asks which ones carry your voice and read as drafted, which are worth a glance, and which nobody needs to touch. It quotes the phrases that gave each one away. Nothing changes status; the review page just puts the rewrite pile first and underlines the tells.
+
+```sh
+export ANTHROPIC_API_KEY=...                       # yours; SlopChop has no account
+slopchop triage                                    # dry run: what would be sent, and how much
+slopchop triage --apply
+slopchop decide --triage fine --status ai-fine     # the model's "fine" pile, if you agree
+slopchop suggest --apply                           # rewrites to start from, for the rewrite pile
+```
+
+Labels are skipped unless you ask for them with `--tier label`. `--file`, `--limit`, and `--id` narrow either command, and running one again only sends what has no answer yet.
+
+A suggestion sits under your own box in the review page, not in it. `s` copies it in when you want a starting point. If you save it without changing anything, it lands as `ai-revised`, and the report and badge count it apart from `human`. Change one word and it is yours, which is the point: the suggestion is there to get you unstuck, not to finish the job.
+
+It uses `claude-opus-5-5` at medium effort unless `.slopchop.json` says otherwise (`"model"`, `"effort"`). Point `"voice"` at a file of notes on how you write, and both commands read it.
+
 ## Keeping it that way
 
-Rewriting two thousand strings once is a finite job. Keeping them rewritten is not, because the next AI session adds forty more and the site slides back without anyone noticing.
+It would be rough if you had to re-label already reviewed strings.
 
 So the first `sync` stamps a baseline: every unreviewed string at that moment is accepted as existing debt, and `check` fails only when a string that is not in the baseline shows up undecided. You can leave the backlog alone for a month and CI stays green. New copy has to be looked at before it merges. When the backlog reaches zero, set `"strict": true` in the ledger and the check fails on any unreviewed string at all.
 
@@ -117,9 +136,9 @@ Writeback refuses anything that would break the file it lands in (a `{` in JSX t
 
 ## What it does not do
 
-- It does not send your text anywhere it was not already. There is no server, no account, and no model call. The review page is a local process reading local files, and the pull request comments go to the same GitHub that holds the code.
+- It does not send your text anywhere you did not ask it to. There is no server and no account. The review page is a local process reading local files, the pull request comments go to the same GitHub that holds the code, and the only model calls are `triage` and `suggest`, on your key, after a dry run.
 - It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.
-- It does not write for you. A first pass that flags the worst AI tells and suggests a direction is coming, and it will run on your own key. A suggestion you accept without editing will be recorded as its own status, so `human` only ever means a person typed it.
+- It does not write for you. It will suggest, if you ask, but a suggestion you take without editing is recorded as `ai-revised`, so `human` only ever means a person typed it.
 
 ## Report and badge
 
@@ -131,6 +150,6 @@ writes `copy/REPORT.md` with the counts by status and tier, the scope and what w
 
 ## Next
 
-A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves.
+A review page that is more purpose built than just a code review.
 
 To start, run `npx slopchop init` in the repo, then `sync`. The first sync stamps the baseline, so the check passes from the beginning. After that, open `slopchop review` and start with the paragraphs.

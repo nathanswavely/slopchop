@@ -18,6 +18,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { collapse, idFor, BLOCK_KINDS } from './extract/index.js';
+import { decide } from './ledger.js';
 
 // What each block looked like at the moment it was drafted, kept beside the
 // drafts themselves so it travels with them into a private repo.
@@ -305,8 +306,8 @@ export function pullDrafts(project, ledger) {
         continue;
       }
 
-      if (text === '@mine') { e.status = 'human'; e.replacement = null; r.mine++; continue; }
-      if (text === '@fine') { e.status = 'ai-fine'; e.replacement = null; r.fine++; continue; }
+      if (text === '@mine') { decide(e, { status: 'human', replacement: null }); r.mine++; continue; }
+      if (text === '@fine') { decide(e, { status: 'ai-fine', replacement: null }); r.fine++; continue; }
 
       // A block nobody touched carries no decision, so it must not make one,
       // even when the ledger has since moved and the two no longer agree.
@@ -316,8 +317,7 @@ export function pullDrafts(project, ledger) {
       if (!next) { r.unchanged++; continue; }
       if (next === normalize(e.text, e)) { r.unchanged++; continue; }
 
-      e.status = 'rewritten';
-      e.replacement = next;
+      decide(e, { status: 'rewritten', replacement: next });
       r.recorded++;
     }
   }

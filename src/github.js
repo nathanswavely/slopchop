@@ -131,7 +131,9 @@ function suggestionBody(change) {
   return [
     // The text is in the marker, so a rewrite edited later is offered again.
     `<!-- slopchop:rewrite:${change.ids.join(',')}:${idFor(after)} -->`,
-    'Your rewrite from the ledger, not applied yet. Committing this suggestion puts it in the source, and the next `slopchop sync` records it as yours.',
+    change.model
+      ? "A model's rewrite you accepted, not applied yet. Committing this suggestion puts it in the source, and the next `slopchop sync` records it as ai-revised."
+      : 'Your rewrite from the ledger, not applied yet. Committing this suggestion puts it in the source, and the next `slopchop sync` records it as yours.',
     '',
     `${fence}suggestion`,
     after,

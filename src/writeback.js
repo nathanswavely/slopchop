@@ -166,7 +166,10 @@ function planEdits(project, ledger) {
           reason = `source drifted: no exact match for this text in ${file} (re-run sync)`;
           break;
         }
-        edits.push({ file, id: entry.id, start: at, end: at + occ.raw.length, value: enc.value });
+        edits.push({
+          file, id: entry.id, model: entry.replacement_source === 'model',
+          start: at, end: at + occ.raw.length, value: enc.value,
+        });
         cursor = at + occ.raw.length;
       }
       if (reason) break;
@@ -225,6 +228,7 @@ export function previewLines(project, ledger) {
       changes.push({
         file,
         ids: [...new Set(g.edits.map((e) => e.id))],
+        model: g.edits.some((e) => e.model),
         startLine: g.startLine,
         endLine: g.endLine,
         before: content.slice(from, to),

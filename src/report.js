@@ -8,7 +8,10 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { stats as statsOf } from './ledger.js';
+import { stats as statsOf, authorshipOf } from './ledger.js';
+
+/** The badge's "human": rewritten by a person, or theirs to begin with. Edited is reported, not counted. */
+const humanShare = (s) => (s.total ? (s.byAuthorship.written + s.byAuthorship.claimed) / s.total : 0);
 
 const pct = (n, d) => (d === 0 ? '100%' : `${Math.round((n / d) * 100)}%`);
 
@@ -24,8 +27,14 @@ export function renderReport(project, ledger) {
   L.push('');
   L.push('| | strings | words |');
   L.push('|---|---:|---:|');
-  L.push(`| Written by a person | ${s.byStatus.human} | ${s.wordsByStatus.human.toLocaleString()} |`);
+  const a = s.byAuthorship, aw = s.wordsByAuthorship;
+  L.push(`| Written by a person | ${a.written} | ${aw.written.toLocaleString()} |`);
+  L.push(`| A person's words from the start | ${a.claimed} | ${aw.claimed.toLocaleString()} |`);
+  L.push(`| Drafted by a model, edited by a person | ${a.edited} | ${aw.edited.toLocaleString()} |`);
   L.push(`| Left as drafted, deliberately | ${s.byStatus['ai-fine']} | ${s.wordsByStatus['ai-fine'].toLocaleString()} |`);
+  if (s.byStatus['ai-revised']) {
+    L.push(`| Rewritten by a model, accepted unedited | ${s.byStatus['ai-revised']} | ${s.wordsByStatus['ai-revised'].toLocaleString()} |`);
+  }
   L.push(`| Not yet reviewed | ${s.byStatus.unreviewed} | ${s.wordsByStatus.unreviewed.toLocaleString()} |`);
   if (s.byStatus.rewritten) {
     L.push(`| Written, not yet applied to source | ${s.byStatus.rewritten} | ${s.wordsByStatus.rewritten.toLocaleString()} |`);
@@ -33,7 +42,10 @@ export function renderReport(project, ledger) {
   L.push(`| **Total** | **${s.total}** | **${s.words.toLocaleString()}** |`);
   L.push('');
   L.push(`Human-authored or deliberately accepted: **${pct(s.done, s.total)}** of strings.`);
-  L.push(`Written by a person: **${pct(s.byStatus.human, s.total)}** of strings, **${pct(s.wordsByStatus.human, s.words)}** of words.`);
+  L.push(`A person's words: **${pct(a.written + a.claimed, s.total)}** of strings, **${pct(aw.written + aw.claimed, s.words)}** of words.`);
+  L.push(`Edited from a model's draft: **${pct(a.edited, s.total)}** of strings, counted apart, because an edit leaves most of the model's words in place.`);
+  L.push('');
+  L.push(`Whether a replacement was a rewrite or small edits is what the person said when they saved it. SlopChop records it and does not check it.`);
   L.push('');
   L.push('## By tier');
   L.push('');
@@ -66,12 +78,14 @@ export function renderReport(project, ledger) {
   if (!replaced.length) {
     L.push('_None yet._');
   } else {
-    L.push("Where a model's draft was replaced by a person, both are kept.");
+    L.push("Where a model's draft was replaced, both are kept. A replacement a model wrote and a person accepted unedited is marked as such.");
     L.push('');
     for (const e of replaced.slice(0, 400)) {
       L.push(`- \`${e.occurrences[0]?.file || '—'}\``);
       L.push(`  - draft: ${JSON.stringify(e.previous_ai_text)}`);
-      L.push(`  - now: ${JSON.stringify(e.text)}`);
+      const how = e.status === 'ai-revised' ? ' (model rewrite, accepted)'
+        : e.status === 'human' && authorshipOf(e).kind === 'edited' ? ' (edited)' : '';
+      L.push(`  - now${how}: ${JSON.stringify(e.text)}`);
     }
   }
   L.push('');
@@ -82,7 +96,7 @@ export function renderReport(project, ledger) {
 export function badge(ledger) {
   const s = statsOf(ledger);
   const decided = s.total ? s.done / s.total : 1;
-  const human = s.total ? s.byStatus.human / s.total : 0;
+  const human = humanShare(s);
   return {
     schemaVersion: 1,
     label: 'copy',
