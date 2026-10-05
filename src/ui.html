@@ -182,6 +182,15 @@
   <div id="detail"><div class="empty">Loading…</div></div>
 </main>
 
+<dialog class="lt-dialog" id="ask" aria-labelledby="askTitle">
+  <strong id="askTitle"></strong>
+  <div id="askBody" class="small" style="margin:8px 0 14px; white-space:pre-line"></div>
+  <div class="actions">
+    <button type="button" class="lt-btn lt-btn-sm lt-btn-primary" id="askYes"></button>
+    <button type="button" class="lt-btn lt-btn-sm" id="askNo"></button>
+  </div>
+</dialog>
+
 <dialog class="lt-dialog" id="help" aria-labelledby="helpTitle">
   <strong id="helpTitle">Keyboard</strong>
   <table id="helpTable"></table>
@@ -248,6 +257,33 @@ const api = async (p, opts) => {
 };
 
 const flash = (msg) => toast(msg);
+
+// Questions are asked in the page. A browser's confirm() can be switched
+// off (some embedded browsers do), and then it answers "no" without asking,
+// which made Apply rewrites look broken.
+const askBox = dialog($('#ask'));
+function ask(title, body, { yes = 'Go ahead', no = 'Cancel' } = {}) {
+  $('#askTitle').textContent = title;
+  $('#askBody').textContent = body;
+  $('#askYes').textContent = yes;
+  $('#askNo').textContent = no;
+  return new Promise((resolve) => {
+    // Answer from the button itself. Some embedded browsers delay a dialog's
+    // close event indefinitely, so it is only the fallback, for Escape.
+    let done = false;
+    const finish = (answer) => {
+      if (done) return;
+      done = true;
+      askBox.close();
+      resolve(answer);
+    };
+    $('#askYes').onclick = () => finish(true);
+    $('#askNo').onclick = () => finish(false);
+    $('#ask').addEventListener('close', () => finish(false), { once: true });
+    askBox.open();
+    $('#askYes').focus();
+  });
+}
 
 function applyStats(s) {
   statsData = s;
@@ -432,8 +468,10 @@ async function bulk(status, { force = false, ids = [...selected] } = {}) {
   const byId = new Map(entries.map((e) => [e.id, e]));
   const pending = ids.filter((id) => byId.get(id)?.replacement);
   if (!force && pending.length && status !== 'rewritten' &&
-      !confirm(`${pending.length} of these ${pending.length === 1 ? 'has a rewrite' : 'have rewrites'} not applied yet. ` +
-               `This throws ${pending.length === 1 ? 'it' : 'them'} away. Go ahead?`)) return;
+      !await ask('Throw away unapplied rewrites?',
+        `${pending.length} of these ${pending.length === 1 ? 'has a rewrite' : 'have rewrites'} not applied yet. ` +
+        `Deciding them this way throws ${pending.length === 1 ? 'it' : 'them'} away.`,
+        { yes: 'Throw away and decide', no: 'Keep them' })) return;
 
   let r;
   try {
@@ -442,10 +480,10 @@ async function bulk(status, { force = false, ids = [...selected] } = {}) {
     if (err.body?.code !== 'checked-out') return flash(err.message);
     const held = err.body.held;
     const files = [...new Set(held.map((h) => h.rel))].join(', ');
-    const anyway = confirm(
-      `${held.length} of these ${held.length === 1 ? 'is' : 'are'} checked out in ${files}.\n\n` +
-      `OK decides them here anyway, which orphans anything written in those draft blocks.\n` +
-      `Cancel leaves them for the draft and decides the rest.`);
+    const anyway = await ask(`${held.length} checked out in a draft`,
+      `${held.length} of these ${held.length === 1 ? 'is' : 'are'} checked out in ${files}. ` +
+      `Deciding them here orphans anything written in those draft blocks.`,
+      { yes: 'Decide them here anyway', no: 'Leave them for the draft' });
     const heldIds = new Set(held.map((h) => h.id));
     return bulk(status, { force: anyway, ids: anyway ? ids : ids.filter((id) => !heldIds.has(id)) });
   }
@@ -637,11 +675,10 @@ async function persist(e, body) {
   } catch (err) {
     if (err.body?.code !== 'checked-out') throw err;
     const where = err.body.draft.rel;
-    const ok = confirm(
-      `"${e.text.slice(0, 90)}"\n\nis checked out in ${where}.\n\n` +
-      `Deciding it here retires its marker, so anything written in that block ` +
-      `will have nowhere to go when you run slopchop pull.\n\n` +
-      `Decide it here anyway?`);
+    const ok = await ask(`Checked out in ${where}`,
+      `"${e.text.slice(0, 90)}"\n\nDeciding it here retires its marker, so anything written in that ` +
+      `block will have nowhere to go when you run slopchop pull.`,
+      { yes: 'Decide it here anyway', no: 'Leave it for the draft' });
     if (!ok) { flash(`Left for ${err.body.draft.source}.`); return false; }
     r = await api('/api/decide', {
       method: 'POST', body: JSON.stringify({ id: e.id, ...body, force: true }),
@@ -708,12 +745,13 @@ async function setStatus(e, status) {
 async function applyRewrites() {
   const dry = await api('/api/apply', { method: 'POST', body: JSON.stringify({ dryRun: true }) });
   if (!dry.entries && !dry.blocked.length) return flash('Nothing to apply.');
-  let msg = `${dry.entries} entr${dry.entries === 1 ? 'y' : 'ies'} across ${dry.occurrences} occurrence${dry.occurrences === 1 ? '' : 's'} in ${dry.files.length} file${dry.files.length === 1 ? '' : 's'}.`;
+  let msg = `${dry.entries} entr${dry.entries === 1 ? 'y' : 'ies'} across ${dry.occurrences} occurrence${dry.occurrences === 1 ? '' : 's'} in ${dry.files.map((f) => f.file).join(', ')}.`;
   if (dry.blocked.length) {
     msg += `\n\n${dry.blocked.length} blocked:\n` + dry.blocked.map((b) => `• "${b.text.slice(0, 60)}"\n  ${b.reason}`).join('\n');
   }
-  msg += '\n\nThis edits source files. Write them now?';
-  if (!confirm(msg)) return;
+  msg += '\n\nThis edits source files. Review the diff before you commit.';
+  if (!dry.entries) { await ask('Nothing can be applied', msg, { yes: 'OK', no: 'Close' }); return; }
+  if (!await ask('Write your rewrites into source?', msg, { yes: 'Apply rewrites', no: 'Not yet' })) return;
   const r = await api('/api/apply', { method: 'POST', body: JSON.stringify({ dryRun: false }) });
   flash(`Applied ${r.entries}. Review the diff before committing.`);
   await loadAll();
@@ -819,7 +857,7 @@ function focusEditor() {
 }
 
 addEventListener('keydown', (ev) => {
-  if (help.isOpen) return;
+  if (help.isOpen || askBox.isOpen) return;
   const mod = ev.metaKey || ev.ctrlKey;
   const editing = document.activeElement?.tagName === 'TEXTAREA';
   const key = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
