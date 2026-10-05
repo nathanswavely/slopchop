@@ -10,12 +10,15 @@
 //   apply     write approved replacements into source (dry run by default)
 //   check     CI gate: fails on copy that entered source unreviewed
 //   comment   explain the gate on a pull request, with rewrites as suggestions
+//   triage    ask a model which strings are worth your writing time (your key)
+//   suggest   ask a model for rewrites to start from (your key)
 //   report    render the ledger as a publishable summary, plus a badge
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadProject, proposeConfig, CONFIG_NAME } from './config.js';
-import { load, save, sync, stats, gate, STATUSES } from './ledger.js';
+import { load, save, sync, stats, gate, STATUSES, CHOOSABLE } from './ledger.js';
+import { select, triage, suggest, settings, VERDICTS } from './advice.js';
 import { writeback, previewLines } from './writeback.js';
 import { writeReport } from './report.js';
 import {
@@ -259,18 +262,23 @@ function cmdDecide() {
   const status = val('status');
   const file = val('file');
   const tier = val('tier');
+  const verdict = val('triage');
   const note = val('note');
   const maxWords = val('max-words') ? Number(val('max-words')) : null;
   if (maxWords !== null && !Number.isInteger(maxWords)) {
     console.error('--max-words takes a whole number');
     process.exit(1);
   }
-  if (!STATUSES.includes(status)) {
-    console.error(`--status must be one of: ${STATUSES.join(', ')}`);
+  if (!CHOOSABLE.includes(status)) {
+    console.error(`--status must be one of: ${CHOOSABLE.join(', ')}`);
     process.exit(1);
   }
-  if (!file && !tier && maxWords === null) {
-    console.error('refusing to touch every entry. Pass --file, --tier and/or --max-words');
+  if (verdict && !VERDICTS.includes(verdict)) {
+    console.error(`--triage must be one of: ${VERDICTS.join(', ')}`);
+    process.exit(1);
+  }
+  if (!file && !tier && !verdict && maxWords === null) {
+    console.error('refusing to touch every entry. Pass --file, --tier, --triage and/or --max-words');
     process.exit(1);
   }
 
@@ -278,6 +286,7 @@ function cmdDecide() {
   const hit = ledger.entries.filter((e) =>
     (!file || e.occurrences.some((o) => o.file === file)) &&
     (!tier || e.tier === tier) &&
+    (!verdict || e.triage?.verdict === verdict) &&
     (maxWords === null || e.words < maxWords) &&
     (flag('force') || e.status === 'unreviewed'));
 
@@ -488,10 +497,80 @@ async function cmdReview() {
 
 // ------------------------------------------------------------------------ ---
 
+// ---------------------------------------------------------- triage/suggest ---
+
+// The only commands that send text anywhere, and only to Anthropic, under
+// the key in ANTHROPIC_API_KEY. Dry runs until --apply, like everything else
+// that costs something.
+async function cmdAdvise(mode) {
+  const p = project();
+  const ledger = load(p);
+  const limit = val('limit') ? Number(val('limit')) : null;
+  if (limit !== null && !(Number.isInteger(limit) && limit > 0)) {
+    console.error('--limit takes a positive whole number');
+    process.exit(1);
+  }
+  const picked = select(ledger, mode, { file: val('file'), tier: val('tier'), id: val('id'), limit, redo: flag('redo') });
+  const { model, effort } = settings(p, { model: val('model'), effort: val('effort') });
+
+  if (!picked.length) {
+    if (mode === 'suggest' && !val('file') && !val('tier') && !val('id')) {
+      console.log('Nothing triaged as rewrite is waiting for a suggestion.');
+      console.log(`${DIM}Run slopchop triage first, or narrow with --file, --tier or --id.${OFF}`);
+    } else {
+      console.log('Nothing to send. Every matching unreviewed string already has an answer (--redo asks again).');
+    }
+    return;
+  }
+
+  const words = picked.reduce((n, e) => n + e.words, 0);
+  const size = val('batch') ? Number(val('batch')) : mode === 'triage' ? 20 : 8;
+  const requests = Math.ceil(picked.length / size);
+  console.log(`${picked.length} string${picked.length === 1 ? '' : 's'} · ${words.toLocaleString()} words · about ${requests} request${requests === 1 ? '' : 's'} to ${model} (effort ${effort})`);
+  for (const e of picked.slice(0, 5)) console.log(`  ${DIM}${e.text.replace(/\s+/g, ' ').slice(0, 76)}${OFF}`);
+  if (picked.length > 5) console.log(`  ${DIM}…and ${picked.length - 5} more${OFF}`);
+
+  if (!flag('apply')) {
+    console.log(`\n${YEL}dry run${OFF}. The text of these strings goes to Anthropic under your ANTHROPIC_API_KEY.`);
+    console.log(`Re-run with ${GREEN}--apply${OFF} to send it.`);
+    return;
+  }
+
+  let done = 0;
+  const onBatch = () => { save(p, ledger); done++; if (TTY) process.stdout.write(`\r  ${done}/${requests} batches`); };
+  const opts = { model, effort, size, onBatch };
+  let r;
+  try { r = mode === 'triage' ? await triage(p, picked, opts) : await suggest(p, picked, opts); }
+  catch (e) { console.error(`${RED}${e.message}${OFF}`); process.exit(1); }
+  save(p, ledger);
+  if (TTY) process.stdout.write('\n');
+
+  if (mode === 'triage') {
+    console.log(`${GREEN}${r.rewrite} worth writing yourself${OFF} · ${r.glance} worth a glance · ${r.fine} fine as drafted`);
+  } else {
+    console.log(`${GREEN}${r.suggested} suggestion${r.suggested === 1 ? '' : 's'}${OFF}${r.unchanged ? ` · ${r.unchanged} left as they were` : ''}`);
+    for (const x of r.refused.slice(0, 10)) console.log(`  ${YEL}dropped${OFF} "${x.entry.text.slice(0, 50)}…": ${x.reason}`);
+  }
+  if (r.failed.length) {
+    const reasons = [...new Set(r.failed.map((f) => f.reason))];
+    console.log(`${RED}${r.failed.length} got no answer:${OFF} ${reasons.slice(0, 3).join('; ')}`);
+    console.log(`${DIM}Run the same command again to retry just those.${OFF}`);
+  }
+
+  if (mode === 'triage') {
+    console.log(`\nNext: ${GREEN}slopchop review${OFF} puts the rewrite pile first and marks the tells.`);
+    if (r.fine) console.log(`${DIM}To leave the fine ones as drafted: slopchop decide --triage fine --status ai-fine${OFF}`);
+  } else if (r.suggested) {
+    console.log(`\nNext: ${GREEN}slopchop review${OFF}. A suggestion taken without edits is recorded as ai-revised, not as yours.`);
+  }
+  process.exit(r.failed.length ? 1 : 0);
+}
+
 const COMMANDS = {
   init: cmdInit, sync: cmdSync, stats: cmdStats, apply: cmdApply, check: cmdCheck,
   report: cmdReport, decide: cmdDecide, draft: cmdDraft, pull: cmdPull, review: cmdReview,
   comment: cmdComment,
+  triage: () => cmdAdvise('triage'), suggest: () => cmdAdvise('suggest'),
 };
 
 if (!COMMANDS[cmd]) {

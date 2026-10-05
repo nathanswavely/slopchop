@@ -45,6 +45,19 @@
   .tag.human { color:var(--ok); border-color:var(--ok); }
   .tag.unreviewed { color:var(--warn); border-color:var(--warn); }
   .tag.rewritten { color:var(--accent); border-color:var(--accent); }
+  .tag.ai-revised, .tag.v-glance { color:var(--warn); border-color:var(--line); }
+  .tag.v-rewrite { color:var(--bad); border-color:var(--bad); }
+  .tag.v-fine { color:var(--dim); }
+  #queue .v { font-family:var(--mono); }
+  #queue .v.rewrite { color:var(--bad); }
+  #queue .v.glance { color:var(--warn); }
+  mark { background:none; color:inherit; text-decoration:underline wavy var(--bad); text-underline-offset:4px; }
+  ul.tells { margin:6px 0 0; padding-left:18px; font-size:13px; }
+  ul.tells li { margin:3px 0; }
+  ul.tells q { color:var(--ink); }
+  ul.tells span { color:var(--dim); }
+  .advice { color:var(--dim); font-size:13px; margin:6px 0 0; }
+  blockquote.suggestion { border-left-color:var(--warn); }
   blockquote {
     margin:14px 0; padding:12px 16px; background:var(--panel);
     border-left:3px solid var(--line); border-radius:0 6px 6px 0; white-space:pre-wrap;
@@ -117,6 +130,7 @@
       <option value="rewritten">Rewritten (pending apply)</option>
       <option value="human">Human</option>
       <option value="ai-fine">Left as drafted</option>
+      <option value="ai-revised">Model rewrite, accepted</option>
     </select>
     <select id="fTier">
       <option value="">Every tier</option>
@@ -218,9 +232,11 @@ function refilter(keepId) {
     (!file || e.occurrences.some((o) => o.file === file)) &&
     (!q || e.text.toLowerCase().includes(q)));
 
-  // Paragraphs first: they carry the most voice per unit of effort.
+  // What triage called worth rewriting first, then paragraphs: they carry
+  // the most voice per unit of effort. Untriaged sits above "fine as drafted".
   const rank = { prose: 0, helper: 1, label: 2 };
-  view.sort((a, b) => rank[a.tier] - rank[b.tier] ||
+  const urgency = (e) => ({ rewrite: 0, glance: 1, fine: 3 }[e.triage?.verdict] ?? 2);
+  view.sort((a, b) => urgency(a) - urgency(b) || rank[a.tier] - rank[b.tier] ||
     a.occurrences[0].file.localeCompare(b.occurrences[0].file) ||
     a.occurrences[0].line - b.occurrences[0].line);
 
@@ -238,8 +254,14 @@ function renderQueue() {
     b.setAttribute('aria-current', i === cursor);
     const t = document.createElement('span'); t.className = 't'; t.textContent = e.text;
     const m = document.createElement('span'); m.className = 'm';
-    m.textContent = `${e.tier} · ${e.words}w · ${e.occurrences[0].file.split('/').pop()}:${e.occurrences[0].line}` +
-      (e.occurrences.length > 1 ? ` +${e.occurrences.length - 1}` : '');
+    if (e.triage && e.status === 'unreviewed') {
+      const v = document.createElement('span');
+      v.className = `v ${e.triage.verdict}`;
+      v.textContent = `${e.triage.verdict}${e.suggestion ? ' + suggestion' : ''} · `;
+      m.append(v);
+    }
+    m.append(`${e.tier} · ${e.words}w · ${e.occurrences[0].file.split('/').pop()}:${e.occurrences[0].line}` +
+      (e.occurrences.length > 1 ? ` +${e.occurrences.length - 1}` : ''));
     b.append(t, m);
     b.onclick = () => { cursor = i; renderQueue(); renderDetail(); };
     q.append(b);
@@ -257,13 +279,36 @@ async function renderDetail() {
 
   d.innerHTML = '';
   const head = document.createElement('div'); head.className = 'row';
-  for (const [cls, txt] of [[e.tier, e.tier], [e.status, e.status], ['', `${e.words} words`],
-                            ['', `${e.occurrences.length} place${e.occurrences.length === 1 ? '' : 's'}`]]) {
+  const statusLabel = e.status === 'rewritten' && e.replacement_source === 'model'
+    ? 'rewritten · model' : e.status;
+  const tags = [[e.tier, e.tier], [e.status, statusLabel], ['', `${e.words} words`],
+                ['', `${e.occurrences.length} place${e.occurrences.length === 1 ? '' : 's'}`]];
+  if (e.triage && e.status === 'unreviewed') tags.splice(2, 0, [`v-${e.triage.verdict}`, `triage: ${e.triage.verdict}`]);
+  for (const [cls, txt] of tags) {
     const s = document.createElement('span'); s.className = `tag ${cls}`; s.textContent = txt; head.append(s);
   }
   d.append(head);
 
-  const bq = document.createElement('blockquote'); bq.textContent = e.text; d.append(bq);
+  const bq = document.createElement('blockquote');
+  bq.append(...marked(e.text, e.status === 'unreviewed' ? e.triage?.tells : null));
+  d.append(bq);
+
+  if (e.triage && e.status === 'unreviewed' && (e.triage.tells.length || e.triage.note)) {
+    if (e.triage.tells.length) {
+      const ul = document.createElement('ul'); ul.className = 'tells';
+      for (const t of e.triage.tells) {
+        const li = document.createElement('li');
+        const q = document.createElement('q'); q.textContent = t.quote;
+        const why = document.createElement('span'); why.textContent = ` ${t.why}`;
+        li.append(q, why); ul.append(li);
+      }
+      d.append(ul);
+    }
+    if (e.triage.note) {
+      const p = document.createElement('p'); p.className = 'advice';
+      p.textContent = e.triage.note; d.append(p);
+    }
+  }
 
   const heldIn = drafts.checkedOut[e.id];
   if (heldIn) {
@@ -314,6 +359,29 @@ async function renderDetail() {
   mk('Skip', 'j', '', () => move(1));
   d.append(acts);
 
+  // The suggestion sits below your own box on purpose: write first, borrow
+  // second. Taken without a single edit it is recorded as the model's.
+  if (e.suggestion && e.status === 'unreviewed') {
+    const hs = document.createElement('h3'); hs.textContent = "A model's suggestion";
+    const sq = document.createElement('blockquote'); sq.className = 'suggestion';
+    sq.textContent = e.suggestion.text;
+    d.append(hs, sq);
+    if (e.suggestion.why) {
+      const p = document.createElement('p'); p.className = 'advice';
+      p.textContent = e.suggestion.why; d.append(p);
+    }
+    const sa = document.createElement('div'); sa.className = 'actions';
+    const b = document.createElement('button');
+    b.append('Start from this');
+    const k = document.createElement('kbd'); k.textContent = 's'; b.append(k);
+    b.onclick = () => useSuggestion(e);
+    sa.append(b);
+    const note = document.createElement('span'); note.className = 'muted';
+    note.textContent = 'Saved unedited, it counts as ai-revised, not yours.';
+    sa.append(note);
+    d.append(sa);
+  }
+
   const h2 = document.createElement('h3'); h2.textContent = 'Where it appears';
   d.append(h2);
   for (const o of e.occurrences) {
@@ -358,6 +426,8 @@ async function persist(e, body) {
       method: 'POST', body: JSON.stringify({ id: e.id, ...body, force: true }),
     });
   }
+  // The server's copy is the truth, including fields it dropped.
+  for (const k of Object.keys(e)) if (!(k in r.entry)) delete e[k];
   Object.assign(e, r.entry);
   applyStats(r.stats);
   return true;
@@ -368,8 +438,41 @@ async function saveRewrite(e, text) {
   if (!next) return flash('Empty. Nothing saved.');
   if (next === e.text) { await setStatus(e, 'human'); return; }
   if (!await persist(e, { status: 'rewritten', replacement: next })) return;
-  flash('Saved. Apply rewrites to write it into source.');
+  flash(e.replacement_source === 'model'
+    ? "Saved as the model's rewrite (ai-revised once applied). Edit it to make it yours."
+    : 'Saved. Apply rewrites to write it into source.');
   advance(e);
+}
+
+function useSuggestion(e) {
+  if (!e?.suggestion) return;
+  const ta = $('#editor');
+  ta.value = e.suggestion.text;
+  ta.dispatchEvent(new Event('input'));
+  ta.focus();
+}
+
+/** Text as nodes, with each quoted tell underlined. Only the first hit of each. */
+function marked(text, tells) {
+  const spans = [];
+  for (const t of tells || []) {
+    const at = text.indexOf(t.quote);
+    if (at === -1 || spans.some((s) => at < s.end && at + t.quote.length > s.start)) continue;
+    spans.push({ start: at, end: at + t.quote.length, why: t.why });
+  }
+  spans.sort((a, b) => a.start - b.start);
+  const out = [];
+  let i = 0;
+  for (const s of spans) {
+    if (s.start > i) out.push(document.createTextNode(text.slice(i, s.start)));
+    const m = document.createElement('mark');
+    m.textContent = text.slice(s.start, s.end);
+    m.title = s.why;
+    out.push(m);
+    i = s.end;
+  }
+  out.push(document.createTextNode(text.slice(i)));
+  return out;
 }
 
 async function setStatus(e, status) {
@@ -425,6 +528,7 @@ addEventListener('keydown', (ev) => {
   else if (ev.key === 'e' || ev.key === 'Enter') { ev.preventDefault(); $('#editor')?.focus(); }
   else if (ev.key === 'h') { ev.preventDefault(); setStatus(view[cursor], 'human'); }
   else if (ev.key === 'a') { ev.preventDefault(); setStatus(view[cursor], 'ai-fine'); }
+  else if (ev.key === 's' && view[cursor]?.suggestion) { ev.preventDefault(); useSuggestion(view[cursor]); }
 });
 
 loadAll().catch((e) => { $('#detail').innerHTML = `<div class="empty">${e.message}</div>`; });

@@ -26,6 +26,9 @@ export function renderReport(project, ledger) {
   L.push('|---|---:|---:|');
   L.push(`| Written by a person | ${s.byStatus.human} | ${s.wordsByStatus.human.toLocaleString()} |`);
   L.push(`| Left as drafted, deliberately | ${s.byStatus['ai-fine']} | ${s.wordsByStatus['ai-fine'].toLocaleString()} |`);
+  if (s.byStatus['ai-revised']) {
+    L.push(`| Rewritten by a model, accepted unedited | ${s.byStatus['ai-revised']} | ${s.wordsByStatus['ai-revised'].toLocaleString()} |`);
+  }
   L.push(`| Not yet reviewed | ${s.byStatus.unreviewed} | ${s.wordsByStatus.unreviewed.toLocaleString()} |`);
   if (s.byStatus.rewritten) {
     L.push(`| Written, not yet applied to source | ${s.byStatus.rewritten} | ${s.wordsByStatus.rewritten.toLocaleString()} |`);
@@ -66,12 +69,12 @@ export function renderReport(project, ledger) {
   if (!replaced.length) {
     L.push('_None yet._');
   } else {
-    L.push("Where a model's draft was replaced by a person, both are kept.");
+    L.push("Where a model's draft was replaced, both are kept. A replacement a model wrote and a person accepted unedited is marked as such.");
     L.push('');
     for (const e of replaced.slice(0, 400)) {
       L.push(`- \`${e.occurrences[0]?.file || '—'}\``);
       L.push(`  - draft: ${JSON.stringify(e.previous_ai_text)}`);
-      L.push(`  - now: ${JSON.stringify(e.text)}`);
+      L.push(`  - now${e.status === 'ai-revised' ? ' (model rewrite, accepted)' : ''}: ${JSON.stringify(e.text)}`);
     }
   }
   L.push('');

@@ -183,9 +183,9 @@
       ]
     },
     {
-      "id": "1e4c3372a5d2",
-      "text": "## The four decisions",
-      "words": 4,
+      "id": "43a398969a22",
+      "text": "## The decisions",
+      "words": 3,
       "tier": "label",
       "status": "unreviewed",
       "replacement": null,
@@ -195,15 +195,15 @@
           "file": "README.md",
           "line": 21,
           "kind": "md-block",
-          "raw": "## The four decisions",
+          "raw": "## The decisions",
           "quote": null
         }
       ]
     },
     {
-      "id": "8ed588e980dd",
-      "text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has looked. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |",
-      "words": 58,
+      "id": "48703bba93b3",
+      "text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has looked. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |",
+      "words": 75,
       "tier": "prose",
       "status": "unreviewed",
       "replacement": null,
@@ -213,7 +213,7 @@
           "file": "README.md",
           "line": 23,
           "kind": "md-block",
-          "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has looked. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |",
+          "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has looked. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |",
           "quote": null
         }
       ]
@@ -229,7 +229,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 30,
+          "line": 31,
           "kind": "md-block",
           "raw": "`ai-fine` is the one that makes this bearable. \"Failed to load comments\" does not need your voice, and neither do most of the labels around it. Marking them is one keystroke each, or one command for a whole file. The report counts them separately from `human`, so the number you end up with is honest about which is which.",
           "quote": null
@@ -247,7 +247,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 32,
+          "line": 33,
           "kind": "md-block",
           "raw": "## Getting through it without losing a weekend",
           "quote": null
@@ -265,7 +265,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 34,
+          "line": 35,
           "kind": "md-block",
           "raw": "Every string is sorted into a tier by length: paragraphs (16 words and up), helper text (6 to 15), and labels (under 6). Paragraphs are where the writing happens. Labels mostly need a glance, and a lot of them can go in bulk:",
           "quote": null
@@ -283,7 +283,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 42,
+          "line": 43,
           "kind": "md-block",
           "raw": "`decide` only ever moves strings out of `unreviewed`, so running it again cannot undo something you decided by hand. It is a dry run until you pass `--apply`.",
           "quote": null
@@ -301,7 +301,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 44,
+          "line": 45,
           "kind": "md-block",
           "raw": "The queue also comes out as Markdown, for the places writing actually happens (a phone, a train, the GitHub web editor):",
           "quote": null
@@ -319,7 +319,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 53,
+          "line": 54,
           "kind": "md-block",
           "raw": "Each string sits between `                ` markers. Write between them. A block you leave alone is skipped, so doing three and coming back later is fine. Replace a whole block with `@mine` if the words are already yours, or `@fine` to leave the draft in place.",
           "quote": null
@@ -337,9 +337,99 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 55,
+          "line": 56,
           "kind": "md-block",
           "raw": "A draft is a checkout. While one exists, decide that file in the draft and not in the review page, because the page can rewrite a string out from under a marker and then your writing has nowhere to land. The page refuses a decision on a checked-out string and names the file. `pull` never records a block you did not touch. If the source moves anyway, `pull --redraft` saves any stranded writing to a file beside the draft and cuts a fresh one. `SLOPCHOP_DRAFTS_DIR` points the drafts at a private repo, so the half-finished sentences stay out of a public one.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "116d8472876a",
+      "text": "## A first pass from a model",
+      "words": 7,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 58,
+          "kind": "md-block",
+          "raw": "## A first pass from a model",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "b83753b1e79b",
+      "text": "Two hundred paragraphs is still a lot to sort by hand. `triage` sends the unreviewed strings to Claude on your own key and asks which ones carry your voice and read as drafted, which are worth a glance, and which nobody needs to touch. It quotes the phrases that gave each one away. Nothing changes status; the review page just puts the rewrite pile first and underlines the tells.",
+      "words": 69,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 60,
+          "kind": "md-block",
+          "raw": "Two hundred paragraphs is still a lot to sort by hand. `triage` sends the unreviewed strings to Claude on your own key and asks which ones carry your voice and read as drafted, which are worth a glance, and which nobody needs to touch. It quotes the phrases that gave each one away. Nothing changes status; the review page just puts the rewrite pile first and underlines the tells.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2fcc0682e5ee",
+      "text": "Labels are skipped unless you ask for them with `--tier label`. `--file`, `--limit`, and `--id` narrow either command, and running one again only sends what has no answer yet.",
+      "words": 29,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 70,
+          "kind": "md-block",
+          "raw": "Labels are skipped unless you ask for them with `--tier label`. `--file`, `--limit`, and `--id` narrow either command, and running one again only sends what has no answer yet.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "5214dc7ba07e",
+      "text": "A suggestion sits under your own box in the review page, not in it. `s` copies it in when you want a starting point. If you save it without changing anything, it lands as `ai-revised`, and the report and badge count it apart from `human`. Change one word and it is yours, which is the point: the suggestion is there to get you unstuck, not to finish the job.",
+      "words": 69,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 72,
+          "kind": "md-block",
+          "raw": "A suggestion sits under your own box in the review page, not in it. `s` copies it in when you want a starting point. If you save it without changing anything, it lands as `ai-revised`, and the report and badge count it apart from `human`. Change one word and it is yours, which is the point: the suggestion is there to get you unstuck, not to finish the job.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "7d3943ba06a6",
+      "text": "It uses `claude-opus-5-5` at medium effort unless `.slopchop.json` says otherwise (`\"model\"`, `\"effort\"`). Point `\"voice\"` at a file of notes on how you write, and both commands read it.",
+      "words": 28,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 74,
+          "kind": "md-block",
+          "raw": "It uses `claude-opus-5-5` at medium effort unless `.slopchop.json` says otherwise (`\"model\"`, `\"effort\"`). Point `\"voice\"` at a file of notes on how you write, and both commands read it.",
           "quote": null
         }
       ]
@@ -355,7 +445,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 57,
+          "line": 76,
           "kind": "md-block",
           "raw": "## Keeping it that way",
           "quote": null
@@ -373,7 +463,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 59,
+          "line": 78,
           "kind": "md-block",
           "raw": "Rewriting two thousand strings once is a finite job. Keeping them rewritten is not, because the next AI session adds forty more and the site slides back without anyone noticing.",
           "quote": null
@@ -391,7 +481,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 61,
+          "line": 80,
           "kind": "md-block",
           "raw": "So the first `sync` stamps a baseline: every unreviewed string at that moment is accepted as existing debt, and `check` fails only when a string that is not in the baseline shows up undecided. You can leave the backlog alone for a month and CI stays green. New copy has to be looked at before it merges. When the backlog reaches zero, set `\"strict\": true` in the ledger and the check fails on any unreviewed string at all.",
           "quote": null
@@ -409,7 +499,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 72,
+          "line": 91,
           "kind": "md-block",
           "raw": "The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings in the job summary, with the file and line for each.",
           "quote": null
@@ -427,7 +517,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 74,
+          "line": 93,
           "kind": "md-block",
           "raw": "On a pull request it also says so on the pull request: one summary comment that stays current, and a comment on each new string the diff touches. If you wrote a rewrite in the ledger and never ran `apply`, it shows up as a suggestion block, and committing the suggestion counts the same as applying it. The next `sync` sees your words in the source and records them as yours. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.",
           "quote": null
@@ -445,7 +535,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 76,
+          "line": 95,
           "kind": "md-block",
           "raw": "## Setting it up",
           "quote": null
@@ -463,7 +553,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 82,
+          "line": 101,
           "kind": "md-block",
           "raw": "`init` looks at the repo and writes a `.slopchop.json` with the patterns that matched something. Edit it to taste:",
           "quote": null
@@ -481,7 +571,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 96,
+          "line": 115,
           "kind": "md-block",
           "raw": "What counts as copy, by file type:",
           "quote": null
@@ -499,7 +589,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 98,
+          "line": 117,
           "kind": "md-block",
           "raw": "| Files | What comes out |\n|---|---|\n| `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |\n| `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |\n| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |\n| `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |\n| `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |\n| `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |\n| `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{\"error\":\"...\"}` bodies. |",
           "quote": null
@@ -517,7 +607,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 108,
+          "line": 127,
           "kind": "md-block",
           "raw": "The filters over-collect on purpose. A false positive costs one keystroke; a false negative is a string you never see. If something odd shows up in the queue, mark it and keep going.",
           "quote": null
@@ -535,7 +625,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 110,
+          "line": 129,
           "kind": "md-block",
           "raw": "## Where it will get in your way",
           "quote": null
@@ -553,7 +643,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 112,
+          "line": 131,
           "kind": "md-block",
           "raw": "In HTML, JSX, and Vue, an inline element splits the sentence around it. `Call us at <code>555-0100</code> or stop by` shows up as two entries. Markdown does not have this problem, since a paragraph is one block whatever is inside it.",
           "quote": null
@@ -571,7 +661,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 114,
+          "line": 133,
           "kind": "md-block",
           "raw": "The YAML reader is a subset: block mappings, sequences, plain and quoted scalars, and `|` and `>` blocks. Flow collections, anchors, and tags are skipped rather than guessed at.",
           "quote": null
@@ -589,7 +679,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 116,
+          "line": 135,
           "kind": "md-block",
           "raw": "Writeback refuses anything that would break the file it lands in (a `{` in JSX text, a quote that would close a YAML scalar, a newline in an attribute) and tells you which entry and why. It would rather leave a string undone than produce a file that does not build.",
           "quote": null
@@ -607,7 +697,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 118,
+          "line": 137,
           "kind": "md-block",
           "raw": "## What it does not do",
           "quote": null
@@ -615,9 +705,9 @@
       ]
     },
     {
-      "id": "db4ceee50056",
-      "text": "- It does not send your text anywhere it was not already. There is no server, no account, and no model call. The review page is a local process reading local files, and the pull request comments go to the same GitHub that holds the code.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. A first pass that flags the worst AI tells and suggests a direction is coming, and it will run on your own key. A suggestion you accept without editing will be recorded as its own status, so `human` only ever means a person typed it.",
-      "words": 134,
+      "id": "e1d02f92dfd1",
+      "text": "- It does not send your text anywhere you did not ask it to. There is no server and no account. The review page is a local process reading local files, the pull request comments go to the same GitHub that holds the code, and the only model calls are `triage` and `suggest`, on your key, after a dry run.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. It will suggest, if you ask, but a suggestion you take without editing is recorded as `ai-revised`, so `human` only ever means a person typed it.",
+      "words": 129,
       "tier": "prose",
       "status": "unreviewed",
       "replacement": null,
@@ -625,9 +715,9 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 120,
+          "line": 139,
           "kind": "md-block",
-          "raw": "- It does not send your text anywhere it was not already. There is no server, no account, and no model call. The review page is a local process reading local files, and the pull request comments go to the same GitHub that holds the code.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. A first pass that flags the worst AI tells and suggests a direction is coming, and it will run on your own key. A suggestion you accept without editing will be recorded as its own status, so `human` only ever means a person typed it.",
+          "raw": "- It does not send your text anywhere you did not ask it to. There is no server and no account. The review page is a local process reading local files, the pull request comments go to the same GitHub that holds the code, and the only model calls are `triage` and `suggest`, on your key, after a dry run.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. It will suggest, if you ask, but a suggestion you take without editing is recorded as `ai-revised`, so `human` only ever means a person typed it.",
           "quote": null
         }
       ]
@@ -643,7 +733,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 124,
+          "line": 143,
           "kind": "md-block",
           "raw": "## Report and badge",
           "quote": null
@@ -661,7 +751,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 130,
+          "line": 149,
           "kind": "md-block",
           "raw": "writes `copy/REPORT.md` with the counts by status and tier, the scope and what was left out of it, and every replaced draft next to the text that replaced it. It also writes `copy/badge.json` for shields.io and `copy/badge.svg` for a repo that would rather not call out. The badge shows two numbers, reviewed and human-written, because either one alone overstates things.",
           "quote": null
@@ -679,7 +769,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 132,
+          "line": 151,
           "kind": "md-block",
           "raw": "## Next",
           "quote": null
@@ -697,7 +787,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 134,
+          "line": 153,
           "kind": "md-block",
           "raw": "A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves.",
           "quote": null
@@ -715,7 +805,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 136,
+          "line": 155,
           "kind": "md-block",
           "raw": "To start, run `npx slopchop init` in the repo, then `sync`. The first sync stamps the baseline, so the check passes from the beginning. After that, open `slopchop review` and start with the paragraphs.",
           "quote": null
@@ -740,7 +830,7 @@
         },
         {
           "file": "src/ui.html",
-          "line": 108,
+          "line": 121,
           "kind": "html-text",
           "raw": "SlopChop",
           "quote": null
@@ -758,7 +848,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 110,
+          "line": 123,
           "kind": "html-text",
           "raw": "loading…",
           "quote": null
@@ -776,7 +866,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 111,
+          "line": 124,
           "kind": "html-text",
           "raw": "Apply rewrites",
           "quote": null
@@ -794,7 +884,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 111,
+          "line": 124,
           "kind": "html-attr:title",
           "raw": "Write approved rewrites into source",
           "quote": "\""
@@ -812,7 +902,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 115,
+          "line": 128,
           "kind": "html-text",
           "raw": "Unreviewed",
           "quote": null
@@ -830,7 +920,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 116,
+          "line": 129,
           "kind": "html-text",
           "raw": "All",
           "quote": null
@@ -848,7 +938,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 117,
+          "line": 130,
           "kind": "html-text",
           "raw": "Rewritten (pending apply)",
           "quote": null
@@ -866,7 +956,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 118,
+          "line": 131,
           "kind": "html-text",
           "raw": "Human",
           "quote": null
@@ -884,9 +974,27 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 119,
+          "line": 132,
           "kind": "html-text",
           "raw": "Left as drafted",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "229353c5c260",
+      "text": "Model rewrite, accepted",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 133,
+          "kind": "html-text",
+          "raw": "Model rewrite, accepted",
           "quote": null
         }
       ]
@@ -902,7 +1010,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 122,
+          "line": 136,
           "kind": "html-text",
           "raw": "Every tier",
           "quote": null
@@ -920,7 +1028,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 123,
+          "line": 137,
           "kind": "html-text",
           "raw": "Paragraphs (16+ words)",
           "quote": null
@@ -938,7 +1046,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 124,
+          "line": 138,
           "kind": "html-text",
           "raw": "Helper text (6–15)",
           "quote": null
@@ -956,7 +1064,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 125,
+          "line": 139,
           "kind": "html-text",
           "raw": "Labels (1–5)",
           "quote": null
@@ -974,7 +1082,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 127,
+          "line": 141,
           "kind": "html-text",
           "raw": "Every file",
           "quote": null
@@ -992,7 +1100,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 128,
+          "line": 142,
           "kind": "html-attr:placeholder",
           "raw": "Search copy…  ⌘K",
           "quote": "\""
@@ -1010,7 +1118,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 136,
+          "line": 150,
           "kind": "html-text",
           "raw": "Loading…",
           "quote": null

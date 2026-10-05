@@ -11,13 +11,21 @@ import path from 'node:path';
 import { extractEntries, idFor, tierFor, wordCount } from './extract/index.js';
 
 // unreviewed → a model drafted it and nobody has looked yet (the default)
-// rewritten  → a person wrote a replacement; writeback has not applied it
+// rewritten  → a replacement is chosen; writeback has not applied it
 // human      → the text in source is a person's words
 // ai-fine    → deliberately left as drafted; mechanical or not voice-bearing
-export const STATUSES = ['unreviewed', 'rewritten', 'human', 'ai-fine'];
+// ai-revised → a model's suggested rewrite, accepted without edits, in source
+//
+// A rewritten entry whose replacement is a model suggestion taken as-is is
+// marked replacement_source: 'model', and becomes ai-revised, never human,
+// when it lands. `human` only ever means a person typed it.
+export const STATUSES = ['unreviewed', 'rewritten', 'human', 'ai-fine', 'ai-revised'];
+
+/** The statuses a person can choose directly. ai-revised is only ever earned. */
+export const CHOOSABLE = ['unreviewed', 'rewritten', 'human', 'ai-fine'];
 
 /** The statuses that count as decided. */
-export const DECIDED = new Set(['human', 'ai-fine']);
+export const DECIDED = new Set(['human', 'ai-fine', 'ai-revised']);
 
 export const EMPTY = { version: 1, strict: false, entries: [], retired: [] };
 
@@ -65,7 +73,7 @@ export function merge(existing, fresh) {
       landed.push(from);
       return {
         ...f,
-        status: 'human',
+        status: landedStatus(from),
         note: from.note ?? null,
         previous_ai_text: from.previous_ai_text || from.text,
       };
@@ -76,8 +84,13 @@ export function merge(existing, fresh) {
       status: seen.status || 'unreviewed',
       replacement: seen.replacement ?? null,
       note: seen.note ?? null,
+      ...(seen.replacement_source ? { replacement_source: seen.replacement_source } : {}),
       // The draft this text replaced, kept for the public record.
       ...(seen.previous_ai_text ? { previous_ai_text: seen.previous_ai_text } : {}),
+      // Advice is keyed by the text it was given about, so it stays valid
+      // for as long as the id does.
+      ...(seen.triage ? { triage: seen.triage } : {}),
+      ...(seen.suggestion ? { suggestion: seen.suggestion } : {}),
     };
   });
 
@@ -123,18 +136,35 @@ export function stats(ledger) {
   }
 
   const total = ledger.entries.length;
-  const done = byStatus.human + byStatus['ai-fine'];
+  const done = [...DECIDED].reduce((n, st) => n + byStatus[st], 0);
   return { total, done, pending: total - done, byStatus, wordsByStatus, byTier, words, wordsDone };
 }
 
 /** Apply one review decision to an entry, in place. Returns the entry. */
 export function decide(entry, { status, replacement, note }) {
-  if (status && !STATUSES.includes(status)) throw new Error(`bad status: ${status}`);
+  if (status && !CHOOSABLE.includes(status)) throw new Error(`bad status: ${status}`);
   if (status) entry.status = status;
-  if (replacement !== undefined) entry.replacement = replacement || null;
+  if (replacement !== undefined) setReplacement(entry, replacement);
   if (note !== undefined) entry.note = note || null;
   if (entry.status === 'rewritten' && !entry.replacement) entry.status = 'unreviewed';
   return entry;
+}
+
+/**
+ * Record a replacement, and whether it is a model's suggestion taken
+ * verbatim. That is decided here, from the text, and never taken on a
+ * caller's word: any edit at all makes it the person's.
+ */
+export function setReplacement(entry, text) {
+  entry.replacement = text || null;
+  if (entry.replacement && entry.suggestion?.text === entry.replacement) entry.replacement_source = 'model';
+  else delete entry.replacement_source;
+  return entry;
+}
+
+/** What a landed replacement becomes: the person's, unless a model wrote it. */
+function landedStatus(entry) {
+  return entry.replacement_source === 'model' ? 'ai-revised' : 'human';
 }
 
 /**
@@ -149,8 +179,11 @@ export function promote(entry, newText) {
   entry.id = idFor(newText);
   entry.words = wordCount(newText);
   entry.tier = tierFor(newText);
+  entry.status = landedStatus(entry);
   entry.replacement = null;
-  entry.status = 'human';
+  delete entry.replacement_source;
+  delete entry.suggestion;
+  delete entry.triage;
   return entry;
 }
 

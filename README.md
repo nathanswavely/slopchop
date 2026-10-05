@@ -18,7 +18,7 @@ It is not an AI detector. It records what you decided, and it makes deciding fas
 
 `slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it.
 
-## The four decisions
+## The decisions
 
 | Status | Means |
 |---|---|
@@ -26,6 +26,7 @@ It is not an AI detector. It records what you decided, and it makes deciding fas
 | `rewritten` | You wrote a replacement and `apply` has not written it yet. |
 | `human` | The text in source is your words. |
 | `ai-fine` | You looked, and it is fine as drafted. |
+| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |
 
 `ai-fine` is the one that makes this bearable. "Failed to load comments" does not need your voice, and neither do most of the labels around it. Marking them is one keystroke each, or one command for a whole file. The report counts them separately from `human`, so the number you end up with is honest about which is which.
 
@@ -53,6 +54,24 @@ slopchop apply --apply
 Each string sits between `<!-- copy:ID -->` markers. Write between them. A block you leave alone is skipped, so doing three and coming back later is fine. Replace a whole block with `@mine` if the words are already yours, or `@fine` to leave the draft in place.
 
 A draft is a checkout. While one exists, decide that file in the draft and not in the review page, because the page can rewrite a string out from under a marker and then your writing has nowhere to land. The page refuses a decision on a checked-out string and names the file. `pull` never records a block you did not touch. If the source moves anyway, `pull --redraft` saves any stranded writing to a file beside the draft and cuts a fresh one. `SLOPCHOP_DRAFTS_DIR` points the drafts at a private repo, so the half-finished sentences stay out of a public one.
+
+## A first pass from a model
+
+Two hundred paragraphs is still a lot to sort by hand. `triage` sends the unreviewed strings to Claude on your own key and asks which ones carry your voice and read as drafted, which are worth a glance, and which nobody needs to touch. It quotes the phrases that gave each one away. Nothing changes status; the review page just puts the rewrite pile first and underlines the tells.
+
+```sh
+export ANTHROPIC_API_KEY=...                       # yours; SlopChop has no account
+slopchop triage                                    # dry run: what would be sent, and how much
+slopchop triage --apply
+slopchop decide --triage fine --status ai-fine     # the model's "fine" pile, if you agree
+slopchop suggest --apply                           # rewrites to start from, for the rewrite pile
+```
+
+Labels are skipped unless you ask for them with `--tier label`. `--file`, `--limit`, and `--id` narrow either command, and running one again only sends what has no answer yet.
+
+A suggestion sits under your own box in the review page, not in it. `s` copies it in when you want a starting point. If you save it without changing anything, it lands as `ai-revised`, and the report and badge count it apart from `human`. Change one word and it is yours, which is the point: the suggestion is there to get you unstuck, not to finish the job.
+
+It uses `claude-opus-5-5` at medium effort unless `.slopchop.json` says otherwise (`"model"`, `"effort"`). Point `"voice"` at a file of notes on how you write, and both commands read it.
 
 ## Keeping it that way
 
@@ -117,9 +136,9 @@ Writeback refuses anything that would break the file it lands in (a `{` in JSX t
 
 ## What it does not do
 
-- It does not send your text anywhere it was not already. There is no server, no account, and no model call. The review page is a local process reading local files, and the pull request comments go to the same GitHub that holds the code.
+- It does not send your text anywhere you did not ask it to. There is no server and no account. The review page is a local process reading local files, the pull request comments go to the same GitHub that holds the code, and the only model calls are `triage` and `suggest`, on your key, after a dry run.
 - It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.
-- It does not write for you. A first pass that flags the worst AI tells and suggests a direction is coming, and it will run on your own key. A suggestion you accept without editing will be recorded as its own status, so `human` only ever means a person typed it.
+- It does not write for you. It will suggest, if you ask, but a suggestion you take without editing is recorded as `ai-revised`, so `human` only ever means a person typed it.
 
 ## Report and badge
 
