@@ -4,7 +4,7 @@ SlopChop is copy review for a site or app you are building with AI coding tools.
 
 ## Why this exists
 
-I've been building a lot with AI. AI code doesnt bother me, but AI copy gives me the ick. Even as the models get better, there is something that irks me about reading words that have my name on them but weren't written by me. But it's very difficult to parse through the copy and edit it without going back to pre-ai coding workflows. What I needed was a way to parse through the couple hundred paragraphs that need rewriting, skip the labels that did not, and keep a record so I would not have to make the same call twice. As an added bonus, open source projects have a transparent way of communicating to users which copy is human authored and which is not.
+I've been building a lot with AI. AI code doesn't bother me, but AI copy gives me the ick. Even as the models get better, there is something that irks me about reading words that have my name on them but weren't written by me. But it's very difficult to parse through the copy and edit it without going back to pre-ai coding workflows. What I needed was a way to parse through the couple hundred paragraphs that need rewriting, skip the labels that did not, and keep a record so I would not have to make the same call twice. As an added bonus, open source projects have a transparent way of communicating to users which copy is human authored and which is not.
 
 It is not built to be an AI detector or a "policing" service. It is self-reported and records what the reviewer decides. And, most importantly, it makes deciding possible, efficient, and simple.
 
