@@ -358,13 +358,15 @@ function cmdCheck() {
   const g = gate(onDisk, fresh);
   const s = stats(fresh);
 
-  const ok = !g.unledgered.length && !(g.strict && g.backlog.length);
+  const ok = !g.unledgered.length && !g.unknown.length && !(g.strict && g.backlog.length);
+  const where = (e) => ({ id: e.id, text: e.text, file: e.occurrences[0].file, line: e.occurrences[0].line });
 
   // Machine-readable: the JSON is the whole of stdout, nothing else.
   if (flag('json')) {
     console.log(JSON.stringify({
       ok,
-      unledgered: g.unledgered.map((e) => ({ id: e.id, text: e.text, file: e.occurrences[0].file, line: e.occurrences[0].line })),
+      unledgered: g.unledgered.map(where),
+      unknown: g.unknown.map((e) => ({ ...where(e), status: e.status })),
       backlog: g.backlog.length, pendingApply: g.pendingApply.length, strict: g.strict, stats: s,
     }, null, 2));
     writeSummary(p, g, s);
@@ -379,6 +381,20 @@ function cmdCheck() {
   }
 
   writeSummary(p, g, s);
+
+  if (g.unknown.length) {
+    const kinds = [...new Set(g.unknown.map((e) => e.status))].map((st) => `"${st}"`).join(', ');
+    console.error(`\n${RED}✗ ${g.unknown.length} string${g.unknown.length === 1 ? ' has' : 's have'} a status SlopChop does not know (${kinds}):${OFF}\n`);
+    for (const e of g.unknown.slice(0, 25)) {
+      const o = e.occurrences[0];
+      console.error(`  ${o.file}:${o.line}  ${DIM}${e.status}${OFF}`);
+      console.error(`    "${e.text.slice(0, 88)}${e.text.length > 88 ? '…' : ''}"`);
+    }
+    if (g.unknown.length > 25) console.error(`  ${DIM}…and ${g.unknown.length - 25} more${OFF}`);
+    console.error(`\n  A status the tool does not define is not a decision. Set these to one of`);
+    console.error(`  ${STATUSES.join(', ')}, or to unreviewed and decide them in slopchop review.\n`);
+    process.exit(1);
+  }
 
   if (g.strict && g.backlog.length) {
     console.error(`\n${RED}strict mode: ${g.backlog.length} strings still unreviewed.${OFF}`);
@@ -468,7 +484,7 @@ async function cmdComment() {
     const existing = await gh.all(`/repos/${repo}/pulls/${pr.number}/comments`);
     const plan = planComments({ unledgered: g.unledgered, changes, diff, entries: fresh.entries, prefix, existing });
     const summary = summaryBody(key, g, s, { link, pending: g.pendingApply });
-    const hasNews = g.unledgered.length > 0 || plan.inline.length > 0;
+    const hasNews = g.unledgered.length > 0 || g.unknown.length > 0 || plan.inline.length > 0;
     const log = await publish({ gh, repo, pr: pr.number, sha: pr.sha, key: prefix, summary, plan, hasNews });
     for (const line of log) console.log(line);
     if (!log.length) console.log('Nothing new to say on this pull request.');

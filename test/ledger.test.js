@@ -94,3 +94,36 @@ test('load, sync and save round-trip through the configured ledger path', async 
     assert.equal(again.baseline.length, 2);
   });
 });
+
+test('a status the tool does not define fails the gate instead of passing for a decision', async () => {
+  const { renderVerdict } = await import('../src/github.js');
+  const odd = mk('Written into the file by hand as as-is.', { status: 'as-is' });
+  const fine = mk('A string somebody decided properly.', { status: 'ai-fine' });
+  const g = gate({ baseline: [] }, { entries: [odd, fine] });
+  assert.equal(g.unledgered.length, 0);
+  assert.deepEqual(g.unknown.map((e) => e.status), ['as-is']);
+
+  const md = renderVerdict(g, { done: 1, total: 2, byStatus: { human: 0 } }).join('\n');
+  assert.match(md, /status SlopChop does not define/);
+  assert.match(md, /`as-is`/);
+  assert.doesNotMatch(md, /Every string in source has an author on record/);
+});
+
+test('check exits non-zero and names the unknown status', async () => {
+  const { execFileSync } = await import('node:child_process');
+  await withProject({ 'a.md': 'One paragraph that somebody marked by hand.\n' }, (project, dir) => {
+    const { ledger } = sync(project, load(project));
+    ledger.baseline = [];
+    ledger.entries[0].status = 'as-is';
+    save(project, ledger);
+    fs.writeFileSync(path.join(dir, '.slopchop.json'), JSON.stringify({ include: ['a.md'] }));
+    const cli = path.resolve('bin/slopchop.js');
+    let out = '';
+    let code = 0;
+    try { execFileSync(process.execPath, [cli, 'check', '--config', path.join(dir, '.slopchop.json')], { encoding: 'utf8', stdio: 'pipe', env: { ...process.env, NO_COLOR: '1' } }); }
+    catch (e) { code = e.status; out = e.stderr; }
+    assert.equal(code, 1);
+    assert.match(out, /status SlopChop does not know \("as-is"\)/);
+    assert.match(out, /a\.md:1/);
+  });
+});
