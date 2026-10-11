@@ -5,21 +5,26 @@ visitor-readable string in this repository and records who wrote it.
 
 | | strings | words |
 |---|---:|---:|
-| Written by a person | 0 | 0 |
-| Left as drafted, deliberately | 0 | 0 |
-| Not yet reviewed | 55 | 1,607 |
-| **Total** | **55** | **1,607** |
+| Written by a person | 6 | 247 |
+| A person's words from the start | 0 | 0 |
+| Drafted by a model, edited by a person | 1 | 125 |
+| Left as drafted, deliberately | 75 | 1,618 |
+| Not yet reviewed | 0 | 0 |
+| **Total** | **82** | **1,990** |
 
-Human-authored or deliberately accepted: **0%** of strings.
-Written by a person: **0%** of strings, **0%** of words.
+Human-authored or deliberately accepted: **100%** of strings.
+A person's words: **7%** of strings, **12%** of words.
+Edited from a model's draft: **1%** of strings, counted apart, because an edit leaves most of the model's words in place.
+
+Whether a replacement was a rewrite or small edits is what the person said when they saved it. SlopChop records it and does not check it.
 
 ## By tier
 
 | Tier | Decided | Total |
 |---|---:|---:|
-| Paragraphs (16+ words) | 0 | 27 |
-| Helper text (6–15 words) | 0 | 4 |
-| Labels (1–5 words) | 0 | 24 |
+| Paragraphs (16+ words) | 32 | 32 |
+| Helper text (6–15 words) | 9 | 9 |
+| Labels (1–5 words) | 41 | 41 |
 
 ## Scope
 
@@ -34,6 +39,28 @@ Out of scope, on purpose:
 - `examples/`: Fixture copy for the test suite; it carries its own ledger.
 - `test/`: Test fixtures.
 
-## Replaced drafts (0)
+## Replaced drafts (7)
 
-_None yet._
+Where a model's draft was replaced, both are kept. A replacement a model wrote and a person accepted unedited is marked as such.
+
+- `README.md`
+  - draft: "SlopChop is copy review for a site or app you built with AI. It finds every string a visitor can read, puts the paragraphs in front of you one at a time so you can write them yourself, and lets you wave through the labels and error messages that were never going to sound like anyone. Each decision is recorded in a file next to the code, and a CI check keeps the next AI session from quietly undoing your work."
+  - now: "SlopChop is copy review for a site or app you are building with AI coding tools. It finds every string a visitor can read, puts the paragraphs in front of you one at a time so you can either rewrite them or allow them as drafted. Each decision is recorded in a file next to the code, and a CI check keeps the next AI session from quietly undoing your work."
+- `README.md`
+  - draft: "Patchwork, the community platform I run, was built with a lot of AI assistance, and most of its copy was drafted the same way. The build went quickly, and most of the words on the site were not mine. There were about two thousand strings, so \"I will go through and fix it sometime\" was never going to happen. What I needed was a way to find the couple hundred paragraphs that carried the voice, skip the labels that did not, and keep a record so I would not have to make the same call twice. This is that tool with the Patchwork-specific parts turned into configuration."
+  - now (edited): "I've been building a lot with AI. AI code doesn't bother me, but AI copy gives me the ick. Even as the models get better, there is something that irks me about reading words that have my name on them but weren't written by me. But it's very difficult to parse through the copy and edit it without going back to pre-ai coding workflows. What I needed was a way to parse through the couple hundred paragraphs that need rewriting, skip the labels that did not, and keep a record so I would not have to make the same call twice. As an added bonus, open source projects have a transparent way of communicating to users which copy is human authored and which is not."
+- `README.md`
+  - draft: "It is not an AI detector. It records what you decided, and it makes deciding fast."
+  - now: "It is not built to be an AI detector or a \"policing\" service. It is self-reported and records what the reviewer decides. And, most importantly, it makes deciding possible, efficient, and simple."
+- `README.md`
+  - draft: "`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `Ctrl+Enter` (`⌘↵` on a Mac) saves what you wrote. Tick several strings, or shift-click a run of them, and `h` or `a` decides them all at once. `?` lists the rest."
+  - now: "`slopchop review` opens a page on localhost that allows you to review your repo's copy and clear it for release, either by rewriting it in your voice, marking it as already yours, or leaving as \"ai.\" Built in keyboard shortcuts make the process smooth."
+- `README.md`
+  - draft: "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has looked. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |"
+  - now: "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |"
+- `README.md`
+  - draft: "Rewriting two thousand strings once is a finite job. Keeping them rewritten is not, because the next AI session adds forty more and the site slides back without anyone noticing."
+  - now: "It would be rough if you had to re-label already reviewed strings."
+- `README.md`
+  - draft: "A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves."
+  - now: "A review page that is more purpose built than just a code review."

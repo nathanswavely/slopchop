@@ -1,6 +1,19 @@
 # SlopChop
 
+[![copy provenance](https://raw.githubusercontent.com/nathanswavely/slopchop/main/copy/badge.svg)](https://github.com/nathanswavely/slopchop/blob/main/copy/REPORT.md)
+
 SlopChop is copy review for a site or app you are building with AI coding tools. It finds every string a visitor can read, puts the paragraphs in front of you one at a time so you can either rewrite them or allow them as drafted. Each decision is recorded in a file next to the code, and a CI check keeps the next AI session from quietly undoing your work.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/nathanswavely/slopchop/main/docs/screenshots/review-dark.png">
+  <img alt="The review page: a queue of strings on the left, and on the right the selected paragraph with a note from triage, a box to write in, the save options, and the lines around it in the source." src="https://raw.githubusercontent.com/nathanswavely/slopchop/main/docs/screenshots/review-light.png">
+</picture>
+
+```sh
+npx slopchop init      # writes .slopchop.json for this repo
+npx slopchop sync      # builds copy/ledger.json and stamps the baseline
+npx slopchop review    # opens the review page
+```
 
 ## Why this exists
 
@@ -13,6 +26,11 @@ It is not built to be an AI detector or a "policing" service. It is self-reporte
 `slopchop sync` reads the files named in `.slopchop.json` and pulls out every string a person could read: paragraphs in Markdown, text between tags, `placeholder` and `alt` attributes, message catalog values, sentence-shaped strings in your JavaScript. Identical text in twelve places becomes one entry, so you decide "Save changes" once. The result is `copy/ledger.json`, with every entry marked unreviewed.
 
 `slopchop review` opens a page on localhost that allows you to review your repo's copy and clear it for release, either by rewriting it in your voice, marking it as already yours, or leaving as "ai." Built in keyboard shortcuts make the process smooth.
+
+<details>
+<summary>Keyboard shortcuts</summary>
+<img alt="The keyboard shortcut sheet, opened with the question mark key." src="https://raw.githubusercontent.com/nathanswavely/slopchop/main/docs/screenshots/shortcuts.png">
+</details>
 
 `slopchop apply` writes your versions into the source files. It is a dry run until you pass `--apply`, and it edits nothing unless it finds the exact original text where the ledger says it should be. Run it on a clean tree and read the diff.
 
@@ -41,6 +59,8 @@ slopchop decide --status ai-fine --max-words 4 --note "buttons and nav" --apply
 ```
 
 `decide` only ever moves strings out of `unreviewed`, so running it again cannot undo something you decided by hand. It is a dry run until you pass `--apply`.
+
+<img alt="The review page filtered to strings of four words or fewer, with four labels ticked and a bar at the foot offering already mine, leave as drafted, and back to unreviewed for all of them." src="https://raw.githubusercontent.com/nathanswavely/slopchop/main/docs/screenshots/bulk.png">
 
 The queue also comes out as Markdown, for the places writing actually happens (a phone, a train, the GitHub web editor):
 
