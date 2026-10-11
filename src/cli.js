@@ -537,6 +537,9 @@ async function cmdAdvise(mode) {
     if (mode === 'suggest' && !val('file') && !val('tier') && !val('id')) {
       console.log('Nothing triaged as rewrite is waiting for a suggestion.');
       console.log(`${DIM}Run slopchop triage first, or narrow with --file, --tier or --id.${OFF}`);
+    } else if (!select(ledger, mode, { file: val('file'), tier: val('tier'), id: val('id'), redo: true }).length) {
+      // Nothing undecided in scope at all: say that, not that it was asked before.
+      console.log(`Nothing to send. No unreviewed strings match${mode === 'triage' && !val('tier') ? ' (labels are skipped unless --tier label)' : ''}.`);
     } else {
       console.log('Nothing to send. Every matching unreviewed string already has an answer (--redo asks again).');
     }
@@ -566,7 +569,7 @@ async function cmdAdvise(mode) {
   if (TTY) process.stdout.write('\n');
 
   if (mode === 'triage') {
-    console.log(`${GREEN}${r.rewrite} worth writing yourself${OFF} · ${r.glance} worth a glance · ${r.fine} fine as drafted`);
+    console.log(`${GREEN}${r.rewrite} worth writing yourself${OFF} · ${r.glance} with voice that reads plainly, worth a look · ${r.fine} with no voice in them`);
   } else {
     console.log(`${GREEN}${r.suggested} suggestion${r.suggested === 1 ? '' : 's'}${OFF}${r.unchanged ? ` · ${r.unchanged} left as they were` : ''}`);
     for (const x of r.refused.slice(0, 10)) console.log(`  ${YEL}dropped${OFF} "${x.entry.text.slice(0, 50)}…": ${x.reason}`);
@@ -579,7 +582,7 @@ async function cmdAdvise(mode) {
 
   if (mode === 'triage') {
     console.log(`\nNext: ${GREEN}slopchop review${OFF} puts the rewrite pile first and marks the tells.`);
-    if (r.fine) console.log(`${DIM}To leave the fine ones as drafted: slopchop decide --triage fine --status ai-fine${OFF}`);
+    if (r.fine) console.log(`${DIM}To leave the ones with no voice as drafted: slopchop decide --triage fine --status ai-fine${OFF}`);
   } else if (r.suggested) {
     console.log(`\nNext: ${GREEN}slopchop review${OFF}. A suggestion taken without edits is recorded as ai-revised, not as yours.`);
   }

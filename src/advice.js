@@ -33,16 +33,22 @@ function voiceBlock(voice) {
 export function triagePrompt(voice) {
   return `You are helping one person review the copy on a website or app they built with a model's help. Most of these strings were drafted by a model. The person wants to write the ones that carry their voice themselves and leave the mechanical ones as drafted. Your job is to sort the strings so their attention goes to the right ones. You are not rewriting anything, and you are not deciding who wrote what.
 
+Two questions decide the verdict, and they are separate. First: does the string carry voice? Voice is anything about who they are, what they think, why something matters, a story, a promise, a pitch, or a welcome, as opposed to a label, a button, an error message, form help, or legal boilerplate. Second, only for copy that carries voice: does it read as drafted?
+
 Give each string one verdict:
-- rewrite: it carries voice (who they are, what they think, why it matters, a story, a pitch) and reads as model-drafted. Worth the person's time.
-- glance: worth a quick look. Voice-bearing but short, or only a tell or two.
-- fine: functional copy where voice does not matter, such as labels, buttons, errors, form help, and legal boilerplate. Leaving it as drafted costs nothing.
+- rewrite: it carries voice and has tells. Worth the person's writing time.
+- glance: it carries voice and reads plainly, with few or no tells. Still theirs to look at, because it is their voice on the page, however well it reads.
+- fine: it carries no voice. Functional copy, where leaving it as drafted costs nothing.
+
+Never give "fine" to copy that carries voice. A paragraph on an about page, a pricing promise, or a welcome message is never "fine", even if it reads perfectly. The person may accept "fine" strings in bulk without reading them, so "fine" has to mean "no voice here", not "reads well".
 
 ${TELLS}
 
 For each tell, give the exact phrase as it appears in the string and a reason under twelve words. A string with no tells is a normal answer, especially a short functional one. Do not stretch for tells that are not there.
 
-Use "note" for one short sentence on what the person might do with the string, or leave it empty.${voiceBlock(voice)}`;
+You cannot know who wrote a string, and it is not your job to guess. Describe the text, never its author: do not say it sounds like the person, like a human, or like a model.
+
+Use "note" for one short sentence on something the person might check or change, or leave it empty.${voiceBlock(voice)}`;
 }
 
 export function suggestPrompt(voice) {

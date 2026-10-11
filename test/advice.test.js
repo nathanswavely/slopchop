@@ -243,3 +243,28 @@ test('triage and suggestions survive a sync, and nobody can choose ai-revised by
   assert.throws(() => decide(ledger.entries[0], { status: 'ai-revised' }), /bad status/);
   assert.equal(promote({ ...e, replacement: 'x' }, 'x').status, 'human');
 });
+
+test('the triage prompt keeps "fine" for copy with no voice, and never judges authorship', async () => {
+  const { triagePrompt } = await import('../src/advice.js');
+  const p = triagePrompt('');
+  assert.match(p, /Never give "fine" to copy that carries voice/);
+  assert.match(p, /accept "fine" strings in bulk/);
+  assert.match(p, /Describe the text, never its author/);
+  assert.match(p, /glance: it carries voice and reads plainly/);
+});
+
+test('an empty triage run says whether anything was unreviewed at all', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  await withProject({ 'a.md': 'A paragraph somebody already decided, long enough to count as helper text.\n' }, (project, dir) => {
+    const { ledger } = sync(project, load(project));
+    ledger.baseline = [];
+    ledger.entries[0].status = 'human';
+    save(project, ledger);
+    fs.writeFileSync(path.join(dir, '.slopchop.json'), JSON.stringify({ include: ['a.md'] }));
+    const out = execFileSync(process.execPath, [path.resolve('bin/slopchop.js'), 'triage', '--config', path.join(dir, '.slopchop.json')], { encoding: 'utf8', env: { ...process.env, NO_COLOR: '1' } });
+    assert.match(out, /No unreviewed strings match/);
+    assert.doesNotMatch(out, /already has an answer/);
+  });
+});
