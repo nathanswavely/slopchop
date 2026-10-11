@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
   "label": "copy",
-  "message": "0% reviewed · 0% human",
-  "color": "orange"
+  "message": "100% reviewed · 8% human",
+  "color": "brightgreen"
 }
