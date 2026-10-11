@@ -36,11 +36,14 @@ export function extractJs(file, src) {
 // stay available as the *opening* tag of the next match.
 const AFTER_TAG = /(<\/?[A-Za-z][\w.:-]*(?:\s[^<>]*?)?\/?>)([^<]+)(?=<)/g;
 
-export function extractJsx(file, src) {
-  const clean = stripComments(src);
+/**
+ * Text nodes that follow a real tag, in markup that may hold JSX-style
+ * expressions. `markup` is the same length as `src` with anything that is
+ * not markup already blanked. Shared with Astro templates.
+ */
+export function afterTagText(file, markup, src, { kind = 'jsx-text', text = (s) => collapse(s) } = {}) {
   const hits = [];
-  let m;
-  while ((m = AFTER_TAG.exec(clean)) !== null) {
+  for (const m of markup.matchAll(AFTER_TAG)) {
     const chunk = m[2];
     const chunkIndex = m.index + m[1].length;
     if (!collapse(chunk)) continue;
@@ -52,9 +55,15 @@ export function extractJsx(file, src) {
       const inner = raw.slice(lead, raw.length - trail);
       if (!inner) continue;
       const index = chunkIndex + seg.offset + lead;
-      pushHit(hits, { file, raw: verbatim(src, index, inner), index, src, kind: 'jsx-text', text: collapse(inner) });
+      pushHit(hits, { file, raw: verbatim(src, index, inner), index, src, kind, text: text(inner) });
     }
   }
+  return hits;
+}
+
+export function extractJsx(file, src) {
+  const clean = stripComments(src);
+  const hits = afterTagText(file, clean, src);
 
   hits.push(...attrHits(file, clean, src, 0, 'jsx-attr'));
 

@@ -99,10 +99,22 @@ export function isCatalogCopy(val) {
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(t) || /^(mailto|tel):/i.test(t)) return false;
   if (/^#[0-9a-f]{3,8}$/i.test(t)) return false;
   if (/^[\w-]+([./:#@\\-][\w-]*)+$/.test(t)) return false;     // paths, dotted keys, emails
+  if (/^\.{0,2}\/\S*$/.test(t)) return false;                    // rooted or relative paths: /img/a.jpg, ../x
   if (/^[a-z]+([A-Z][a-z0-9]*)+$/.test(t)) return false;        // camelCase identifier
   if (/^[a-z][a-z0-9]*(_[a-z0-9]+)+$/.test(t)) return false;    // snake_case identifier
   if (/^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$/.test(t)) return false;    // SCREAMING_SNAKE constant
   return true;
+}
+
+/**
+ * Does a catalog key path pass through one of the ignored key names?
+ * `bands[2].events[0].location` is under `events` and under `location`.
+ * Data files that double as content (a list of gigs beside a band's bio)
+ * use this to keep the facts out of review and the prose in.
+ */
+export function underIgnoredKey(at, ignoreKeys) {
+  if (!at || !ignoreKeys || !ignoreKeys.size) return false;
+  return at.split(/[.[\]]+/).some((k) => k && ignoreKeys.has(k));
 }
 
 // Kinds whose line breaks carry meaning. Collapsing a Markdown list to one
