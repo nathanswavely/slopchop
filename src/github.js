@@ -89,8 +89,17 @@ export function renderVerdict(g, s, { link = () => null, pending = [] } = {}) {
     if (g.unledgered.length > 50) L.push(`| … | and ${g.unledgered.length - 50} more |`);
     L.push('');
     L.push('Run `slopchop sync` then `slopchop review` locally, decide each one, and commit the ledger.');
-  } else {
+  } else if (!g.unknown?.length) {
     L.push('Every string in source has an author on record.');
+  }
+  if (g.unknown?.length) {
+    if (g.unledgered.length) L.push('');
+    L.push(`**${plural(g.unknown.length, 'string')}** ${g.unknown.length === 1 ? 'has' : 'have'} a status SlopChop does not define, which is not a decision.`);
+    L.push('');
+    L.push('| Where | Status | Text |');
+    L.push('|---|---|---|');
+    for (const e of g.unknown.slice(0, 50)) L.push(`| ${where(e.occurrences[0])} | \`${cell(String(e.status))}\` | ${cell(e.text)} |`);
+    if (g.unknown.length > 50) L.push(`| … | | and ${g.unknown.length - 50} more |`);
   }
   if (pending.length) {
     L.push('');

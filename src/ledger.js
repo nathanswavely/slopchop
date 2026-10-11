@@ -279,6 +279,9 @@ export function gate(onDisk, fresh) {
     unledgered: unreviewed.filter((e) => !baseline.has(e.id)),
     backlog: unreviewed.filter((e) => baseline.has(e.id)),
     pendingApply: fresh.entries.filter((e) => e.status === 'rewritten'),
+    // A status this tool does not define is not a decision, whoever wrote
+    // it into the file. It fails the check rather than passing for one.
+    unknown: fresh.entries.filter((e) => !STATUSES.includes(e.status)),
     strict: !!onDisk.strict,
   };
 }
