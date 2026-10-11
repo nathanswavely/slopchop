@@ -73,7 +73,7 @@
           "file": "README.md",
           "line": 7,
           "kind": "md-block",
-          "raw": "I've been building a lot with AI. AI code doesnt bother me, but AI copy gives me the ick. Even as the models get better, there is something that irks me about reading words that have my name on them but weren't written by me. But it's very difficult to parse through the copy and edit it without going back to pre-ai coding workflows. What I needed was a way to parse through the couple hundred paragraphs that need rewriting, skip the labels that did not, and keep a record so I would not have to make the same call twice. As an added bonus, open source projects have a transparent way of communicating to users which copy is human authored and which is not.",
+          "raw": "I've been building a lot with AI. AI code doesn't bother me, but AI copy gives me the ick. Even as the models get better, there is something that irks me about reading words that have my name on them but weren't written by me. But it's very difficult to parse through the copy and edit it without going back to pre-ai coding workflows. What I needed was a way to parse through the couple hundred paragraphs that need rewriting, skip the labels that did not, and keep a record so I would not have to make the same call twice. As an added bonus, open source projects have a transparent way of communicating to users which copy is human authored and which is not.",
           "quote": null
         }
       ],
@@ -591,6 +591,24 @@
       ]
     },
     {
+      "id": "0ce249d5a2c4",
+      "text": "`ignoreKeys` is for a data file that is half content and half facts, like a JSON file with a band's bio beside its list of gigs. Any value under one of those key names, at any depth, is left out, so adding a show does not put a venue address in the review queue.",
+      "words": 54,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 116,
+          "kind": "md-block",
+          "raw": "`ignoreKeys` is for a data file that is half content and half facts, like a JSON file with a band's bio beside its list of gigs. Any value under one of those key names, at any depth, is left out, so adding a show does not put a venue address in the review queue.",
+          "quote": null
+        }
+      ]
+    },
+    {
       "id": "733c543e200e",
       "text": "What counts as copy, by file type:",
       "words": 7,
@@ -601,7 +619,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 115,
+          "line": 118,
           "kind": "md-block",
           "raw": "What counts as copy, by file type:",
           "quote": null
@@ -609,19 +627,19 @@
       ]
     },
     {
-      "id": "1fd07944acd4",
-      "text": "| Files | What comes out |\n|---|---|\n| `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |\n| `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |\n| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |\n| `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |\n| `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |\n| `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |\n| `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{\"error\":\"...\"}` bodies. |",
-      "words": 151,
+      "id": "215bb7289554",
+      "text": "| Files | What comes out |\n|---|---|\n| `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |\n| `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |\n| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |\n| `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |\n| `.astro` | Template text and attributes, sentence-shaped strings in the `---` frontmatter, in `{expressions}`, and in client `<script>`s. Not `<style>` or comments. |\n| `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |\n| `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |\n| `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{\"error\":\"...\"}` bodies. |",
+      "words": 175,
       "tier": "prose",
-      "status": "ai-fine",
+      "status": "unreviewed",
       "replacement": null,
       "note": null,
       "occurrences": [
         {
           "file": "README.md",
-          "line": 117,
+          "line": 120,
           "kind": "md-block",
-          "raw": "| Files | What comes out |\n|---|---|\n| `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |\n| `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |\n| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |\n| `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |\n| `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |\n| `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |\n| `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{\"error\":\"...\"}` bodies. |",
+          "raw": "| Files | What comes out |\n|---|---|\n| `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |\n| `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |\n| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |\n| `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |\n| `.astro` | Template text and attributes, sentence-shaped strings in the `---` frontmatter, in `{expressions}`, and in client `<script>`s. Not `<style>` or comments. |\n| `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |\n| `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |\n| `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{\"error\":\"...\"}` bodies. |",
           "quote": null
         }
       ]
@@ -637,7 +655,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 127,
+          "line": 131,
           "kind": "md-block",
           "raw": "The filters over-collect on purpose. A false positive costs one keystroke; a false negative is a string you never see. If something odd shows up in the queue, mark it and keep going.",
           "quote": null
@@ -655,7 +673,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 129,
+          "line": 133,
           "kind": "md-block",
           "raw": "## Where it will get in your way",
           "quote": null
@@ -673,7 +691,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 131,
+          "line": 135,
           "kind": "md-block",
           "raw": "In HTML, JSX, and Vue, an inline element splits the sentence around it. `Call us at <code>555-0100</code> or stop by` shows up as two entries. Markdown does not have this problem, since a paragraph is one block whatever is inside it.",
           "quote": null
@@ -691,7 +709,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 133,
+          "line": 137,
           "kind": "md-block",
           "raw": "The YAML reader is a subset: block mappings, sequences, plain and quoted scalars, and `|` and `>` blocks. Flow collections, anchors, and tags are skipped rather than guessed at.",
           "quote": null
@@ -709,7 +727,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 135,
+          "line": 139,
           "kind": "md-block",
           "raw": "Writeback refuses anything that would break the file it lands in (a `{` in JSX text, a quote that would close a YAML scalar, a newline in an attribute) and tells you which entry and why. It would rather leave a string undone than produce a file that does not build.",
           "quote": null
@@ -727,7 +745,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 137,
+          "line": 141,
           "kind": "md-block",
           "raw": "## What it does not do",
           "quote": null
@@ -745,7 +763,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 139,
+          "line": 143,
           "kind": "md-block",
           "raw": "- It does not send your text anywhere you did not ask it to. There is no server and no account. The review page is a local process reading local files, the pull request comments go to the same GitHub that holds the code, and the only model calls are `triage` and `suggest`, on your key, after a dry run.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. It will suggest, if you ask, but a suggestion you take without editing is recorded as `ai-revised`, so `human` only ever means a person typed it.",
           "quote": null
@@ -763,7 +781,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 143,
+          "line": 147,
           "kind": "md-block",
           "raw": "## Report and badge",
           "quote": null
@@ -781,7 +799,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 149,
+          "line": 153,
           "kind": "md-block",
           "raw": "writes `copy/REPORT.md` with the counts by status and tier, the scope and what was left out of it, and every replaced draft next to the text that replaced it. It also writes `copy/badge.json` for shields.io and `copy/badge.svg` for a repo that would rather not call out. The badge shows two numbers, reviewed and human-written, because either one alone overstates things.",
           "quote": null
@@ -799,7 +817,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 151,
+          "line": 155,
           "kind": "md-block",
           "raw": "## Next",
           "quote": null
@@ -817,7 +835,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 153,
+          "line": 157,
           "kind": "md-block",
           "raw": "A review page that is more purpose built than just a code review.",
           "quote": null
@@ -839,7 +857,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 155,
+          "line": 159,
           "kind": "md-block",
           "raw": "To start, run `npx slopchop init` in the repo, then `sync`. The first sync stamps the baseline, so the check passes from the beginning. After that, open `slopchop review` and start with the paragraphs.",
           "quote": null
@@ -1466,7 +1484,26 @@
       ]
     }
   ],
-  "retired": [],
+  "retired": [
+    {
+      "id": "1fd07944acd4",
+      "text": "| Files | What comes out |\n|---|---|\n| `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |\n| `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |\n| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |\n| `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |\n| `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |\n| `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |\n| `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{\"error\":\"...\"}` bodies. |",
+      "words": 151,
+      "tier": "prose",
+      "status": "ai-fine",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 117,
+          "kind": "md-block",
+          "raw": "| Files | What comes out |\n|---|---|\n| `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |\n| `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |\n| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |\n| `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |\n| `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |\n| `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |\n| `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{\"error\":\"...\"}` bodies. |",
+          "quote": null
+        }
+      ]
+    }
+  ],
   "baseline": [
     "8012034e88f7",
     "aaeababbfc74",
