@@ -71,7 +71,11 @@ export function renderReport(project, ledger) {
   if (project.frozen.size) {
     L.push(`- Frozen constants (${[...project.frozen].map((f) => `\`${f}\``).join(', ')}): matched byte-for-byte by the program and never offered for rewriting.`);
   }
-  if (!project.outOfScope.length && !project.frozen.size) L.push('- _Nothing declared._');
+  const ignored = project.ignoreKeys || new Set();
+  if (ignored.size) {
+    L.push(`- Ignored keys in data files (${[...ignored].map((k) => `\`${k}\``).join(', ')}): facts rather than writing, never offered for review.`);
+  }
+  if (!project.outOfScope.length && !project.frozen.size && !ignored.size) L.push('- _Nothing declared._');
   L.push('');
   L.push(`## Replaced drafts (${replaced.length})`);
   L.push('');

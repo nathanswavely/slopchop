@@ -106,6 +106,17 @@ export function isCatalogCopy(val) {
   return true;
 }
 
+/**
+ * Does a catalog key path pass through one of the ignored key names?
+ * `bands[2].events[0].location` is under `events` and under `location`.
+ * Data files that double as content (a list of gigs beside a band's bio)
+ * use this to keep the facts out of review and the prose in.
+ */
+export function underIgnoredKey(at, ignoreKeys) {
+  if (!at || !ignoreKeys || !ignoreKeys.size) return false;
+  return at.split(/[.[\]]+/).some((k) => k && ignoreKeys.has(k));
+}
+
 // Kinds whose line breaks carry meaning. Collapsing a Markdown list to one
 // line turns four bullets into one paragraph, and writeback would then put
 // that flattened line back into the file. HTML and string literals have no

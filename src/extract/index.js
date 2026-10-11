@@ -45,7 +45,7 @@ export function extractOne(file, lang, src, ctx = {}) {
 /** Every hit across every in-scope file, unmerged. */
 export function extractAll(project) {
   const hits = [];
-  const ctx = { frozen: project.frozen };
+  const ctx = { frozen: project.frozen, ignoreKeys: project.ignoreKeys };
   for (const { file, lang } of project.sourceFiles()) {
     const src = fs.readFileSync(path.join(project.root, file), 'utf8');
     hits.push(...extractOne(file, lang, src, ctx));

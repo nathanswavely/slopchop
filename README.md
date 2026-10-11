@@ -106,11 +106,14 @@ npx slopchop init
   "exclude": ["**/*.test.*"],
   "languages": { "internal/handler/**/*.go": "go-errors" },
   "frozen": ["legacyCharterText"],
+  "ignoreKeys": ["events"],
   "outOfScope": [
     { "path": "docs/adr/", "reason": "Engineering notes. Nobody's voice to reclaim." }
   ]
 }
 ```
+
+`ignoreKeys` is for a data file that is half content and half facts, like a JSON file with a band's bio beside its list of gigs. Any value under one of those key names, at any depth, is left out, so adding a show does not put a venue address in the review queue.
 
 What counts as copy, by file type:
 

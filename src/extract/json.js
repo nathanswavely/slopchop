@@ -4,7 +4,7 @@
 // in scope and the filter is only there to drop the obviously non-copy
 // (URLs, identifiers, colours). Keys are never copy.
 
-import { pushHit, isCatalogCopy, collapse } from './common.js';
+import { pushHit, isCatalogCopy, collapse, underIgnoredKey } from './common.js';
 
 /** Every string value in a JSON document, with position and key path. */
 export function scanJson(src) {
@@ -48,10 +48,10 @@ function decode(raw) {
   catch { return raw; }
 }
 
-export function extractJson(file, src) {
+export function extractJson(file, src, { ignoreKeys } = {}) {
   const hits = [];
   for (const s of scanJson(src)) {
-    if (!isCatalogCopy(s.text)) continue;
+    if (!isCatalogCopy(s.text) || underIgnoredKey(s.at, ignoreKeys)) continue;
     pushHit(hits, { file, raw: s.raw, index: s.index, src, kind: 'json-value', quote: '"', text: collapse(s.text), at: s.at });
   }
   return hits;

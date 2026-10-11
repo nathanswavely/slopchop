@@ -150,3 +150,19 @@ test('JSON: a rooted or relative asset path is not copy', () => {
   const texts = extractOne('bands.json', 'json', src).map((h) => h.text);
   assert.deepEqual(texts, ['A band from Lancaster.']);
 });
+
+test('JSON and YAML: values under an ignored key are left out at any depth', () => {
+  const ignoreKeys = new Set(['events']);
+  const json = JSON.stringify({ bands: [{
+    bio: 'Four people who met at church and never left the practice room.',
+    events: [{ event: 'Fall Fest (Duo)', location: 'The Grape | Philadelphia, PA' }],
+  }] }, null, 2);
+  const jsonTexts = extractOne('bands.json', 'json', json, { ignoreKeys }).map((h) => h.text);
+  assert.deepEqual(jsonTexts, ['Four people who met at church and never left the practice room.']);
+
+  const yaml = 'bio: A band from Lancaster.\nevents:\n  - event: Fall Fest\n    location: The Grape\n';
+  const yamlTexts = extractOne('bands.yml', 'yaml', yaml, { ignoreKeys }).map((h) => h.text);
+  assert.deepEqual(yamlTexts, ['A band from Lancaster.']);
+
+  assert.equal(extractOne('bands.json', 'json', json).length, 3, 'nothing is ignored without the setting');
+});

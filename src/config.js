@@ -38,6 +38,7 @@ export const DEFAULTS = {
   exclude: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/*.test.*', '**/*.spec.*'],
   languages: {},
   frozen: [],
+  ignoreKeys: [],
   outOfScope: [],
 };
 
@@ -100,6 +101,7 @@ export function projectFrom(raw, configPath) {
     badgePath: abs(config.badge),
     draftDir,
     frozen: new Set(config.frozen),
+    ignoreKeys: new Set(config.ignoreKeys),
     outOfScope: config.outOfScope,
 
     /** Posix-relative path from root for printing. */
