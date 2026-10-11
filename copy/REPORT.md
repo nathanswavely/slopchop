@@ -8,12 +8,12 @@ visitor-readable string in this repository and records who wrote it.
 | Written by a person | 6 | 247 |
 | A person's words from the start | 0 | 0 |
 | Drafted by a model, edited by a person | 1 | 125 |
-| Left as drafted, deliberately | 72 | 1,535 |
+| Left as drafted, deliberately | 75 | 1,618 |
 | Not yet reviewed | 0 | 0 |
-| **Total** | **79** | **1,907** |
+| **Total** | **82** | **1,990** |
 
 Human-authored or deliberately accepted: **100%** of strings.
-A person's words: **8%** of strings, **13%** of words.
+A person's words: **7%** of strings, **12%** of words.
 Edited from a model's draft: **1%** of strings, counted apart, because an edit leaves most of the model's words in place.
 
 Whether a replacement was a rewrite or small edits is what the person said when they saved it. SlopChop records it and does not check it.
@@ -22,8 +22,8 @@ Whether a replacement was a rewrite or small edits is what the person said when 
 
 | Tier | Decided | Total |
 |---|---:|---:|
-| Paragraphs (16+ words) | 30 | 30 |
-| Helper text (6–15 words) | 8 | 8 |
+| Paragraphs (16+ words) | 32 | 32 |
+| Helper text (6–15 words) | 9 | 9 |
 | Labels (1–5 words) | 41 | 41 |
 
 ## Scope

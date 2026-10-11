@@ -47,7 +47,7 @@
       "text": "The review page: a queue of strings on the left, and on the right the selected paragraph with a note from triage, a box to write in, the save options, and the lines around it in the source.",
       "words": 38,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -210,7 +210,7 @@
       "text": "The keyboard shortcut sheet, opened with the question mark key.",
       "words": 10,
       "tier": "helper",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -376,7 +376,7 @@
       "text": "The review page filtered to strings of four words or fewer, with four labels ticked and a bar at the foot offering already mine, leave as drafted, and back to unreviewed for all of them.",
       "words": 35,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
