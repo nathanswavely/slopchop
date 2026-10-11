@@ -30,11 +30,16 @@
 :where(a:hover) { text-decoration: underline; }
 
 :where(h1, h2, h3, h4) { line-height: 1.25; }
-/* Big headings carry the hand-lettered voice; smaller ones stay readable. */
+/* Big headings carry the hand-lettered voice; h3 and smaller stay in the
+   grotesque with everything else (see the type rule in foundation.css). */
 :where(h1, h2) {
   font-family: var(--lt-font-display);
-  font-variation-settings: 'BNCE' 20;
+  font-variation-settings: 'BNCE' var(--lt-bounce, 20);
 }
+/* A display-face h1 at the browser's 2em pushes the first control a third
+   of the way down a phone (Patchwork, 2026-09-28). It eases from 2rem on a
+   wide screen to 1.6rem on a narrow one, with no breakpoint. */
+:where(h1) { font-size: clamp(1.6rem, 1.35rem + 1.2vw, 2rem); }
 
 /* Form controls inherit the page's type and color. Without color: inherit,
    a button renders the browser's black ButtonText, which vanishes in dark. */
@@ -50,7 +55,8 @@
   input[type="search"], input[type="password"], input[type="date"],
   input[type="datetime-local"], textarea, select
 ) {
-  padding: 0.45rem 0.7rem;
+  min-height: var(--lt-target, 24px);
+  padding: var(--lt-field-pad-y, 0.45rem) var(--lt-field-pad-x, 0.7rem);
   border: 1px solid var(--lt-color-border);
   border-radius: var(--lt-radius-control);
   background: var(--lt-color-surface);
@@ -74,7 +80,16 @@
 
 :where(code, kbd, samp, pre) { font-family: var(--lt-font-mono); }
 
-@media (max-width: 640px) {
-  /* iOS zooms the page when a focused field is under 16px. */
+@media (pointer: coarse) {
+  /* iOS zooms the page when a focused field is under 16px. By pointer, not
+     width: an iPad zooms too, and a narrow desktop window does not. */
   :where(input, textarea, select) { font-size: 16px; }
+}
+
+@media (max-width: 640px) {
+  /* One element wider than a phone should not let the whole page slide
+     sideways. clip, not hidden: overflow-x: hidden makes the root a
+     scroll container that never scrolls, and then no position: sticky
+     works (Patchwork, f7aaf0c). hidden stays as the fallback. */
+  :where(html, body) { overflow-x: hidden; overflow-x: clip; }
 }
