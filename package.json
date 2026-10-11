@@ -1,6 +1,6 @@
 {
   "name": "slopchop",
-  "version": "0.2.3",
+  "version": "0.2.2",
   "description": "Copy review for a site you built with AI: write the paragraphs yourself, wave through the labels, and keep a record next to the code so the next AI session cannot undo it.",
   "type": "module",
   "bin": { "slopchop": "bin/slopchop.js" },
