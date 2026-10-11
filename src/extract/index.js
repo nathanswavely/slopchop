@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { idFor, tierFor, wordCount } from './common.js';
 import { extractSvelte } from './svelte.js';
+import { extractAstro } from './astro.js';
 import { extractJs, extractJsx } from './js.js';
 import { extractGo, extractGoErrors } from './go.js';
 import { extractMd, extractMdx } from './md.js';
@@ -18,6 +19,7 @@ export { collapse, idFor, tierFor, wordCount, BLOCK_KINDS } from './common.js';
 
 export const EXTRACTORS = {
   svelte: extractSvelte,
+  astro: extractAstro,
   js: extractJs,
   jsx: extractJsx,
   vue: extractVue,
@@ -43,7 +45,7 @@ export function extractOne(file, lang, src, ctx = {}) {
 /** Every hit across every in-scope file, unmerged. */
 export function extractAll(project) {
   const hits = [];
-  const ctx = { frozen: project.frozen };
+  const ctx = { frozen: project.frozen, ignoreKeys: project.ignoreKeys };
   for (const { file, lang } of project.sourceFiles()) {
     const src = fs.readFileSync(path.join(project.root, file), 'utf8');
     hits.push(...extractOne(file, lang, src, ctx));

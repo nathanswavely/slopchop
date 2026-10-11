@@ -15,6 +15,7 @@ export const CONFIG_NAME = '.slopchop.json';
 // Which extractor handles which extension, unless `languages` overrides it.
 const BY_EXT = {
   '.svelte': 'svelte',
+  '.astro': 'astro',
   '.js': 'js', '.mjs': 'js', '.cjs': 'js', '.ts': 'js', '.mts': 'js', '.cts': 'js',
   '.jsx': 'jsx', '.tsx': 'jsx',
   '.vue': 'vue',
@@ -37,6 +38,7 @@ export const DEFAULTS = {
   exclude: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/*.test.*', '**/*.spec.*'],
   languages: {},
   frozen: [],
+  ignoreKeys: [],
   outOfScope: [],
 };
 
@@ -99,6 +101,7 @@ export function projectFrom(raw, configPath) {
     badgePath: abs(config.badge),
     draftDir,
     frozen: new Set(config.frozen),
+    ignoreKeys: new Set(config.ignoreKeys),
     outOfScope: config.outOfScope,
 
     /** Posix-relative path from root for printing. */
@@ -133,6 +136,7 @@ export function langFor(file, overrides = []) {
 const CANDIDATES = [
   { include: 'README.md', why: 'the first thing a newcomer reads' },
   { include: 'src/**/*.svelte' },
+  { include: 'src/**/*.astro' },
   { include: 'src/**/*.{jsx,tsx}' },
   { include: 'src/**/*.vue' },
   { include: 'src/**/*.{js,ts}', why: 'toasts, error messages, option labels' },

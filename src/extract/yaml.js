@@ -7,7 +7,7 @@
 // which is the failure mode the tool prefers (a string not offered) over the
 // alternative (a string rewritten in the wrong place).
 
-import { pushHit, isCatalogCopy, collapse } from './common.js';
+import { pushHit, isCatalogCopy, collapse, underIgnoredKey } from './common.js';
 
 const KEY = /^("(?:[^"\\]|\\.)*"|'(?:[^']|'')*'|[^\s"'#[\]{}&*!|>%@`-][^:#]*?|-[^\s:#][^:#]*?)\s*:(?=\s|$)/;
 
@@ -159,10 +159,10 @@ export function scanYaml(src, offset = 0) {
   return out;
 }
 
-export function yamlHits(file, src, scalars) {
+export function yamlHits(file, src, scalars, { ignoreKeys } = {}) {
   const hits = [];
   for (const s of scalars) {
-    if (!isCatalogCopy(s.text)) continue;
+    if (!isCatalogCopy(s.text) || underIgnoredKey(s.at, ignoreKeys)) continue;
     pushHit(hits, {
       file, raw: s.raw, index: s.index, src, kind: s.kind, quote: s.quote,
       text: s.kind === 'yaml-block' ? s.text : collapse(s.text), at: s.at, indent: s.indent,
@@ -171,6 +171,6 @@ export function yamlHits(file, src, scalars) {
   return hits;
 }
 
-export function extractYaml(file, src) {
-  return yamlHits(file, src, scanYaml(src));
+export function extractYaml(file, src, ctx = {}) {
+  return yamlHits(file, src, scanYaml(src), ctx);
 }
