@@ -120,6 +120,7 @@ What counts as copy, by file type:
 | `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |
 | `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |
 | `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |
+| `.astro` | Template text and attributes, sentence-shaped strings in the `---` frontmatter, in `{expressions}`, and in client `<script>`s. Not `<style>` or comments. |
 | `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |
 | `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |
 | `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{"error":"..."}` bodies. |

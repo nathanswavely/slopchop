@@ -144,3 +144,9 @@ test('Markdown frontmatter values are copy, and the fence is not a paragraph', (
   assert.ok(!texts.some((t) => t.includes('---')));
   assert.equal(hits.find((h) => h.text === 'About Northwind').line, 2);
 });
+
+test('JSON: a rooted or relative asset path is not copy', () => {
+  const src = JSON.stringify({ image: '/img/band.jpg', cover: './covers/a.png', up: '../x/y.svg', bio: 'A band from Lancaster.' }, null, 2);
+  const texts = extractOne('bands.json', 'json', src).map((h) => h.text);
+  assert.deepEqual(texts, ['A band from Lancaster.']);
+});
