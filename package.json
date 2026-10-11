@@ -1,6 +1,6 @@
 {
   "name": "slopchop",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Copy review for a site you built with AI: write the paragraphs yourself, wave through the labels, and keep a record next to the code so the next AI session cannot undo it.",
   "type": "module",
   "bin": { "slopchop": "bin/slopchop.js" },
@@ -14,5 +14,8 @@
     "report": "node bin/slopchop.js report"
   },
   "keywords": ["copy", "provenance", "ai", "review", "ci", "i18n", "content"],
+  "repository": { "type": "git", "url": "git+https://github.com/nathanswavely/slopchop.git" },
+  "homepage": "https://github.com/nathanswavely/slopchop#readme",
+  "bugs": { "url": "https://github.com/nathanswavely/slopchop/issues" },
   "license": "MIT"
 }
