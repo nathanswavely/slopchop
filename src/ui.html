@@ -31,6 +31,10 @@
     font-size: 15px; line-height: 1.55;
   }
   header { border-bottom: 1px solid var(--lt-color-border); padding: 10px 16px; flex: none; }
+  /* The filter row is a dense toolbar: its fields keep the small type
+     Liquid Textile 0.3.0 moved .lt-field off (fields are body size now),
+     or "Min" and "Max" no longer fit their boxes. */
+  header .lt-field { --lt-field-font: var(--lt-text-sm); }
   .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .grow { flex: 1; }
   .bar { flex: 1; min-width: 160px; height: 8px; background: var(--lt-color-border); border-radius: 4px; overflow: hidden; }
@@ -92,7 +96,9 @@
   #detail .lt-quote { margin: 14px 0; }
   #detail .lt-eyebrow { margin: 26px 0 6px; }
   #detail .lt-callout { margin-top: 12px; }
-  #editor { width: 100%; min-height: 130px; }
+  /* The page's reading size, as the draft above it is: Liquid Textile sets
+     fields at 1rem (16px), and this page reads at 15px. */
+  #editor { width: 100%; min-height: 130px; --lt-field-font: 1em; }
   .actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 
   mark.tell {
