@@ -152,6 +152,10 @@
   --lt-btn-sm-font: 0.78rem;
   --lt-field-pad-y: 0.45rem;
   --lt-field-pad-x: 0.7rem;
+  /* What a person types is read at body size, in an input, a select or a
+     textarea alike. rem, not inherit: a field inside .lt-label would
+     otherwise take the label's small type. */
+  --lt-field-font: 1rem;
   /* Table cells ease tighter on a small screen without a breakpoint. */
   --lt-cell-pad-y: clamp(0.5rem, 1.5vw, 0.6rem);
   --lt-cell-pad-x: clamp(0.6rem, 2vw, 0.75rem);
@@ -176,6 +180,7 @@
   --lt-btn-sm-font: var(--lt-text-xs);
   --lt-field-pad-y: 0.3rem;
   --lt-field-pad-x: 0.55rem;
+  --lt-field-font: var(--lt-text-sm);
   --lt-cell-pad-y: 0.35rem;
   --lt-cell-pad-x: 0.55rem;
   --lt-item-pad-y: 3px;
@@ -434,6 +439,11 @@
    ================================================================ */
 
 .lt-field {
+  /* Never wider than its box, and free to shrink in a row beside a
+     button: a field's natural width is its minimum otherwise, and a
+     phone's row of a field and a button overflowed. */
+  min-width: 0;
+  max-width: 100%;
   min-height: var(--lt-target);
   padding: var(--lt-field-pad-y) var(--lt-field-pad-x);
   border: 1px solid var(--lt-color-border);
@@ -441,7 +451,10 @@
   background: var(--lt-color-surface);
   color: var(--lt-color-text);
   font: inherit;
-  font-size: var(--lt-text-sm);
+  /* Typed text is regular weight even inside .lt-label, whose words are
+     medium and would otherwise come through font: inherit. */
+  font-size: var(--lt-field-font);
+  font-weight: 400;
   line-height: 1.4;
   transition: border-color var(--lt-quick) ease;
 }
@@ -451,7 +464,7 @@
   outline-offset: 1px;
   border-color: var(--lt-color-primary);
 }
-textarea.lt-field { font-size: inherit; line-height: 1.55; resize: vertical; }
+textarea.lt-field { line-height: 1.55; resize: vertical; }
 
 /* ================================================================
    TAGS, KEYS
@@ -625,6 +638,10 @@ textarea.lt-field { font-size: inherit; line-height: 1.55; resize: vertical; }
    ================================================================ */
 
 .lt-dialog {
+  /* Centred by the browser's own margin: auto for a modal <dialog>; set
+     here too, so an app's * { margin: 0 } reset does not pin it to the
+     top-left corner. */
+  margin: auto;
   max-width: min(32rem, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
   padding: var(--lt-pad);
@@ -1518,7 +1535,9 @@ html:has(.lt-dialog:modal, .lt-drawer:modal, .lt-sheet:modal) { overflow: hidden
     gap: 2px;
     min-width: 0;
     margin: 0;
-    padding: 2px 4px;
+    /* 2px a side: five tabs on a 375px phone still fit an eleven-letter
+       word ("Noticeboard") at this size. */
+    padding: 2px;
     border-bottom: 0;
     border-radius: var(--lt-radius-control);
     font-size: 0.6875rem;
@@ -1555,6 +1574,10 @@ html:has(.lt-dialog:modal, .lt-drawer:modal, .lt-sheet:modal) { overflow: hidden
    box); a definite width gives the browser the real one. */
 .lt-table-wrap:has(> .lt-table-stack) { container-type: inline-size; width: 100%; }
 @container (max-width: 40rem) {
+  /* .lt-table.lt-table-stack, not :where(): the table's own .lt-table td
+     (padding, a rule under every cell, a 22rem cap) and its nowrap for a
+     cell holding a control would otherwise win, and every cell drew a
+     line. */
   .lt-table-stack { min-width: 0; }
   .lt-table-stack.lt-table-pin :is(th, td):first-child { position: static; background: none; box-shadow: none; }
   .lt-table-stack :where(thead) {
@@ -1565,18 +1588,20 @@ html:has(.lt-dialog:modal, .lt-drawer:modal, .lt-sheet:modal) { overflow: hidden
     clip: rect(0 0 0 0);
     white-space: nowrap;
   }
-  .lt-table-stack :where(tbody, tr, td) { display: block; }
+  .lt-table-stack :where(tbody, tr) { display: block; }
   .lt-table-stack :where(tr) { padding: 0.6rem 0; border-bottom: 1px solid var(--lt-color-border); }
-  .lt-table-stack :where(td) {
+  .lt-table.lt-table-stack td {
     display: grid;
     grid-template-columns: minmax(6rem, 35%) minmax(0, 1fr);
     gap: 0.75rem;
+    /* A tag or a button keeps its own width, not the column's. */
+    justify-items: start;
     max-width: none;
     padding: 0.2rem 0;
     border: 0;
     white-space: normal;
   }
-  .lt-table-stack :where(td)::before {
+  .lt-table.lt-table-stack td::before {
     content: attr(data-label);
     color: var(--lt-color-text-muted);
     font-size: var(--lt-text-xs);
@@ -1585,8 +1610,8 @@ html:has(.lt-dialog:modal, .lt-drawer:modal, .lt-sheet:modal) { overflow: hidden
     text-transform: uppercase;
   }
   /* A cell with no label holds actions: they keep their own width. */
-  .lt-table-stack :where(td:not([data-label])) { grid-template-columns: minmax(0, 1fr); justify-items: start; }
-  .lt-table-stack :where(td:not([data-label]))::before { display: none; }
+  .lt-table.lt-table-stack td:not([data-label]) { grid-template-columns: minmax(0, 1fr); }
+  .lt-table.lt-table-stack td:not([data-label])::before { display: none; }
 }
 
 /* ================================================================

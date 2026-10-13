@@ -48,7 +48,7 @@
   color: inherit;
 }
 :where(button) { cursor: pointer; }
-:where(button:disabled) { cursor: not-allowed; }
+:where(button:disabled) { cursor: not-allowed; opacity: 0.5; }
 
 :where(
   input[type="text"], input[type="email"], input[type="url"], input[type="number"],
@@ -61,7 +61,8 @@
   border-radius: var(--lt-radius-control);
   background: var(--lt-color-surface);
   color: var(--lt-color-text);
-  font-size: var(--lt-text-sm);
+  font-size: var(--lt-field-font, 1rem);
+  font-weight: 400;
   transition: border-color var(--lt-quick) ease;
 }
 :where(input, textarea, select):focus-visible {
