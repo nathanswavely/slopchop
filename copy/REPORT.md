@@ -5,15 +5,15 @@ visitor-readable string in this repository and records who wrote it.
 
 | | strings | words |
 |---|---:|---:|
-| Written by a person | 6 | 247 |
+| Written by a person | 5 | 172 |
 | A person's words from the start | 0 | 0 |
 | Drafted by a model, edited by a person | 1 | 125 |
 | Left as drafted, deliberately | 75 | 1,618 |
-| Not yet reviewed | 0 | 0 |
-| **Total** | **82** | **1,990** |
+| Not yet reviewed | 2 | 108 |
+| **Total** | **83** | **2,023** |
 
-Human-authored or deliberately accepted: **100%** of strings.
-A person's words: **7%** of strings, **12%** of words.
+Human-authored or deliberately accepted: **98%** of strings.
+A person's words: **6%** of strings, **9%** of words.
 Edited from a model's draft: **1%** of strings, counted apart, because an edit leaves most of the model's words in place.
 
 Whether a replacement was a rewrite or small edits is what the person said when they saved it. SlopChop records it and does not check it.
@@ -22,9 +22,9 @@ Whether a replacement was a rewrite or small edits is what the person said when 
 
 | Tier | Decided | Total |
 |---|---:|---:|
-| Paragraphs (16+ words) | 32 | 32 |
+| Paragraphs (16+ words) | 31 | 32 |
 | Helper text (6–15 words) | 9 | 9 |
-| Labels (1–5 words) | 41 | 41 |
+| Labels (1–5 words) | 41 | 42 |
 
 ## Scope
 
@@ -39,7 +39,7 @@ Out of scope, on purpose:
 - `examples/`: Fixture copy for the test suite; it carries its own ledger.
 - `test/`: Test fixtures.
 
-## Replaced drafts (7)
+## Replaced drafts (6)
 
 Where a model's draft was replaced, both are kept. A replacement a model wrote and a person accepted unedited is marked as such.
 
@@ -56,11 +56,12 @@ Where a model's draft was replaced, both are kept. A replacement a model wrote a
   - draft: "`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `Ctrl+Enter` (`⌘↵` on a Mac) saves what you wrote. Tick several strings, or shift-click a run of them, and `h` or `a` decides them all at once. `?` lists the rest."
   - now: "`slopchop review` opens a page on localhost that allows you to review your repo's copy and clear it for release, either by rewriting it in your voice, marking it as already yours, or leaving as \"ai.\" Built in keyboard shortcuts make the process smooth."
 - `README.md`
-  - draft: "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has looked. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |"
-  - now: "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |"
-- `README.md`
   - draft: "Rewriting two thousand strings once is a finite job. Keeping them rewritten is not, because the next AI session adds forty more and the site slides back without anyone noticing."
   - now: "It would be rough if you had to re-label already reviewed strings."
 - `README.md`
   - draft: "A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves."
   - now: "A review page that is more purpose built than just a code review."
+
+## Marked as not copy (0)
+
+_None._

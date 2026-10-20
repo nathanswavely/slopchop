@@ -45,6 +45,7 @@ It is not built to be an AI detector or a "policing" service. It is self-reporte
 | `human` | The text in source is your words. |
 | `ai-fine` | You looked, and it is fine as drafted. |
 | `ai-revised` | A model suggested a rewrite and you took it without changing a word. |
+| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |
 
 `ai-fine` is the one that makes this bearable. "Failed to load comments" does not need your voice, and neither do most of the labels around it. Marking them is one keystroke each, or one command for a whole file. The report counts them separately from `human`, so the number you end up with is honest about which is which.
 

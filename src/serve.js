@@ -8,9 +8,10 @@ import { fileURLToPath } from 'node:url';
 import { load, save, stats, decide } from './ledger.js';
 import { writeback } from './writeback.js';
 import { outstandingDrafts, draftDirLabel } from './drafts.js';
+import { rewriteProblem } from './expressions.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const BULK_STATUSES = ['human', 'ai-fine', 'unreviewed'];
+const BULK_STATUSES = ['human', 'ai-fine', 'not-copy', 'unreviewed'];
 
 // The page's design system, vendored so the review page has no network
 // dependency. Served by name from a fixed list, never by path.
@@ -93,6 +94,12 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
         return res.end(fs.readFileSync(path.join(VENDOR, name)));
       }
 
+      // The page finds expressions the same way the ledger does.
+      if (req.method === 'GET' && url.pathname === '/expressions.js') {
+        res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
+        return res.end(fs.readFileSync(path.join(HERE, 'expressions.js')));
+      }
+
       if (req.method === 'GET' && url.pathname === '/api/ledger') {
         const ledger = load(project);
         return json(res, 200, {
@@ -127,6 +134,11 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
             draft: { rel: held.rel, source: held.source },
           });
         }
+
+        // The page locks expressions already; this is the same rule for
+        // anything that posts here without it.
+        const problem = replacement ? rewriteProblem(entry, replacement) : null;
+        if (problem) return json(res, 400, { error: `Not saved: this ${problem}.`, code: 'expressions' });
 
         decide(entry, { status, replacement, note, kind });
         save(project, ledger);

@@ -107,7 +107,8 @@ export function renderVerdict(g, s, { link = () => null, pending = [] } = {}) {
   }
   L.push('');
   L.push(`${s.done}/${s.total} strings decided (${pct(s.done, s.total)}) · ${pct(s.byStatus.human, s.total)} written by a person` +
-    (g.backlog.length ? ` · ${g.backlog.length} in the grandfathered backlog` : ''));
+    (g.backlog.length ? ` · ${g.backlog.length} in the grandfathered backlog` : '') +
+    (s.excluded?.total ? ` · ${s.excluded.total} marked not copy, not counted` : ''));
   return L;
 }
 

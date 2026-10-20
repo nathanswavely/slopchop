@@ -100,7 +100,8 @@ function cmdSync() {
 
   save(p, ledger);
   const s = stats(ledger);
-  console.log(`${GREEN}synced${OFF} ${p.rel(p.ledgerPath)}: ${s.total} entries, ${s.words.toLocaleString()} words, ${p.sourceFiles().length} files`);
+  console.log(`${GREEN}synced${OFF} ${p.rel(p.ledgerPath)}: ${s.total} entries, ${s.words.toLocaleString()} words, ${p.sourceFiles().length} files` +
+    (s.excluded.total ? ` ${DIM}(and ${s.excluded.total} marked not copy, not counted)${OFF}` : ''));
   if (added.length) console.log(`  ${added.length} new`);
   if (landed.length) console.log(`  ${landed.length} rewrite${landed.length === 1 ? '' : 's'} found in source without apply, recorded as yours`);
   const gone = removed.filter((e) => !landed.includes(e));
@@ -115,7 +116,11 @@ function cmdStats() {
   const s = stats(ledger);
 
   console.log(`\n  ${bar(s.done, s.total)}  ${s.done}/${s.total} strings (${pct(s.done, s.total)})`);
-  console.log(`  ${DIM}${s.wordsDone.toLocaleString()} of ${s.words.toLocaleString()} words decided · ${pct(s.byStatus.human, s.total)} written by a person${OFF}\n`);
+  console.log(`  ${DIM}${s.wordsDone.toLocaleString()} of ${s.words.toLocaleString()} words decided · ${pct(s.byStatus.human, s.total)} written by a person${OFF}`);
+  if (s.excluded.total) {
+    console.log(`  ${DIM}not counted: ${s.excluded.total} marked not copy (${s.excluded.words.toLocaleString()} words), listed in the report${OFF}`);
+  }
+  console.log('');
 
   for (const tier of ['prose', 'helper', 'label']) {
     const t = s.byTier[tier];
@@ -205,8 +210,13 @@ function cmdPull() {
   if (r.recorded) bits.push(`${r.recorded} rewritten`);
   if (r.mine) bits.push(`${r.mine} marked yours`);
   if (r.fine) bits.push(`${r.fine} left as drafted`);
+  if (r.notCopy) bits.push(`${r.notCopy} marked not copy`);
   console.log(bits.length ? `${GREEN}${bits.join(' · ')}${OFF}` : 'No changes found in the drafts.');
   if (r.unchanged) console.log(`${DIM}${r.unchanged} untouched${OFF}`);
+  for (const x of r.refused) {
+    console.log(`${RED}not recorded:${OFF} ${x.file} ${DIM}(${x.id})${OFF}: the rewrite ${x.reason}.`);
+  }
+  if (r.refused.length) console.log(`${DIM}Fix ${r.refused.length === 1 ? 'that block' : 'those blocks'} in the draft and pull again.${OFF}`);
 
   const { removed, kept } = pruneDrafts(p, load(p));
   if (removed.length) console.log(`${DIM}cleared ${removed.length} finished draft file(s)${OFF}`);

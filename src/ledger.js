@@ -9,12 +9,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { extractEntries, idFor, tierFor, wordCount } from './extract/index.js';
+import { syntaxOf } from './expressions.js';
 
 // unreviewed → a model drafted it and nobody has looked yet (the default)
 // rewritten  → a replacement is chosen; writeback has not applied it
 // human      → the text in source is a person's words
 // ai-fine    → deliberately left as drafted; mechanical or not voice-bearing
 // ai-revised → a model's suggested rewrite, accepted without edits, in source
+// not-copy   → not text a person reads: a format string, an identifier, a
+//              fixture that slipped into scope. A claim about the string,
+//              not about who wrote it, so it is left out of every total
+//              and listed by name in the report instead
 //
 // A rewritten entry whose replacement is a model suggestion taken as-is is
 // marked replacement_source: 'model', and becomes ai-revised, never human,
@@ -24,13 +29,19 @@ import { extractEntries, idFor, tierFor, wordCount } from './extract/index.js';
 // is written (they rewrote it), edited (they made small edits), or claimed
 // (no edits; the words were already theirs). SlopChop records what the
 // person says. It does not measure or second-guess it.
-export const STATUSES = ['unreviewed', 'rewritten', 'human', 'ai-fine', 'ai-revised'];
+export const STATUSES = ['unreviewed', 'rewritten', 'human', 'ai-fine', 'ai-revised', 'not-copy'];
 
 /** The statuses a person can choose directly. ai-revised is only ever earned. */
-export const CHOOSABLE = ['unreviewed', 'rewritten', 'human', 'ai-fine'];
+export const CHOOSABLE = ['unreviewed', 'rewritten', 'human', 'ai-fine', 'not-copy'];
 
-/** The statuses that count as decided. */
+/** The statuses that count as decided, among the strings that are counted. */
 export const DECIDED = new Set(['human', 'ai-fine', 'ai-revised']);
+
+/**
+ * Decided, and left out of the totals. Leaving text out is never a quiet
+ * way to move the numbers: stats says how much, and the report lists it.
+ */
+export const EXCLUDED = new Set(['not-copy']);
 
 export const EMPTY = { version: 1, strict: false, entries: [], retired: [] };
 
@@ -153,8 +164,17 @@ export function stats(ledger) {
   const wordsByAuthorship = { written: 0, edited: 0, claimed: 0 };
   let words = 0;
   let wordsDone = 0;
+  // Counted on their own line, never in the totals above them.
+  const excluded = { total: 0, words: 0 };
 
   for (const e of ledger.entries) {
+    if (EXCLUDED.has(e.status)) {
+      byStatus[e.status]++;
+      wordsByStatus[e.status] += e.words;
+      excluded.total++;
+      excluded.words += e.words;
+      continue;
+    }
     if (e.status === 'human') {
       const kind = authorshipOf(e).kind;
       byAuthorship[kind]++;
@@ -169,11 +189,11 @@ export function stats(ledger) {
     if (done) wordsDone += e.words;
   }
 
-  const total = ledger.entries.length;
+  const total = ledger.entries.length - excluded.total;
   const done = [...DECIDED].reduce((n, st) => n + byStatus[st], 0);
   return {
     total, done, pending: total - done, byStatus, wordsByStatus,
-    byAuthorship, wordsByAuthorship, byTier, words, wordsDone,
+    byAuthorship, wordsByAuthorship, byTier, words, wordsDone, excluded,
   };
 }
 
@@ -256,8 +276,8 @@ export function promote(entry, newText) {
   entry.previous_ai_text = previous;
   entry.text = newText;
   entry.id = idFor(newText);
-  entry.words = wordCount(newText);
-  entry.tier = tierFor(newText);
+  entry.words = wordCount(newText, syntaxOf(entry.occurrences));
+  entry.tier = tierFor(newText, syntaxOf(entry.occurrences));
   entry.status = landedStatus(entry);
   entry.replacement = null;
   if (entry.status !== 'human') delete entry.authorship;
