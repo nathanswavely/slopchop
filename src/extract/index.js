@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { idFor, tierFor, wordCount } from './common.js';
+import { syntaxOf } from '../expressions.js';
 import { extractSvelte } from './svelte.js';
 import { extractAstro } from './astro.js';
 import { extractJs, extractJsx } from './js.js';
@@ -66,8 +67,8 @@ export function foldHits(hits) {
       byId.set(id, {
         id,
         text: h.text,
-        words: wordCount(h.text),
-        tier: tierFor(h.text),
+        words: 0,
+        tier: 'label',
         status: 'unreviewed',
         replacement: null,
         note: null,
@@ -84,6 +85,11 @@ export function foldHits(hits) {
   }
   for (const e of byId.values()) {
     e.occurrences.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line);
+    // Counted once every occurrence is in: whether `{x}` is an expression or
+    // two literal braces depends on where the text lives.
+    const syntax = syntaxOf(e.occurrences);
+    e.words = wordCount(e.text, syntax);
+    e.tier = tierFor(e.text, syntax);
   }
   return [...byId.values()].sort(
     (a, b) => a.occurrences[0].file.localeCompare(b.occurrences[0].file)

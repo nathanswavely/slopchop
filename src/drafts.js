@@ -19,6 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { collapse, idFor, BLOCK_KINDS } from './extract/index.js';
 import { decide } from './ledger.js';
+import { rewriteProblem } from './expressions.js';
 
 // What each block looked like at the moment it was drafted, kept beside the
 // drafts themselves so it travels with them into a private repo.
@@ -85,6 +86,10 @@ you leave untouched is skipped, so you can do three and come back.
 - Replace a whole block with \`@mine\` if the words are already yours.
 - Replace it with \`@fine\` to leave a model's draft in place on purpose
   (error messages, form labels: things with no voice to reclaim).
+- Replace it with \`@notcopy\` if nobody reads it at all (a format string,
+  an identifier, a test fixture). The report lists it apart from the totals.
+- Leave anything in \`{…}\` or \`\${…}\` exactly as it is. That is code; move
+  the words around it.
 
 Leave the \`<!-- copy:… -->\` markers alone. They are how your writing
 finds its way back into the source.
@@ -291,7 +296,7 @@ export function draftHolding(project, ledger, id) {
 export function pullDrafts(project, ledger) {
   const byId = new Map(ledger.entries.map((e) => [e.id, e]));
   const rendered = loadRendered(project);
-  const r = { recorded: 0, unchanged: 0, mine: 0, fine: 0, unknown: [], files: 0 };
+  const r = { recorded: 0, unchanged: 0, mine: 0, fine: 0, notCopy: 0, unknown: [], refused: [], files: 0 };
 
   for (const abs of allDrafts(project.draftDir)) {
     r.files++;
@@ -308,6 +313,7 @@ export function pullDrafts(project, ledger) {
 
       if (text === '@mine') { decide(e, { status: 'human', replacement: null }); r.mine++; continue; }
       if (text === '@fine') { decide(e, { status: 'ai-fine', replacement: null }); r.fine++; continue; }
+      if (text === '@notcopy') { decide(e, { status: 'not-copy', replacement: null }); r.notCopy++; continue; }
 
       // A block nobody touched carries no decision, so it must not make one,
       // even when the ledger has since moved and the two no longer agree.
@@ -316,6 +322,11 @@ export function pullDrafts(project, ledger) {
       const next = normalize(text, e);
       if (!next) { r.unchanged++; continue; }
       if (next === normalize(e.text, e)) { r.unchanged++; continue; }
+
+      // Nothing in a Markdown file stops an edit from eating an expression,
+      // so the check happens here. The block stays in the draft to fix.
+      const problem = rewriteProblem(e, next);
+      if (problem) { r.refused.push({ id, file: source, reason: problem }); continue; }
 
       decide(e, { status: 'rewritten', replacement: next });
       r.recorded++;

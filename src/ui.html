@@ -99,6 +99,18 @@
   /* The page's reading size, as the draft above it is: Liquid Textile sets
      fields at 1rem (16px), and this page reads at 15px. */
   #editor { width: 100%; min-height: 130px; --lt-field-font: 1em; }
+  /* The editor for text that holds code: words in it, locked chips between. */
+  #editor.chips { display: block; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
+
+  /* A template expression. Code, not words: shown, never edited. */
+  .expr {
+    font-family: var(--lt-font-mono); font-size: .82em; line-height: 1.4;
+    padding: 1px 5px; margin: 0 1px; border-radius: 4px;
+    background: var(--lt-color-overlay-hover); border: 1px solid var(--lt-color-border);
+    color: var(--lt-color-text-muted); white-space: pre-wrap; user-select: none; cursor: default;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  }
+  .warn .lt-btn { margin-left: 6px; }
   .actions { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 
   mark.tell {
@@ -156,6 +168,7 @@
       <option value="human:claimed">Human: already theirs</option>
       <option value="ai-fine">Left as drafted</option>
       <option value="ai-revised">Model rewrite, accepted</option>
+      <option value="not-copy">Not copy</option>
     </select>
     <span class="words" role="group" aria-label="Word count">
       <input class="lt-field" type="number" id="fMin" min="1" step="1" inputmode="numeric" placeholder="Min" aria-label="At least this many words">
@@ -205,6 +218,7 @@
 
 <script type="module">
 import { initTheme, keys, isTyping, combobox, dialog, toast } from '/lt/behaviors.js';
+import { syntaxOf, expressions, splitExpressions, compareExpressions, expressionProblem } from '/expressions.js';
 
 const $ = (s) => document.querySelector(s);
 let entries = [], view = [], cursor = 0, statsData = null, drafts = { checkedOut: {}, files: [] };
@@ -235,7 +249,7 @@ $('#fText').placeholder = `Search copy…  ${keys('Mod+K')}`;
 
 // The tone each status and triage verdict reads in, shared by tags and the list.
 const TONE = {
-  human: 'success', rewritten: 'primary', unreviewed: 'warning', 'ai-revised': 'warning', 'ai-fine': 'muted',
+  human: 'success', rewritten: 'primary', unreviewed: 'warning', 'ai-revised': 'warning', 'ai-fine': 'muted', 'not-copy': 'muted',
   prose: 'primary', rewrite: 'error', glance: 'warning', fine: 'muted',
 };
 const tag = (text, tone) => {
@@ -295,7 +309,9 @@ function applyStats(s) {
   statsData = s;
   $('#progress').style.width = (s.total ? (s.done / s.total) * 100 : 100) + '%';
   $('#counts').textContent =
-    `${s.done}/${s.total} decided · ${s.byStatus.unreviewed} to go · ${s.byStatus.rewritten} pending apply`;
+    `${s.done}/${s.total} decided · ${s.byStatus.unreviewed} to go · ${s.byStatus.rewritten} pending apply` +
+    // Left out of the numbers before it, so it is said beside them.
+    (s.excluded?.total ? ` · ${s.excluded.total} not copy, not counted` : '');
   $('#applyBtn').style.display = s.byStatus.rewritten ? '' : 'none';
 }
 
@@ -459,6 +475,7 @@ function renderSelection() {
   };
   act('Already mine', 'h', () => bulk('human'));
   act('Leave as drafted', 'a', () => bulk('ai-fine'));
+  act('Not copy', 'n', () => bulk('not-copy'));
   act('Back to unreviewed', 'u', () => bulk('unreviewed'));
   act('Clear', 'Esc', () => selectAll(false));
 }
@@ -466,6 +483,7 @@ function renderSelection() {
 const BULK_DONE = {
   human: (n) => `${n} marked as your words.`,
   'ai-fine': (n) => `${n} left as drafted.`,
+  'not-copy': (n) => `${n} marked as not copy. The report lists ${n === 1 ? 'it' : 'them'} apart from the totals.`,
   unreviewed: (n) => `${n} back in the queue.`,
 };
 
@@ -542,8 +560,9 @@ async function renderDetail() {
   head.append(tag(`${e.words} words`), tag(`${e.occurrences.length} place${e.occurrences.length === 1 ? '' : 's'}`));
   d.append(head);
 
+  const syntax = syntaxOf(e.occurrences);
   const bq = document.createElement('blockquote'); bq.className = 'lt-quote';
-  bq.append(...marked(e.text, e.status === 'unreviewed' ? e.triage?.tells : null));
+  bq.append(...marked(e.text, e.status === 'unreviewed' ? e.triage?.tells : null, syntax));
   d.append(bq);
 
   if (e.triage && e.status === 'unreviewed' && (e.triage.tells.length || e.triage.note)) {
@@ -580,8 +599,8 @@ async function renderDetail() {
     d.append(eyebrow('Replaced draft'), p);
   }
 
-  const ta = document.createElement('textarea');
-  ta.id = 'editor'; ta.className = 'lt-field';
+  const ta = makeEditor(e, syntax);
+  ta.id = 'editor';
   ta.setAttribute('aria-label', 'Your version');
   ta.value = e.replacement ?? e.text;
   const label = eyebrow('Your version');
@@ -590,13 +609,29 @@ async function renderDetail() {
 
   const warn = document.createElement('div'); warn.className = 'warn'; warn.setAttribute('role', 'status'); d.append(warn);
   const checkPlaceholders = () => {
+    // Expressions are locked in the editor, so this only fires when one went
+    // missing some other way (an undo, an older rewrite). Saving is refused.
+    const { missing } = compareExpressions(e.text, ta.value, syntax);
+    const broken = expressionProblem(e.text, ta.value, syntax);
+    if (broken) {
+      warn.textContent = `Not saveable: this ${broken}.`;
+      if (missing.length && ta.putBack) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'lt-btn lt-btn-sm';
+        b.textContent = missing.length === 1 ? 'Put it back at the end' : 'Put them back at the end';
+        b.onclick = () => { ta.putBack(missing); ta.dispatchEvent(new Event('input')); ta.focusEnd(); };
+        warn.append(b);
+      }
+      return;
+    }
+    // Placeholders a catalog fills in at runtime. Not locked, so a warning.
     const want = [...e.text.matchAll(/\{\{?[^{}]+\}?\}|%[sd]|%\{[^}]+\}|\$\{[^}]+\}/g)].map((m) => m[0]);
-    const missing = want.filter((p) => !ta.value.includes(p));
-    warn.textContent = missing.length
-      ? `Careful: the original interpolates ${missing.join(', ')}. Dropping it will break the rendered text.`
+    const gone = want.filter((p) => !ta.value.includes(p));
+    warn.textContent = gone.length
+      ? `Careful: the original interpolates ${gone.join(', ')}. Dropping it will break the rendered text.`
       : '';
   };
   ta.addEventListener('input', checkPlaceholders);
+  ta.addEventListener('locked', () => flash('Code stays as it is. Move the words around it.'));
   checkPlaceholders();
 
   // Two ways to save, and the person says which: a rewrite, or small edits.
@@ -628,6 +663,7 @@ async function renderDetail() {
   syncSave();
   mk('Already mine', 'h', '', () => setStatus(e, 'human'));
   mk('Leave as drafted', 'a', '', () => setStatus(e, 'ai-fine'));
+  mk('Not copy', 'n', '', () => setStatus(e, 'not-copy')).title = 'Nobody reads this: a format string, an identifier, code. Listed in the report, left out of the totals.';
   mk('Skip', 'j', 'lt-btn-ghost', () => move(1));
   d.append(acts);
 
@@ -704,7 +740,14 @@ async function saveRewrite(e, text, kind) {
   if (next === (e.replacement ?? e.text).trim() || next === e.text) {
     return flash('Nothing changed. Press h if these are already your words.');
   }
-  if (!await persist(e, { status: 'rewritten', replacement: next, kind })) return;
+  // A rewrite that loses or changes code would break the page it lands on.
+  const broken = expressionProblem(e.text, next, syntaxOf(e.occurrences));
+  if (broken) return flash(`Not saved: this ${broken}.`);
+  try {
+    if (!await persist(e, { status: 'rewritten', replacement: next, kind })) return;
+  } catch (err) {
+    return flash(err.message);
+  }
   flash(e.replacement_source === 'model'
     ? "Saved as the model's rewrite (ai-revised once applied). Edit it to make it yours."
     : `Saved as ${KIND_LABEL[kind]}. Apply rewrites to write it into source.`);
@@ -719,9 +762,13 @@ function useSuggestion(e) {
   ta.focus();
 }
 
-/** Text as nodes, with each quoted tell underlined. Only the first hit of each. */
-function marked(text, tells) {
-  const spans = [];
+/**
+ * Text as nodes, with each quoted tell underlined (only the first hit of
+ * each) and each template expression shown as a chip. A tell that runs
+ * into an expression is not underlined: tells are about words.
+ */
+function marked(text, tells, syntax) {
+  const spans = expressions(text, syntax).map((x) => ({ ...x, expr: true }));
   for (const t of tells || []) {
     const at = text.indexOf(t.quote);
     if (at === -1 || spans.some((s) => at < s.end && at + t.quote.length > s.start)) continue;
@@ -732,14 +779,168 @@ function marked(text, tells) {
   let i = 0;
   for (const s of spans) {
     if (s.start > i) out.push(document.createTextNode(text.slice(i, s.start)));
-    const m = document.createElement('mark'); m.className = 'tell';
-    m.textContent = text.slice(s.start, s.end);
-    m.title = s.why;
-    out.push(m);
+    if (s.expr) {
+      out.push(chip(s.text));
+    } else {
+      const m = document.createElement('mark'); m.className = 'tell';
+      m.textContent = text.slice(s.start, s.end);
+      m.title = s.why;
+      out.push(m);
+    }
     i = s.end;
   }
   out.push(document.createTextNode(text.slice(i)));
   return out;
+}
+
+// ---------------------------------------------------------------- editor ---
+
+const squash = (s) => s.replace(/\s+/g, ' ').trim();
+
+/** One expression, locked. `data-expr` is what the editor reads back. */
+function chip(code) {
+  const c = document.createElement('span');
+  c.className = 'expr';
+  c.contentEditable = 'false';
+  c.dataset.expr = code;
+  c.textContent = code;
+  c.title = 'Code, filled in when the page renders. Locked: write the words around it.';
+  return c;
+}
+
+/**
+ * "Your version". A plain textarea, unless the text holds template
+ * expressions. Then it is an editable box with each expression as a locked
+ * chip, so a rewrite can move words around one but cannot break or drop it.
+ * Both have `value` and `focusEnd()`, so nothing else needs to know which.
+ */
+function makeEditor(e, syntax) {
+  const locked = expressions(e.text, syntax).map((x) => squash(x.text));
+  if (!locked.length) {
+    const ta = document.createElement('textarea');
+    ta.className = 'lt-field';
+    ta.focusEnd = () => {
+      ta.focus({ preventScroll: true });
+      ta.setSelectionRange(ta.value.length, ta.value.length);
+    };
+    return ta;
+  }
+
+  const ed = document.createElement('div');
+  ed.className = 'lt-field chips';
+  ed.setAttribute('role', 'textbox');
+  ed.setAttribute('aria-multiline', 'true');
+  // Plain text only, where the browser has it; paste and Enter are handled
+  // below either way, so a browser without it gets the same text.
+  try { ed.contentEditable = 'plaintext-only'; } catch { ed.contentEditable = 'true'; }
+
+  // A zero-width space either side of a chip at the very start or end gives
+  // the caret somewhere to stand. It is never part of the value.
+  const ZW = '​';
+  const read = (node) => {
+    let s = '';
+    for (const n of node.childNodes) {
+      if (n.nodeType === Node.TEXT_NODE) s += n.nodeValue;
+      else if (n.dataset?.expr !== undefined) s += n.dataset.expr;
+      else if (n.tagName === 'BR') s += '\n';
+      else { if (s && /^(DIV|P)$/.test(n.tagName)) s += '\n'; s += read(n); }
+    }
+    return s;
+  };
+  const render = (v) => {
+    const nodes = splitExpressions(v, syntax).map((p) =>
+      p.expr && locked.includes(squash(p.text)) ? chip(p.text) : document.createTextNode(p.text));
+    ed.replaceChildren(document.createTextNode(ZW), ...nodes, document.createTextNode(ZW));
+  };
+  Object.defineProperty(ed, 'value', {
+    get: () => read(ed).replaceAll(ZW, '').replace(/ /g, ' '),
+    // Set from outside (a suggestion, a reload): not an edit to undo.
+    set: (v) => { before = null; render(String(v ?? '')); },
+  });
+  ed.putBack = (missing) => render(`${ed.value.replace(/\s+$/, '')} ${missing.join(' ')}`);
+  ed.focusEnd = () => {
+    ed.focus({ preventScroll: true });
+    const r = document.createRange();
+    r.selectNodeContents(ed);
+    r.collapse(false);
+    const sel = getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+  };
+
+  // Where the caret is, counted in characters of `value`, and back again.
+  const caretAt = () => {
+    const sel = getSelection();
+    if (!sel.rangeCount || !ed.contains(sel.anchorNode)) return null;
+    const r = document.createRange();
+    r.setStart(ed, 0);
+    r.setEnd(sel.getRangeAt(0).startContainer, sel.getRangeAt(0).startOffset);
+    const box = document.createElement('div');
+    box.append(r.cloneContents());
+    return read(box).replaceAll(ZW, '').length;
+  };
+  const placeCaret = (n) => {
+    const r = document.createRange();
+    let acc = 0;
+    for (const node of ed.childNodes) {
+      const len = node.nodeType === Node.TEXT_NODE ? node.nodeValue.replaceAll(ZW, '').length : node.dataset?.expr?.length ?? 0;
+      if (len && n <= acc + len) {
+        if (node.nodeType === Node.TEXT_NODE) r.setStart(node, n - acc);
+        else if (n === acc) r.setStartBefore(node);
+        else r.setStartAfter(node);
+        r.collapse(true);
+        const sel = getSelection();
+        sel.removeAllRanges();
+        sel.addRange(r);
+        return;
+      }
+      acc += len;
+    }
+    ed.focusEnd();
+  };
+
+  // The lock, in two layers. An edit whose range takes in a chip (a
+  // backspace into one, a selection typed over, a cut) is refused before the
+  // browser makes it, where the browser says what the edit will cover. Some
+  // do not, for a plain backspace, so anything that removes a chip anyway is
+  // put back the moment it happens, caret and all.
+  const chipCount = () => ed.querySelectorAll('.expr').length;
+  let before = null;
+  ed.addEventListener('beforeinput', (ev) => {
+    const chips = [...ed.querySelectorAll('.expr')];
+    const sel = getSelection();
+    const ranges = (ev.getTargetRanges?.() || []).map((sr) => {
+      const r = document.createRange();
+      r.setStart(sr.startContainer, sr.startOffset);
+      r.setEnd(sr.endContainer, sr.endOffset);
+      return r;
+    });
+    if (!ranges.length && sel.rangeCount) ranges.push(sel.getRangeAt(0));
+    const hits = ranges.some((r) => !r.collapsed && chips.some((c) => r.intersectsNode(c)));
+    if (hits) { ev.preventDefault(); ed.dispatchEvent(new Event('locked')); return; }
+    before = { value: ed.value, caret: caretAt(), chips: chips.length };
+  });
+  ed.addEventListener('input', (ev) => {
+    if (!before || chipCount() >= before.chips) return;
+    ev.stopImmediatePropagation();
+    const { value, caret } = before;
+    render(value);
+    if (caret !== null) placeCaret(caret);
+    ed.dispatchEvent(new Event('locked'));
+  });
+  ed.addEventListener('paste', (ev) => {
+    ev.preventDefault();
+    document.execCommand('insertText', false, ev.clipboardData.getData('text/plain'));
+  });
+  ed.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter' && !ev.metaKey && !ev.ctrlKey && !ev.altKey) {
+      ev.preventDefault();
+      document.execCommand('insertText', false, '\n');
+    }
+  });
+  ed.addEventListener('dragstart', (ev) => ev.preventDefault());
+  ed.addEventListener('drop', (ev) => ev.preventDefault());
+  return ed;
 }
 
 async function setStatus(e, status) {
@@ -822,13 +1023,14 @@ const SHORTCUTS = [
   [keys('Mod+A'), 'Select everything shown'],
   ['e  Enter', 'Into the editor'],
   [`${keys('Alt+J')}  ${keys('Alt+K')}`, 'Next and previous, without leaving the editor'],
-  [`${keys('Alt+H')}  ${keys('Alt+A')}  ${keys('Alt+U')}  ${keys('Alt+S')}`, 'h, a, u and s, without leaving the editor'],
+  [`${keys('Alt+H')}  ${keys('Alt+A')}  ${keys('Alt+N')}  ${keys('Alt+U')}  ${keys('Alt+S')}`, 'h, a, n, u and s, without leaving the editor'],
   ['Esc', 'Out of the editor or a field'],
   [SAVE_KEY, 'Save as a rewrite'],
   [EDIT_KEY, 'Save as small edits'],
   ['s', "Copy the model's suggestion into the editor"],
   ['h', 'Already mine (the selection, if there is one)'],
   ['a', 'Leave as drafted (the selection, if there is one)'],
+  ['n', 'Not copy: nobody reads it (the selection, if there is one)'],
   ['u', 'Back to unreviewed (the selection, if there is one)'],
   ['[', 'Collapse or show the list'],
   [`/  ${keys('Mod+K')}`, 'Search the copy'],
@@ -847,7 +1049,7 @@ for (const [k, what] of SHORTCUTS) {
 const help = dialog($('#help'));
 $('#helpBtn').onclick = () => help.open();
 
-/** h, a, u: the selection when there is one, otherwise the current string. */
+/** h, a, n, u: the selection when there is one, otherwise the current string. */
 function decideKey(status) {
   if (selected.size) return bulk(status);
   const e = view[cursor];
@@ -856,16 +1058,13 @@ function decideKey(status) {
 
 /** The cursor in "Your version", at the end of what is there. */
 function focusEditor() {
-  const ta = $('#editor');
-  if (!ta) return;
-  ta.focus({ preventScroll: true });
-  ta.setSelectionRange(ta.value.length, ta.value.length);
+  $('#editor')?.focusEnd();
 }
 
 addEventListener('keydown', (ev) => {
   if (help.isOpen || askBox.isOpen) return;
   const mod = ev.metaKey || ev.ctrlKey;
-  const editing = document.activeElement?.tagName === 'TEXTAREA';
+  const editing = !!document.activeElement?.closest?.('#editor');
   const key = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
 
   // The cursor never moves into the editor by itself: the single keys below
@@ -873,7 +1072,7 @@ addEventListener('keydown', (ev) => {
   // plus the same letters still move and decide without leaving it.
   // ev.code, because on a Mac Option+J arrives as the character ∆.
   if (ev.altKey && !mod && !ev.shiftKey) {
-    const alt = { KeyJ: 'next', ArrowDown: 'next', KeyK: 'prev', ArrowUp: 'prev', KeyH: 'human', KeyA: 'ai-fine', KeyU: 'unreviewed', KeyS: 'suggest' }[ev.code];
+    const alt = { KeyJ: 'next', ArrowDown: 'next', KeyK: 'prev', ArrowUp: 'prev', KeyH: 'human', KeyA: 'ai-fine', KeyN: 'not-copy', KeyU: 'unreviewed', KeyS: 'suggest' }[ev.code];
     if (alt) {
       ev.preventDefault();
       const stay = editing;
@@ -915,6 +1114,7 @@ addEventListener('keydown', (ev) => {
   else if (key === 'e' || (key === 'Enter' && ev.target.tagName !== 'BUTTON')) { ev.preventDefault(); focusEditor(); }
   else if (key === 'h') { ev.preventDefault(); decideKey('human'); }
   else if (key === 'a') { ev.preventDefault(); decideKey('ai-fine'); }
+  else if (key === 'n') { ev.preventDefault(); decideKey('not-copy'); }
   else if (key === 'u') { ev.preventDefault(); decideKey('unreviewed'); }
   else if (key === 's' && view[cursor]?.suggestion) { ev.preventDefault(); useSuggestion(view[cursor]); }
   else if (key === '[') { ev.preventDefault(); setCollapsed(!document.body.classList.contains('collapsed')); }

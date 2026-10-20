@@ -10,7 +10,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { promote } from './ledger.js';
-import { encodeEntities } from './extract/common.js';
+import { encodeEntities, collapse } from './extract/common.js';
+import { syntaxFor, expressions, expressionProblem, splitExpressions } from './expressions.js';
 
 /** Byte offset of the start of 1-indexed `line`. */
 function offsetOfLine(content, line) {
@@ -32,6 +33,15 @@ const YAML_NEEDS_QUOTES = /^[\s[\]{}&*!|>'"%@`#,?:-]|: | #|:$|^(true|false|null|
  * `occ` is the full occurrence, for kinds that need more than the quote.
  */
 export function encodeFor(kind, quote, text, occ = {}) {
+  // Text that holds template expressions: check and encode the words, and
+  // put each expression back exactly as the source has it.
+  const syntax = syntaxFor(kind, quote);
+  if (syntax && occ.raw !== undefined && expressions(occ.raw, syntax).length) {
+    const problem = expressionProblem(occ.raw, text, syntax);
+    if (problem) return { problem };
+    return encodeAround(kind, quote, text, occ.raw, syntax);
+  }
+
   if (kind === 'markup') {
     // Svelte reads { and } as expression delimiters in markup.
     if (/[{}]/.test(text)) {
@@ -114,6 +124,26 @@ export function encodeFor(kind, quote, text, occ = {}) {
   }
 
   return { problem: `unknown occurrence kind: ${kind}` };
+}
+
+/**
+ * Encode the words between expressions as the kind requires, and write each
+ * expression as `raw` has it: the ledger's text is collapsed, and collapsing
+ * the whitespace inside a string literal would change what it renders.
+ */
+function encodeAround(kind, quote, text, raw, syntax) {
+  const verbatim = new Map();
+  for (const x of expressions(raw, syntax)) {
+    if (!verbatim.has(collapse(x.text))) verbatim.set(collapse(x.text), x.text);
+  }
+  let value = '';
+  for (const part of splitExpressions(text, syntax)) {
+    if (part.expr) { value += verbatim.get(collapse(part.text)) ?? part.text; continue; }
+    const enc = encodeFor(kind, quote, part.text);
+    if (enc.problem) return enc;
+    value += enc.value;
+  }
+  return { value };
 }
 
 /**

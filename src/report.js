@@ -8,7 +8,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { stats as statsOf, authorshipOf } from './ledger.js';
+import { stats as statsOf, authorshipOf, EXCLUDED } from './ledger.js';
 
 /** The badge's "human": rewritten by a person, or theirs to begin with. Edited is reported, not counted. */
 const humanShare = (s) => (s.total ? (s.byAuthorship.written + s.byAuthorship.claimed) / s.total : 0);
@@ -41,6 +41,10 @@ export function renderReport(project, ledger) {
   }
   L.push(`| **Total** | **${s.total}** | **${s.words.toLocaleString()}** |`);
   L.push('');
+  if (s.excluded.total) {
+    L.push(`Not counted above: **${s.excluded.total}** ${s.excluded.total === 1 ? 'string' : 'strings'} (${s.excluded.words.toLocaleString()} words) marked as not copy. Every one is listed under [Marked as not copy](#${notCopyAnchor(s.excluded.total)}).`);
+    L.push('');
+  }
   L.push(`Human-authored or deliberately accepted: **${pct(s.done, s.total)}** of strings.`);
   L.push(`A person's words: **${pct(a.written + a.claimed, s.total)}** of strings, **${pct(aw.written + aw.claimed, s.words)}** of words.`);
   L.push(`Edited from a model's draft: **${pct(a.edited, s.total)}** of strings, counted apart, because an edit leaves most of the model's words in place.`);
@@ -93,8 +97,30 @@ export function renderReport(project, ledger) {
     }
   }
   L.push('');
+
+  // Every string left out of the totals, by name, with no cap. The report
+  // is a public claim; an exclusion nobody can see would be a quiet edit to it.
+  const notCopy = ledger.entries.filter((e) => EXCLUDED.has(e.status));
+  L.push(`## Marked as not copy (${notCopy.length})`);
+  L.push('');
+  if (!notCopy.length) {
+    L.push('_None._');
+  } else {
+    L.push('A reviewer marked these as not text a person reads: format strings, identifiers, code. They are left out of every count above and listed here so the call can be checked.');
+    L.push('');
+    for (const e of notCopy) {
+      const o = e.occurrences[0];
+      const more = e.occurrences.length > 1 ? ` (and ${e.occurrences.length - 1} more)` : '';
+      L.push(`- \`${o ? `${o.file}:${o.line}` : '—'}\`${more}: ${JSON.stringify(e.text)}`);
+      if (e.note) L.push(`  - note: ${JSON.stringify(e.note)}`);
+    }
+  }
+  L.push('');
   return L.join('\n');
 }
+
+/** GitHub's anchor for the "Marked as not copy (n)" heading. */
+const notCopyAnchor = (n) => `marked-as-not-copy-${n}`;
 
 /** A shields.io endpoint payload. Point a badge at the raw file URL. */
 export function badge(ledger) {

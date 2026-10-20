@@ -11,6 +11,7 @@
 //                     refuses, and never guesses.
 
 import crypto from 'node:crypto';
+import { countWords } from '../expressions.js';
 
 // Attributes whose values a person reads.
 export const COPY_ATTRS = ['placeholder', 'title', 'aria-label', 'alt', 'aria-description'];
@@ -40,12 +41,16 @@ export function idFor(text) {
   return crypto.createHash('sha256').update(collapse(text)).digest('hex').slice(0, 12);
 }
 
-export function wordCount(text) {
-  return collapse(text).split(/\s+/).filter(Boolean).length;
+/**
+ * Words a person reads. `syntax` (see expressions.js) names the template
+ * expressions the text can hold; they are code, and are not counted.
+ */
+export function wordCount(text, syntax = null) {
+  return countWords(collapse(text), syntax);
 }
 
-export function tierFor(text) {
-  const n = wordCount(text);
+export function tierFor(text, syntax = null) {
+  const n = wordCount(text, syntax);
   if (n < 6) return 'label';
   if (n < 16) return 'helper';
   return 'prose';

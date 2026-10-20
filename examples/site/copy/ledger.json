@@ -750,7 +750,7 @@
     {
       "id": "d399045f4ada",
       "text": "Every tool we sell comes with a promise: bring it back and we will fix it. {count} people have taken us up on that this year.",
-      "words": 26,
+      "words": 25,
       "tier": "prose",
       "status": "unreviewed",
       "replacement": null,
@@ -993,7 +993,7 @@
     {
       "id": "35170616ba65",
       "text": "Welcome back, {{ user.name }}.",
-      "words": 5,
+      "words": 2,
       "tier": "label",
       "status": "unreviewed",
       "replacement": null,
