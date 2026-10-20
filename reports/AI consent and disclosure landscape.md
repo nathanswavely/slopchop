@@ -100,7 +100,7 @@ Section 4 is what keeps the post from regurgitating existing work. Section 8 is 
 | Pew "66% of under-30s would like an AI painting less" | Age figures from secondary coverage [secondary] | Check the Sept 17, 2025 short read before quoting |
 | Porter & Machery "being told it's AI lowers ratings" | Recollection, not confirmed in summary [verify] | Check the PMC full text. The 46.6% detection figure is solid |
 | Columbia "AI art valued 62% lower" | Research brief; peer review unknown | Call it "a Columbia Business School study" |
-| Deezer/Ipsos 80% want labels | 97% is solid; 80% is [secondary] | Lead with 97% |
+| Deezer/Ipsos | **Verified from the Deezer press release (Nov 12, 2025):** Ipsos online survey, 9,000 adults 18–65 in 8 countries, Oct 6–10, 2025. 97% failed a blind test (3 tracks: 2 AI, 1 human); 80% want 100% AI music clearly labeled; 73% say training on copyrighted material without the artist's approval is unethical; 70% say it threatens artists' livelihoods; 52% uncomfortable not being able to tell | Safe to cite. Note the blind test was only three tracks, and Deezer commissioned it (Deezer markets AI detection and tagging) |
 | CC "social contract breaks, reciprocation evaporates" | Search-summary wording [verify] | Paraphrase unless checked |
 | Newton-Rex statement wording; Ortiz testimony; Crabapple quote | Secondary / paraphrase | Quote only from aitrainingstatement.org, the Senate PDF and Artnet respectively |
 | Chiang New Yorker essays | Not re-fetched | Use the Princeton quote, which is sourced; paraphrase the essays |
