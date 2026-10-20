@@ -93,9 +93,10 @@ Section 4 is what keeps the post from regurgitating existing work. Section 8 is 
 
 | Item | Status | Action |
 |---|---|---|
-| Schilke & Reimann "exposure is worse than disclosure" | Abstract only; no effect sizes [secondary] | Paraphrase ("comparatively weaker than third-party exposure"); don't give a number |
+| Schilke & Reimann "exposure is worse than disclosure" | **Verified from full text (SSRN 5205850), Study 13:** tax-advisor scenario, N = 195. Trust: no disclosure M = 4.02, self-disclosed M = 3.15, exposed by an anonymous leak M = 2.49 (exposed vs disclosed d = 0.64; disclosed vs none d = 0.81). Study 7 (N = 426): priming that AI use is collectively valid shrank the disclosure penalty (d = 1.12 → 0.72) | Safe to cite. Note it is one workplace scenario, and the exposure condition was undisclosed use, not a false "no AI" claim |
 | Raj, Berg & Seamans: 16 studies, N = 27,491, −6.2% | Press release / Prolific page [verify] | Check DOI 10.1037/xge0001889. Don't attribute these numbers to Schilke & Reimann |
-| Pew partisan 2026 (56/49, liberal Dems 63%) and under-30 figures | Search summaries; Pew site blocked [verify] | Open the Sept 16 and Aug 18, 2026 short reads |
+| Pew partisan 2026 (56/49, liberal Dems 63%) | **Verified from the Sept 16, 2026 short read** (survey June 22–28, 2026): Dems 56% "more concerned than excited" (46% in 2023), Reps 49% (down 10 points since 2023), liberal Dems 45% → 63%, conservative Reps down 14 points; all adults about half, up from 37% in 2021. Jobs: Dems 75% vs Reps 68% expect fewer jobs (58% vs 70% in 2024) | Safe to cite. The 2025 "tie" figure is still unverified; compare against 2023 instead |
+| Pew under-30 figures | Search summaries [verify] | Open the Aug 18, 2026 short read |
 | Pew "66% of under-30s would like an AI painting less" | Age figures from secondary coverage [secondary] | Check the Sept 17, 2025 short read before quoting |
 | Porter & Machery "being told it's AI lowers ratings" | Recollection, not confirmed in summary [verify] | Check the PMC full text. The 46.6% detection figure is solid |
 | Columbia "AI art valued 62% lower" | Research brief; peer review unknown | Call it "a Columbia Business School study" |
