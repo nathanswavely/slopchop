@@ -8,11 +8,11 @@ visitor-readable string in this repository and records who wrote it.
 | Written by a person | 5 | 172 |
 | A person's words from the start | 0 | 0 |
 | Drafted by a model, edited by a person | 1 | 125 |
-| Left as drafted, deliberately | 77 | 1,726 |
-| Not yet reviewed | 28 | 506 |
-| **Total** | **111** | **2,529** |
+| Left as drafted, deliberately | 76 | 1,620 |
+| Not yet reviewed | 29 | 677 |
+| **Total** | **111** | **2,594** |
 
-Human-authored or deliberately accepted: **75%** of strings.
+Human-authored or deliberately accepted: **74%** of strings.
 A person's words: **5%** of strings, **7%** of words.
 Edited from a model's draft: **1%** of strings, counted apart, because an edit leaves most of the model's words in place.
 
@@ -22,7 +22,7 @@ Whether a replacement was a rewrite or small edits is what the person said when 
 
 | Tier | Decided | Total |
 |---|---:|---:|
-| Paragraphs (16+ words) | 32 | 39 |
+| Paragraphs (16+ words) | 31 | 39 |
 | Helper text (6–15 words) | 9 | 17 |
 | Labels (1–5 words) | 42 | 55 |
 

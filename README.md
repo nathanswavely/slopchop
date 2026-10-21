@@ -42,7 +42,7 @@ It is not built to be an AI detector or a "policing" service. It is self-reporte
 |---|---|
 | `unreviewed` | A model drafted it and nobody has reviewed. The default. |
 | `rewritten` | You wrote a replacement and `apply` has not written it yet. |
-| `human` | The text in source is your words. |
+| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |
 | `ai-fine` | You looked, and it is fine as drafted. |
 | `ai-revised` | A model suggested a rewrite and you took it without changing a word. |
 | `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |
@@ -207,7 +207,7 @@ The file looks like this:
 }
 ```
 
-A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `"enabled": false` and the next `report` deletes the file instead of leaving the last one deployed.
+The statuses are the ledger's, with nothing added. `human` says the declarant put the words there, not a model: a testimonial they chose and pasted in is `human`, and one a model drafted into the page is not. A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `"enabled": false` and the next `report` deletes the file instead of leaving the last one deployed.
 
 For each page, a Reader lists the declared copy with its status, lists the undeclared copy by its text, and shows your out-of-scope reasons beside it. It counts `not-copy` strings separately and leaves them out of the page's total. The bookmarklet does the same on whatever page you are looking at, and marks each string on the page in its status's colour.
 

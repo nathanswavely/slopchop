@@ -9,7 +9,7 @@ The record of every visitor-readable string in a project and the status its revi
 _Avoid_: Database, audit log
 
 **Status**:
-What the reviewer declared about one string: `human`, `ai-revised`, `ai-fine`, `not-copy`, or unreviewed.
+What the reviewer declared about one string: `human`, `ai-revised`, `ai-fine`, `not-copy`, or unreviewed. `human` means the **Declarant** put the words there, not a model. A quote counts as whoever included it: a testimonial the Declarant chose and pasted in is `human`; one a model drafted into the page is not.
 _Avoid_: Score, rating, verdict
 
 **ID**:

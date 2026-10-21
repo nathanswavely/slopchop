@@ -278,11 +278,11 @@
       ]
     },
     {
-      "id": "45c179b7badb",
-      "text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
-      "words": 106,
+      "id": "4c216a7acf29",
+      "text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+      "words": 133,
       "tier": "prose",
-      "status": "ai-fine",
+      "status": "unreviewed",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -290,7 +290,7 @@
           "file": "README.md",
           "line": 41,
           "kind": "md-block",
-          "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+          "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
           "quote": null
         }
       ]
@@ -954,9 +954,9 @@
       ]
     },
     {
-      "id": "ef60da8d8571",
-      "text": "A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `\"enabled\": false` and the next `report` deletes the file instead of leaving the last one deployed.",
-      "words": 70,
+      "id": "e10e2ebf726d",
+      "text": "The statuses are the ledger's, with nothing added. `human` says the declarant put the words there, not a model: a testimonial they chose and pasted in is `human`, and one a model drafted into the page is not. A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `\"enabled\": false` and the next `report` deletes the file instead of leaving the last one deployed.",
+      "words": 108,
       "tier": "prose",
       "status": "unreviewed",
       "replacement": null,
@@ -966,7 +966,7 @@
           "file": "README.md",
           "line": 210,
           "kind": "md-block",
-          "raw": "A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `\"enabled\": false` and the next `report` deletes the file instead of leaving the last one deployed.",
+          "raw": "The statuses are the ledger's, with nothing added. `human` says the declarant put the words there, not a model: a testimonial they chose and pasted in is `human`, and one a model drafted into the page is not. A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `\"enabled\": false` and the next `report` deletes the file instead of leaving the last one deployed.",
           "quote": null
         }
       ]
@@ -2067,6 +2067,24 @@
       "authorship": {
         "kind": "written"
       }
+    },
+    {
+      "id": "45c179b7badb",
+      "text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+      "words": 106,
+      "tier": "prose",
+      "status": "ai-fine",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 41,
+          "kind": "md-block",
+          "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+          "quote": null
+        }
+      ]
     }
   ],
   "baseline": [
