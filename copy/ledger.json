@@ -278,11 +278,11 @@
       ]
     },
     {
-      "id": "4c216a7acf29",
-      "text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
-      "words": 133,
+      "id": "a49feca62157",
+      "text": "| Status | Means |\n|---|---|\n| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |\n| `rewritten` | Human wrote replacement but `apply` has not written it yet. |\n| `human` | Human wrote the copy, not a model. |\n| `ai-fine` | Human reviewed and accepted the slop. |\n| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+      "words": 101,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "human",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -293,7 +293,11 @@
           "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
           "quote": null
         }
-      ]
+      ],
+      "authorship": {
+        "kind": "written"
+      },
+      "previous_ai_text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |"
     },
     {
       "id": "4b880144de98",
@@ -868,7 +872,7 @@
       "text": "## A copy disclosure, for a site whose source is closed",
       "words": 11,
       "tier": "helper",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -882,11 +886,11 @@
       ]
     },
     {
-      "id": "e58f9d811c12",
-      "text": "The report lives in the repo, which only helps if people can see the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what you declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.",
-      "words": 75,
+      "id": "dcfe2bd8a872",
+      "text": "The report lives in the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what human declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.",
+      "words": 66,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "human",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -897,14 +901,18 @@
           "raw": "The report lives in the repo, which only helps if people can see the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what you declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.",
           "quote": null
         }
-      ]
+      ],
+      "authorship": {
+        "kind": "edited"
+      },
+      "previous_ai_text": "The report lives in the repo, which only helps if people can see the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what you declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up."
     },
     {
       "id": "70e3c2636f3a",
       "text": "It is off until you add a block to `.slopchop.json`. `init` never adds one.",
       "words": 14,
       "tier": "helper",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -922,7 +930,7 @@
       "text": "Or open **Disclosure** in the review page, which edits only this block, previews exactly what would be published, and asks once before the first switch-on. Then:",
       "words": 26,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -940,7 +948,7 @@
       "text": "The file looks like this:",
       "words": 5,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -958,7 +966,7 @@
       "text": "The statuses are the ledger's, with nothing added. `human` says the declarant put the words there, not a model: a testimonial they chose and pasted in is `human`, and one a model drafted into the page is not. A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `\"enabled\": false` and the next `report` deletes the file instead of leaving the last one deployed.",
       "words": 108,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -976,7 +984,7 @@
       "text": "For each page, a Reader lists the declared copy with its status, lists the undeclared copy by its text, and shows your out-of-scope reasons beside it. It counts `not-copy` strings separately and leaves them out of the page's total. The bookmarklet does the same on whatever page you are looking at, and marks each string on the page in its status's colour.",
       "words": 62,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -994,7 +1002,7 @@
       "text": "Where a Reader comes up short:",
       "words": 6,
       "tier": "helper",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1012,7 +1020,7 @@
       "text": "- Template strings never match. `about {event.name}` in source renders as `about Spring Fair`, so it reads as undeclared, and so does anything a script builds at runtime.\n- Strings are cut the way `sync` cuts HTML: an inline element splits a sentence. A Markdown paragraph with a link or emphasis in it renders as several strings, none of which hash to the paragraph in the ledger.\n- Short labels are easy to guess from their hash. Leaving the text out keeps the file small and focused, but it is not a privacy measure.",
       "words": 94,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1030,7 +1038,7 @@
       "text": "The ID is a public, frozen algorithm, `slop: 1`: the first 12 hex characters of SHA-256 over the UTF-8 text, with each run of whitespace collapsed to one space and the ends trimmed, and no Unicode normalization. A Reader anyone writes can compute it. [docs/adr](docs/adr) has the reasoning.",
       "words": 48,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1185,7 +1193,7 @@
       "text": "Disclosure",
       "words": 1,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1203,7 +1211,7 @@
       "text": "Publish a self-reported copy disclosure (slop.json)",
       "words": 6,
       "tier": "helper",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1761,7 +1769,7 @@
       "text": "Copy disclosure",
       "words": 2,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1779,7 +1787,7 @@
       "text": "Close",
       "words": 1,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1797,7 +1805,7 @@
       "text": "A public, self-reported",
       "words": 3,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1815,7 +1823,7 @@
       "text": "slop.json",
       "words": 1,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1833,7 +1841,7 @@
       "text": ": an ID and a status for each string you have decided, with no text and no file paths. A Reader hashes the text on a page and looks the IDs up.",
       "words": 32,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1851,7 +1859,7 @@
       "text": "slopchop report",
       "words": 2,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1869,7 +1877,7 @@
       "text": "writes the file, and deletes it once this is off.",
       "words": 10,
       "tier": "helper",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1887,7 +1895,7 @@
       "text": "Publish a copy disclosure",
       "words": 4,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1905,7 +1913,7 @@
       "text": "Declarant",
       "words": 1,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1923,7 +1931,7 @@
       "text": "The one person or organization making these statements.",
       "words": 8,
       "tier": "helper",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1941,7 +1949,7 @@
       "text": "Contact",
       "words": 1,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1959,7 +1967,7 @@
       "text": "An email address or URL for questions about it.",
       "words": 9,
       "tier": "helper",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1977,7 +1985,7 @@
       "text": "Path",
       "words": 1,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1995,7 +2003,7 @@
       "text": "public/slop.json",
       "words": 1,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -2013,7 +2021,7 @@
       "text": "Where report writes it, so the site serves it at /slop.json.",
       "words": 11,
       "tier": "helper",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -2031,7 +2039,7 @@
       "text": "Save",
       "words": 1,
       "tier": "label",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [

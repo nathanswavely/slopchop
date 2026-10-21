@@ -40,11 +40,11 @@ It is not built to be an AI detector or a "policing" service. It is self-reporte
 
 | Status | Means |
 |---|---|
-| `unreviewed` | A model drafted it and nobody has reviewed. The default. |
-| `rewritten` | You wrote a replacement and `apply` has not written it yet. |
-| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |
-| `ai-fine` | You looked, and it is fine as drafted. |
-| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |
+| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |
+| `rewritten` | Human wrote replacement but `apply` has not written it yet. |
+| `human` | Human wrote the copy, not a model. |
+| `ai-fine` | Human reviewed and accepted the slop. |
+| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |
 | `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |
 
 `ai-fine` is the one that makes this bearable. "Failed to load comments" does not need your voice, and neither do most of the labels around it. Marking them is one keystroke each, or one command for a whole file. The report counts them separately from `human`, so the number you end up with is honest about which is which.
@@ -171,7 +171,7 @@ writes `copy/REPORT.md` with the counts by status and tier, the scope and what w
 
 ## A copy disclosure, for a site whose source is closed
 
-The report lives in the repo, which only helps if people can see the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what you declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.
+The report lives in the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what human declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.
 
 It is off until you add a block to `.slopchop.json`. `init` never adds one.
 
