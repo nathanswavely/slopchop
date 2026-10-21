@@ -930,7 +930,7 @@
       "text": "`declarant` and `contact` are optional, and `\"enabled\": true` alone turns it on. Leave them out and the file names nobody: a Reader says it is declared by the owner of the site's domain.",
       "words": 33,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1949,7 +1949,7 @@
       "text": "Optional. The one person or organization making these statements. Left empty, the declarant is whoever owns the site's domain.",
       "words": 19,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1985,7 +1985,7 @@
       "text": "Optional. An email address or URL for questions about it.",
       "words": 10,
       "tier": "helper",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
