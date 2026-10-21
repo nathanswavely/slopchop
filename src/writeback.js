@@ -9,7 +9,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { promote } from './ledger.js';
+import { promote, demote } from './ledger.js';
 import { encodeEntities, collapse } from './extract/common.js';
 import { syntaxFor, expressions, expressionProblem, splitExpressions } from './expressions.js';
 
@@ -153,15 +153,48 @@ function encodeAround(kind, quote, text, raw, syntax) {
   return { value };
 }
 
+/** The entries apply would write: rewritten, with a replacement to write. */
+function pendingOf(ledger, ids = null) {
+  return ledger.entries.filter((e) => e.status === 'rewritten' && e.replacement && e.replacement.trim() &&
+    (!ids || ids.includes(e.id)));
+}
+
+/** The line ending a file mostly uses. A file with no line breaks gets \n. */
+function eolOf(content) {
+  const crlf = (content.match(/\r\n/g) || []).length;
+  const lf = (content.match(/\n/g) || []).length - crlf;
+  return crlf > lf ? '\r\n' : '\n';
+}
+
+/** `value` with every line break written the way the file writes them. */
+function withEol(value, eol) {
+  const lf = value.replace(/\r\n?/g, '\n');
+  return eol === '\n' ? lf : lf.replace(/\n/g, eol);
+}
+
+/**
+ * Where `raw` sits in `content`, at or after `from`: the exact text, or the
+ * same text with the file's own CRLF breaks (a multi-line YAML value is
+ * recorded with \n only). Returns { at, length } or null.
+ */
+function findRaw(content, raw, from) {
+  let at = content.indexOf(raw, from);
+  if (at !== -1) return { at, length: raw.length };
+  if (raw.includes('\n') && !raw.includes('\r')) {
+    const crlf = raw.replace(/\n/g, '\r\n');
+    at = content.indexOf(crlf, from);
+    if (at !== -1) return { at, length: crlf.length };
+  }
+  return null;
+}
+
 /**
  * Resolve every pending occurrence to an absolute range in its file.
- * Returns { plan: Map<file, edits[]>, blocked: [{entry, reason}] }.
+ * `pending` is the entries to write, each with its new text in `replacement`.
+ * Returns { plan: Map<file, edits[]>, blocked: [{entry, reason}], ready, contents }.
  */
-function planEdits(project, ledger) {
-  const pending = ledger.entries.filter(
-    (e) => e.status === 'rewritten' && e.replacement && e.replacement.trim());
-
-  const plan = new Map();     // file -> [{start, end, value}]
+function planEdits(project, pending) {
+  const plan = new Map();     // file -> [{start, end, value, occ}]
   const blocked = [];
   const ready = [];
 
@@ -189,6 +222,7 @@ function planEdits(project, ledger) {
       let content;
       try { content = readFile(file); }
       catch { reason = `cannot read ${file}`; break; }
+      const eol = eolOf(content);
 
       occs.sort((a, b) => a.line - b.line);
       let cursor = 0;
@@ -197,17 +231,16 @@ function planEdits(project, ledger) {
         if (enc.problem) { reason = enc.problem; break; }
 
         const from = Math.max(cursor, Math.max(0, offsetOfLine(content, occ.line) - 240));
-        let at = content.indexOf(occ.raw, from);
-        if (at === -1) at = content.indexOf(occ.raw, cursor);  // file shifted
-        if (at === -1) {
+        const hit = findRaw(content, occ.raw, from) || findRaw(content, occ.raw, cursor);  // file shifted
+        if (!hit) {
           reason = `source drifted: no exact match for this text in ${file} (re-run sync)`;
           break;
         }
         edits.push({
-          file, id: entry.id, model: entry.replacement_source === 'model',
-          start: at, end: at + occ.raw.length, value: enc.value,
+          file, id: entry.id, model: entry.replacement_source === 'model', occ,
+          start: hit.at, end: hit.at + hit.length, value: withEol(enc.value, eol),
         });
-        cursor = at + occ.raw.length;
+        cursor = hit.at + hit.length;
       }
       if (reason) break;
     }
@@ -224,6 +257,56 @@ function planEdits(project, ledger) {
 }
 
 /**
+ * Splice a plan into its files. With `apply`, each file is read again just
+ * before anything is written, and if any of them changed after the plan was
+ * made (another review page, an editor), nothing is written at all. A file
+ * keeps its line endings, and its trailing newline or the lack of one.
+ *
+ * Once written, each occurrence an edit touched is moved to the text that
+ * is in source now, so a later rewrite or an undo finds it there.
+ * Returns { files: [{file, edits}], problem }.
+ */
+function commit(project, plan, contents, { apply }) {
+  const out = new Map();
+  for (const [file, edits] of plan) {
+    const before = contents.get(file);
+    // Splice from the end so earlier offsets stay valid.
+    const desc = [...edits].sort((a, b) => b.start - a.start);
+    let content = before;
+    for (const e of desc) {
+      content = content.slice(0, e.start) + e.value + content.slice(e.end);
+    }
+    if (before.endsWith('\n') && !content.endsWith('\n')) content += eolOf(before);
+    else if (!before.endsWith('\n') && content.endsWith('\n')) content = content.replace(/\r?\n$/, '');
+    out.set(file, content);
+  }
+
+  const files = [...plan].map(([file, edits]) => ({ file, edits: edits.length }))
+    .sort((a, b) => a.file.localeCompare(b.file));
+  if (!apply) return { files };
+
+  for (const file of out.keys()) {
+    let now = null;
+    try { now = fs.readFileSync(path.join(project.root, file), 'utf8'); } catch { /* gone: changed */ }
+    if (now !== contents.get(file)) {
+      return { files: [], problem: `${file} changed while this was being written, so nothing was written. Try again` };
+    }
+  }
+
+  for (const [file, content] of out) {
+    fs.writeFileSync(path.join(project.root, file), content);
+    let shift = 0;
+    for (const e of [...plan.get(file)].sort((a, b) => a.start - b.start)) {
+      const at = e.start + shift;
+      shift += e.value.length - (e.end - e.start);
+      e.occ.raw = e.value;
+      e.occ.line = content.slice(0, at).split('\n').length;
+    }
+  }
+  return { files };
+}
+
+/**
  * What apply would do, as whole-line replacements: for each run of lines an
  * edit touches, the original line numbers and the lines that would replace
  * them. This is what a pull request suggestion block carries. Edits that
@@ -232,7 +315,7 @@ function planEdits(project, ledger) {
  * Returns { changes: [{file, entries, startLine, endLine, before, after}], blocked }.
  */
 export function previewLines(project, ledger) {
-  const { plan, blocked, contents } = planEdits(project, ledger);
+  const { plan, blocked, contents } = planEdits(project, pendingOf(ledger));
 
   const changes = [];
   for (const [file, edits] of plan) {
@@ -276,24 +359,23 @@ export function previewLines(project, ledger) {
   return { changes, blocked };
 }
 
+
 /**
  * @param {object} project
  * @param {object} ledger  mutated in place when apply is true
  * @param {boolean} apply  false = dry run, nothing written
+ * @param {string[]} ids   only these entries, when given
  */
-export function writeback(project, ledger, { apply = false } = {}) {
-  const { plan, blocked, ready, contents } = planEdits(project, ledger);
+export function writeback(project, ledger, { apply = false, ids = null } = {}) {
+  const { plan, blocked, ready, contents } = planEdits(project, pendingOf(ledger, ids));
+  const { files, problem } = commit(project, plan, contents, { apply });
 
-  const touched = [];
-  for (const [file, edits] of plan) {
-    // Splice from the end so earlier offsets stay valid.
-    edits.sort((a, b) => b.start - a.start);
-    let content = contents.get(file);
-    for (const e of edits) {
-      content = content.slice(0, e.start) + e.value + content.slice(e.end);
-    }
-    if (apply) fs.writeFileSync(path.join(project.root, file), content);
-    touched.push({ file, edits: edits.length });
+  // A file changed under the write: every entry stays as it was.
+  if (problem) {
+    return {
+      applied: false, entries: 0, files: [], occurrences: 0,
+      blocked: [...ready.map((entry) => ({ entry, reason: problem })), ...blocked],
+    };
   }
 
   if (apply) {
@@ -303,8 +385,30 @@ export function writeback(project, ledger, { apply = false } = {}) {
   return {
     applied: apply,
     entries: ready.length,
-    files: touched.sort((a, b) => a.file.localeCompare(b.file)),
-    occurrences: touched.reduce((n, t) => n + t.edits, 0),
+    files,
+    occurrences: files.reduce((n, t) => n + t.edits, 0),
     blocked,
   };
+}
+
+/** Words that replaced a model's draft and are in source now. */
+export function isApplied(entry) {
+  return !!entry.previous_ai_text && (entry.status === 'human' || entry.status === 'ai-revised');
+}
+
+/**
+ * Undo: put back the drafts these entries replaced, under the same rules
+ * as apply, all of them or none. Each entry then goes back to its draft,
+ * with `status`. Returns { files }, or { problem, entry } and changes nothing.
+ */
+export function restoreDrafts(project, entries, status) {
+  const probes = entries.map((entry) => ({ ...entry, replacement: entry.previous_ai_text, replacement_source: undefined }));
+  const { plan, blocked, contents } = planEdits(project, probes);
+  if (blocked.length) {
+    return { problem: blocked[0].reason, entry: entries[probes.indexOf(blocked[0].entry)] };
+  }
+  const { files, problem } = commit(project, plan, contents, { apply: true });
+  if (problem) return { problem, entry: entries[0] };
+  for (const entry of entries) demote(entry, status);
+  return { files };
 }

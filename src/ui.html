@@ -537,11 +537,11 @@ const BULK_DONE = {
   unreviewed: (n) => `${n} back in the queue.`,
 };
 
-async function bulk(status, { force = false, ids = [...selected] } = {}) {
+async function bulk(status, { force = false, restore = false, ids = [...selected] } = {}) {
   if (!ids.length) return;
   const byId = new Map(entries.map((e) => [e.id, e]));
   const pending = ids.filter((id) => byId.get(id)?.replacement);
-  if (!force && pending.length && status !== 'rewritten' &&
+  if (!force && !restore && pending.length && status !== 'rewritten' &&
       !await ask('Throw away unapplied rewrites?',
         `${pending.length} of these ${pending.length === 1 ? 'has a rewrite' : 'have rewrites'} not applied yet. ` +
         `Deciding them this way throws ${pending.length === 1 ? 'it' : 'them'} away.`,
@@ -549,8 +549,12 @@ async function bulk(status, { force = false, ids = [...selected] } = {}) {
 
   let r;
   try {
-    r = await api('/api/decide-many', { method: 'POST', body: JSON.stringify({ ids, status, force }) });
+    r = await api('/api/decide-many', { method: 'POST', body: JSON.stringify({ ids, status, force, restore }) });
   } catch (err) {
+    if (err.body?.code === 'restore') {
+      if (!await askRestore(err.body.count)) return flash('Kept your words.');
+      return bulk(status, { force, restore: true, ids });
+    }
     if (err.body?.code !== 'checked-out') return flash(err.message);
     const held = err.body.held;
     const files = [...new Set(held.map((h) => h.rel))].join(', ');
@@ -559,20 +563,23 @@ async function bulk(status, { force = false, ids = [...selected] } = {}) {
       `Deciding them here orphans anything written in those draft blocks.`,
       { yes: 'Decide them here anyway', no: 'Leave them for the draft' });
     const heldIds = new Set(held.map((h) => h.id));
-    return bulk(status, { force: anyway, ids: anyway ? ids : ids.filter((id) => !heldIds.has(id)) });
+    return bulk(status, { force: anyway, restore, ids: anyway ? ids : ids.filter((id) => !heldIds.has(id)) });
   }
 
-  for (const fresh of r.entries) {
-    const e = byId.get(fresh.id);
-    if (!e) continue;
+  // Matched by the id sent: a draft put back has a new one.
+  r.entries.forEach((fresh, i) => {
+    const e = byId.get(r.was?.[i] ?? fresh.id);
+    if (!e) return;
     for (const k of Object.keys(e)) if (!(k in fresh)) delete e[k];
     Object.assign(e, fresh);
-  }
+    notInSource.delete(e.id);
+  });
   applyStats(r.stats);
   // Only what was just decided: anything ticked while the request was in
   // flight is a new selection and stays.
   for (const id of ids) selected.delete(id);
-  flash(BULK_DONE[status](r.entries.length));
+  const done = BULK_DONE[status](r.entries.length);
+  flash(r.restored ? `Drafts back in ${fileList(r.restored)}. ${done}` : done);
   refilter(view[cursor]?.id);
 }
 
@@ -641,6 +648,18 @@ async function renderDetail() {
       'run slopchop pull. A decision here retires its marker, and whatever ' +
       'is in that block loses its home.');
     d.append(held);
+  }
+
+  // Saved, and not in source: refused when it was saved, or read back from
+  // a draft. The ledger says these words; the page does not, yet.
+  if (e.status === 'rewritten') {
+    const why = notInSource.get(e.id);
+    const box = document.createElement('div');
+    box.className = `lt-callout lt-tone-${why ? 'error' : 'warning'}`;
+    box.textContent = why
+      ? `Saved in the ledger, not written into source: ${why}. Change the rewrite and save again, or fix the source and press Apply rewrites.`
+      : 'Saved in the ledger and not in source yet. Apply rewrites writes it there, and the check fails until it is.';
+    d.append(box);
   }
 
   if (e.previous_ai_text) {
@@ -758,30 +777,55 @@ async function renderDetail() {
   } catch { /* context is a nicety; never block review on it */ }
 }
 
-// Returns false when the server refused because the string is checked out in
-// a draft and you decided not to override.
+// The words that replaced a draft are in source. Moving them back puts the
+// draft back there, so the page asks first.
+function askRestore(n) {
+  return ask(n === 1 ? 'Put the draft back?' : `Put ${n} drafts back?`,
+    `${n === 1 ? 'Your words go' : 'Your words go, in each of them,'} back to the model's draft, in source and in the ledger. ` +
+    'Until you commit, git diff still shows what you wrote.',
+    { yes: n === 1 ? 'Put the draft back' : 'Put the drafts back', no: 'Keep my words' });
+}
+
+// Returns the server's answer, or null when you were asked something (a
+// draft checkout, putting a draft back) and said no.
 async function persist(e, body) {
   let r;
-  try {
-    r = await api('/api/decide', { method: 'POST', body: JSON.stringify({ id: e.id, ...body }) });
-  } catch (err) {
-    if (err.body?.code !== 'checked-out') throw err;
-    const where = err.body.draft.rel;
-    const ok = await ask(`Checked out in ${where}`,
-      `"${e.text.slice(0, 90)}"\n\nDeciding it here retires its marker, so anything written in that ` +
-      `block will have nowhere to go when you run slopchop pull.`,
-      { yes: 'Decide it here anyway', no: 'Leave it for the draft' });
-    if (!ok) { flash(`Left for ${err.body.draft.source}.`); return false; }
-    r = await api('/api/decide', {
-      method: 'POST', body: JSON.stringify({ id: e.id, ...body, force: true }),
-    });
+  for (let extra = {}; ;) {
+    try {
+      r = await api('/api/decide', { method: 'POST', body: JSON.stringify({ id: e.id, ...body, ...extra }) });
+      break;
+    } catch (err) {
+      const code = err.body?.code;
+      if (code === 'checked-out' && !extra.force) {
+        const where = err.body.draft.rel;
+        const ok = await ask(`Checked out in ${where}`,
+          `"${e.text.slice(0, 90)}"\n\nDeciding it here retires its marker, so anything written in that ` +
+          `block will have nowhere to go when you run slopchop pull.`,
+          { yes: 'Decide it here anyway', no: 'Leave it for the draft' });
+        if (!ok) { flash(`Left for ${err.body.draft.source}.`); return null; }
+        extra = { ...extra, force: true };
+      } else if (code === 'restore' && !extra.restore) {
+        if (!await askRestore(1)) { flash('Kept your words.'); return null; }
+        extra = { ...extra, restore: true };
+      } else {
+        throw err;
+      }
+    }
   }
-  // The server's copy is the truth, including fields it dropped.
+  // The server's copy is the truth, including fields it dropped. Its id
+  // changes when words go into or come out of source; this is still the
+  // same entry, so the page keeps its place.
   for (const k of Object.keys(e)) if (!(k in r.entry)) delete e[k];
   Object.assign(e, r.entry);
+  if (r.refused) notInSource.set(e.id, r.refused); else notInSource.delete(e.id);
   applyStats(r.stats);
-  return true;
+  return r;
 }
+
+// Why a saved rewrite could not be written into source, by entry id, for as
+// long as this page is open. Apply rewrites tries those again.
+const notInSource = new Map();
+const fileList = (files) => files.map((f) => f.file).join(', ');
 
 async function saveRewrite(e, text, kind) {
   const next = text.trim();
@@ -793,14 +837,21 @@ async function saveRewrite(e, text, kind) {
   // A rewrite that loses or changes code would break the page it lands on.
   const broken = expressionProblem(e.text, next, syntaxOf(e.occurrences));
   if (broken) return flash(`Not saved: this ${broken}.`);
+  const model = e.suggestion?.text === next;
+  let r;
   try {
-    if (!await persist(e, { status: 'rewritten', replacement: next, kind })) return;
+    if (!(r = await persist(e, { status: 'rewritten', replacement: next, kind }))) return;
   } catch (err) {
     return flash(err.message);
   }
-  flash(e.replacement_source === 'model'
-    ? "Saved as the model's rewrite (ai-revised once applied). Edit it to make it yours."
-    : `Saved as ${KIND_LABEL[kind]}. Apply rewrites to write it into source.`);
+  // Saved, but source refused it: stay here, where the reason is shown.
+  if (r.refused) {
+    flash(`Saved in the ledger, not written into source: ${r.refused}.`);
+    return renderDetail();
+  }
+  flash(model
+    ? `Written into ${fileList(r.applied)} as the model's rewrite, so it counts as ai-revised. Edit it to make it yours.`
+    : `Saved as ${KIND_LABEL[kind]} and written into ${fileList(r.applied)}. Read git diff before you commit.`);
   advance(e);
 }
 
@@ -994,11 +1045,19 @@ function makeEditor(e, syntax) {
 }
 
 async function setStatus(e, status) {
-  if (!await persist(e, { status, replacement: null })) return;
-  flash(BULK_DONE[status](1).replace(/^1 /, '').replace(/^./, (c) => c.toUpperCase()));
+  let r;
+  try {
+    if (!(r = await persist(e, { status, replacement: null }))) return;
+  } catch (err) {
+    return flash(err.message);
+  }
+  const done = BULK_DONE[status](1).replace(/^1 /, '').replace(/^./, (c) => c.toUpperCase());
+  flash(r.restored ? `The draft is back in ${fileList(r.restored)}. ${done}` : done);
   advance(e);
 }
 
+// A save writes its rewrite into source by itself. This is for the rest:
+// rewrites read back from a draft, and ones source refused when saved.
 async function applyRewrites() {
   const dry = await api('/api/apply', { method: 'POST', body: JSON.stringify({ dryRun: true }) });
   if (!dry.entries && !dry.blocked.length) return flash('Nothing to apply.');
@@ -1010,6 +1069,8 @@ async function applyRewrites() {
   if (!dry.entries) { await ask('Nothing can be applied', msg, { yes: 'OK', no: 'Close' }); return; }
   if (!await ask('Write your rewrites into source?', msg, { yes: 'Apply rewrites', no: 'Not yet' })) return;
   const r = await api('/api/apply', { method: 'POST', body: JSON.stringify({ dryRun: false }) });
+  notInSource.clear();
+  for (const b of r.blocked) notInSource.set(b.id, b.reason);
   flash(`Applied ${r.entries}. Review the diff before committing.`);
   await loadAll();
 }
