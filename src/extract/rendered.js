@@ -23,7 +23,7 @@
 // Keys are pooled across the project, since a list of services usually lives
 // in one file and the template that shows it in another.
 
-import { COPY_ATTRS, isCatalogCopy, isProseLiteral, pushHit, verbatim, collapse, unescapeString } from './common.js';
+import { COPY_ATTRS, isCatalogCopy, isProseLiteral, pushHit, verbatim, collapse, unescapeString, quotedValue } from './common.js';
 import { stripComments } from './js.js';
 
 // Props whose value a component shows a person, on top of COPY_ATTRS.
@@ -91,7 +91,7 @@ export function renderedKeys(markup, keys = new Set()) {
  */
 export function componentProps(file, markup, src, kindPrefix, { text = (s) => collapse(s) } = {}) {
   const hits = [];
-  const prop = new RegExp(`(?<=\\s)(${COPY_PROPS.join('|')})\\s*=\\s*(["'])([^"'{}]*?)\\2`, 'g');
+  const prop = new RegExp(`(?<=\\s)(${COPY_PROPS.join('|')})\\s*=\\s*${quotedValue(2)}`, 'g');
   for (const tag of tagSpans(markup)) {
     if (!/^[A-Z]/.test(tag.name)) continue;
     const body = markup.slice(tag.start, tag.end);

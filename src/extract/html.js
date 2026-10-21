@@ -38,7 +38,8 @@ export function htmlRegion(file, region, src, offset) {
     const tag = m[0];
     const name = tag.match(/\b(?:name|property)\s*=\s*(["'])([^"']*)\1/i);
     if (!name || !META_NAMES.has(name[2].toLowerCase())) continue;
-    const content = tag.match(/\bcontent\s*=\s*(["'])([^"']*)\1/i);
+    // A description runs to the quote that opened it, apostrophes and all.
+    const content = tag.match(/\bcontent\s*=\s*(["'])((?:(?!\1)[\s\S])*)\1/i);
     if (!content || !/[A-Za-z]{2}/.test(content[2])) continue;
     const valIndex = m.index + content.index + content[0].indexOf(content[1]) + 1;
     pushHit(hits, {
