@@ -12,7 +12,7 @@ const INDEX = fs.readFileSync(new URL('../examples/site/src/index.html', import.
 
 test('the bundled Reader gives the same answer as the one in Node', async () => {
   const m = load('reader.js');
-  assert.deepEqual(Object.keys(m), ['expressions.js', 'extract/common.js', 'extract/js.js', 'extract/html.js', 'slop.js', 'reader.js']);
+  assert.deepEqual(Object.keys(m), ['expressions.js', 'extract/entities.js', 'extract/common.js', 'extract/js.js', 'extract/html.js', 'slop.js', 'reader.js']);
   const d = {
     slop: 1, declarant: 'Pat', contact: 'pat@example.com', outOfScope: ['Fixtures.'],
     copy: { [await slopId('Keep me posted')]: 'human+', [await slopId('Northwind Tools')]: 'not-copy' },

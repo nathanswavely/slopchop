@@ -139,10 +139,15 @@ What counts as copy, by file type:
 |---|---|
 | `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |
 | `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |
-| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions. Not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |
+| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions and share titles. Not `<meta name="keywords">`, which nothing shows anyone, and not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |
+| `.astro` | Template text and copy attributes, sentence-shaped strings in the frontmatter, `{expressions}` and client `<script>`s. |
 | `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |
 | `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |
 | `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |
+
+Markup is recorded as a page shows it: `Next &rarr;` is `Next →`, with every character reference HTML defines decoded the way a browser decodes it. A lone symbol, like that arrow on its own, is not copy.
+
+Two things come out of Astro, JSX and Svelte components on top of that. A string passed to a component under a name like copy (`description`, `label`, `heading`, `subtitle`, `caption`, `summary`, `text`, `message`) is copy: `<BaseLayout description="…">` ends up in a `<meta>` a search result shows. And a short string is copy when a template shows its key: `<span>{service.name}</span>` makes `name: 'Hello'` copy, in any file in scope, where a short string alone would be taken for an identifier. Values that look like ids, paths, URLs or colours are still dropped, and `ignoreKeys` still wins. A key a template shows only through code (`{format(service.name)}`) is not followed, and neither are Vue's `{{ }}` templates.
 | `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{"error":"..."}` bodies. |
 
 The filters over-collect on purpose. A false positive costs one keystroke; a false negative is a string you never see. If something odd shows up in the queue, mark it and keep going.
@@ -215,7 +220,7 @@ For each page, a Reader lists the declared copy with its status, lists the undec
 
 Where a Reader comes up short:
 
-- Template strings never match. `about {event.name}` in source renders as `about Spring Fair`, so it reads as undeclared, and so does anything a script builds at runtime.
+- Template strings never match. `about {event.name}` in source renders as `about Spring Fair`, so it reads as undeclared, and so does anything a script builds at runtime, `© {new Date().getFullYear()}` included.
 - Strings are cut the way `sync` cuts HTML: an inline element splits a sentence. A Markdown paragraph with a link or emphasis in it renders as several strings, none of which hash to the paragraph in the ledger.
 - Short labels are easy to guess from their hash. Leaving the text out keeps the file small and focused, but it is not a privacy measure.
 

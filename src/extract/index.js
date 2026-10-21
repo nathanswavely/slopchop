@@ -5,12 +5,13 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { tierFor, wordCount } from './common.js';
+import { tierFor, wordCount, decodedText } from './common.js';
 import { idFor } from './id.js';
 import { syntaxOf } from '../expressions.js';
-import { extractSvelte } from './svelte.js';
-import { extractAstro } from './astro.js';
-import { extractJs, extractJsx } from './js.js';
+import { extractSvelte, svelteMarkup } from './svelte.js';
+import { extractAstro, astroTemplate } from './astro.js';
+import { extractJs, extractJsx, stripComments } from './js.js';
+import { renderedKeys, keyedStrings, componentProps } from './rendered.js';
 import { extractGo, extractGoErrors } from './go.js';
 import { extractMd, extractMdx } from './md.js';
 import { extractHtml, extractVue } from './html.js';
@@ -20,11 +21,27 @@ import { extractYaml } from './yaml.js';
 export { collapse, tierFor, wordCount, BLOCK_KINDS } from './common.js';
 export { idFor } from './id.js';
 
+// JS and JSX also give short strings for the keys a template shows, and
+// JSX components their copy props (rendered.js). That half lives here, not
+// in js.js, which the bookmarklet bundles and has no use for it.
+const keyed = (file, src, ctx) => keyedStrings(file, src, src, 0, ctx.renderedKeys, 'js-string', ctx.ignoreKeys);
+
 export const EXTRACTORS = {
   svelte: extractSvelte,
   astro: extractAstro,
-  js: extractJs,
-  jsx: extractJsx,
+  js: (file, src, ctx = {}) => [...extractJs(file, src), ...keyed(file, src, ctx)],
+  jsx: (file, src, ctx = {}) => {
+    const clean = stripComments(src);
+    // A sentence-shaped prop is a string literal too; it is recorded once,
+    // as the prop it is.
+    const props = componentProps(file, clean, src, 'jsx-attr', { text: decodedText });
+    const claimed = new Set(props.map((h) => `${h.line}:${h.raw}`));
+    return [
+      ...extractJsx(file, src).filter((h) => !claimed.has(`${h.line}:${h.raw}`)),
+      ...props,
+      ...keyedStrings(file, src, src, 0, ctx.renderedKeys || renderedKeys(clean), 'jsx-string', ctx.ignoreKeys),
+    ];
+  },
   vue: extractVue,
   go: extractGo,
   'go-errors': extractGoErrors,
@@ -45,15 +62,29 @@ export function extractOne(file, lang, src, ctx = {}) {
   return fn(file, src, ctx);
 }
 
+// Where a template shows its keys, for each language that has one.
+const MARKUP = {
+  astro: astroTemplate,
+  svelte: svelteMarkup,
+  jsx: stripComments,
+};
+
+/**
+ * The keys any in-scope template renders where a person reads them, pooled:
+ * the list of services is in one file, the page that shows it in another.
+ */
+export function projectKeys(sources) {
+  const keys = new Set();
+  for (const { lang, src } of sources) if (MARKUP[lang]) renderedKeys(MARKUP[lang](src), keys);
+  return keys;
+}
+
 /** Every hit across every in-scope file, unmerged. */
 export function extractAll(project) {
-  const hits = [];
-  const ctx = { frozen: project.frozen, ignoreKeys: project.ignoreKeys };
-  for (const { file, lang } of project.sourceFiles()) {
-    const src = fs.readFileSync(path.join(project.root, file), 'utf8');
-    hits.push(...extractOne(file, lang, src, ctx));
-  }
-  return hits;
+  const sources = project.sourceFiles().map(({ file, lang }) => (
+    { file, lang, src: fs.readFileSync(path.join(project.root, file), 'utf8') }));
+  const ctx = { frozen: project.frozen, ignoreKeys: project.ignoreKeys, renderedKeys: projectKeys(sources) };
+  return sources.flatMap(({ file, lang, src }) => extractOne(file, lang, src, ctx));
 }
 
 /** Hits folded into ledger entries, keyed by the hash of the collapsed text. */

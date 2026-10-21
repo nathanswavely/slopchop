@@ -5,15 +5,15 @@
 // ({{ x }}, {% if %}, <% %>) is treated the way Svelte expressions are:
 // interpolation stays inside the copy, control flow splits it.
 
-import { blank, textNodes, attrHits, pushHit, decodeEntities, collapse, COPY_ATTRS } from './common.js';
+import { blank, textNodes, attrHits, pushHit, decodedText, COPY_ATTRS } from './common.js';
 import { extractJsStrings } from './js.js';
 
-// <meta name="…"> / <meta property="…"> whose content a person reads.
+// <meta name="…"> / <meta property="…"> whose content a person reads: in a
+// search result, or on a card when the page is shared. Not keywords, which
+// nothing shows anyone.
 const META_NAMES = new Set([
-  'description', 'og:title', 'og:description', 'twitter:title', 'twitter:description', 'keywords',
+  'description', 'og:title', 'og:description', 'twitter:title', 'twitter:description',
 ]);
-
-const decoded = (s) => decodeEntities(collapse(s));
 
 /** Hits inside `region`, which starts at `offset` within `src`. */
 export function htmlRegion(file, region, src, offset) {
@@ -28,8 +28,8 @@ export function htmlRegion(file, region, src, offset) {
     /<pre\b[\s\S]*?<\/pre>/gi);
 
   const hits = [
-    ...textNodes(file, markup, src, offset, 'html-text', { text: decoded }),
-    ...attrHits(file, markup, src, offset, 'html-attr', COPY_ATTRS, { text: decoded }),
+    ...textNodes(file, markup, src, offset, 'html-text', { text: decodedText }),
+    ...attrHits(file, markup, src, offset, 'html-attr', COPY_ATTRS, { text: decodedText }),
   ];
 
   const metaRe = /<meta\b[^>]*>/gi;
@@ -43,7 +43,7 @@ export function htmlRegion(file, region, src, offset) {
     const valIndex = m.index + content.index + content[0].indexOf(content[1]) + 1;
     pushHit(hits, {
       file, raw: content[2], index: offset + valIndex, src, kind: 'html-attr:content', quote: content[1],
-      text: decoded(content[2]), at: `meta ${name[2]}`,
+      text: decodedText(content[2]), at: `meta ${name[2]}`,
     });
   }
   return hits;
