@@ -12,6 +12,7 @@
 //                     refuses, and never guesses.
 
 import { countWords } from '../expressions.js';
+import { namedEntity } from './entities.js';
 
 // Attributes whose values a person reads.
 export const COPY_ATTRS = ['placeholder', 'title', 'aria-label', 'alt', 'aria-description'];
@@ -213,9 +214,11 @@ export function isMarkupNoise(chunk) {
   const literal = stripExpressions(chunk).trim();
   if (ATTR_RESIDUE.test(literal)) return true;
   if (!literal) return true;
-  const words = literal.split(/\s+/).filter((w) => /[A-Za-z]{2}/.test(w));
+  // Words as a page shows them: `&rarr;` is an arrow, not the word "rarr".
+  const shown = decodeEntities(literal);
+  const words = shown.split(/\s+/).filter((w) => /[A-Za-z]{2}/.test(w));
   if (words.length < 1) return true;
-  if (literal.length < 3) return true;
+  if (shown.length < 3) return true;
   return false;
 }
 
@@ -281,21 +284,48 @@ export function attrHits(file, markup, src, offset, kindPrefix, attrs = COPY_ATT
 
 // ----------------------------------------------------------- entities ---
 
+// The references people type most, looked up first. A no-break space reads
+// as a plain one: the ID collapses it to a space either way, and the ledger
+// stays legible. Every other name HTML defines comes from entities.js.
 const NAMED = {
   amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', hellip: '…',
   mdash: '—', ndash: '–', lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”',
   copy: '©', reg: '®', trade: '™', middot: '·', bull: '•', laquo: '«', raquo: '»',
 };
 
-/** Decode the entities a person would otherwise have to read past. */
+// What a browser makes of &#128; to &#159;: the characters windows-1252 put
+// there, because that is what pages that use them meant.
+const C1 = {
+  0x80: 0x20ac, 0x82: 0x201a, 0x83: 0x0192, 0x84: 0x201e, 0x85: 0x2026, 0x86: 0x2020, 0x87: 0x2021,
+  0x88: 0x02c6, 0x89: 0x2030, 0x8a: 0x0160, 0x8b: 0x2039, 0x8c: 0x0152, 0x8e: 0x017d, 0x91: 0x2018,
+  0x92: 0x2019, 0x93: 0x201c, 0x94: 0x201d, 0x95: 0x2022, 0x96: 0x2013, 0x97: 0x2014, 0x98: 0x02dc,
+  0x99: 0x2122, 0x9a: 0x0161, 0x9b: 0x203a, 0x9c: 0x0153, 0x9e: 0x017e, 0x9f: 0x0178,
+};
+
+/** A numeric reference's character, by the rules a browser follows. */
+function codePoint(code) {
+  if (code === 0 || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) return '\uFFFD';
+  return String.fromCodePoint(C1[code] ?? code);
+}
+
+/**
+ * Decode character references the way a browser does, so the text recorded
+ * from source is the text a page shows: every name HTML defines, and
+ * numeric references with or without their `;`. A name needs its `;`; the
+ * few a browser also takes without one are a parse error, and stay as typed.
+ * An unknown name stays as typed, as it does on a page.
+ */
 export function decodeEntities(s) {
-  return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, body) => {
-    if (body[0] === '#') {
-      const code = body[1].toLowerCase() === 'x' ? parseInt(body.slice(2), 16) : parseInt(body.slice(1), 10);
-      return Number.isFinite(code) ? String.fromCodePoint(code) : m;
-    }
-    return NAMED[body] ?? m;
+  return s.replace(/&(?:#x([0-9a-f]+);?|#(\d+);?|([a-z][a-z0-9]*);)/gi, (m, hex, dec, name) => {
+    if (hex !== undefined) return codePoint(parseInt(hex, 16));
+    if (dec !== undefined) return codePoint(parseInt(dec, 10));
+    return NAMED[name] ?? namedEntity(name) ?? m;
   });
+}
+
+/** Collapsed, then decoded: a string of markup as a page shows it. */
+export function decodedText(s) {
+  return decodeEntities(collapse(s));
 }
 
 /** Encode only what would break markup: a bare `&` and `<`. */

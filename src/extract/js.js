@@ -1,10 +1,10 @@
 // JavaScript and TypeScript: sentence-shaped string literals. JSX/TSX adds
 // the text between tags and the copy-bearing attributes on them.
 
-import { blank, pushHit, isProseLiteral, isMarkupNoise, collapse, attrHits, splitOnDirectives, verbatim } from './common.js';
+import { blank, pushHit, isProseLiteral, isMarkupNoise, collapse, decodedText, attrHits, splitOnDirectives, verbatim } from './common.js';
 
 /** Strip line and block comments so commentary never enters the ledger. */
-function stripComments(code) {
+export function stripComments(code) {
   return blank(blank(code, /\/\*[\s\S]*?\*\//g), /(^|[^:'"`])\/\/[^\n]*/g);
 }
 
@@ -63,9 +63,10 @@ export function afterTagText(file, markup, src, { kind = 'jsx-text', text = (s) 
 
 export function extractJsx(file, src) {
   const clean = stripComments(src);
-  const hits = afterTagText(file, clean, src);
+  // JSX decodes `&amp;` in text and in attribute strings, as HTML does.
+  const hits = afterTagText(file, clean, src, { text: decodedText });
 
-  hits.push(...attrHits(file, clean, src, 0, 'jsx-attr'));
+  hits.push(...attrHits(file, clean, src, 0, 'jsx-attr', undefined, { text: decodedText }));
 
   // Remaining string literals, marked as JSX so writeback refuses rather
   // than backslash-escapes a quote: a JSX attribute value has no escapes.

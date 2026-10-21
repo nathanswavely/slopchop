@@ -11,6 +11,7 @@ import path from 'node:path';
 import { extractEntries, idFor, tierFor, wordCount } from './extract/index.js';
 import { syntaxOf } from './expressions.js';
 import { splitBlock, headingText } from './extract/md.js';
+import { collapse, decodedText } from './extract/common.js';
 
 // unreviewed → a model drafted it and nobody has looked yet (the default)
 // rewritten  → a replacement is chosen; writeback has not applied it
@@ -158,6 +159,9 @@ export function merge(existing, fresh) {
  * entry is re-keyed to what the extractor records now, and every decision
  * on it (status, authorship, note, the draft it replaced) moves with it.
  * Nobody reviews a heading twice because the extractor changed its mind.
+ *
+ * Likewise a string whose source holds a character reference the extractor
+ * now decodes the way a browser does ("Next &rarr;" is now "Next →").
  */
 export function migrate(ledger) {
   const remap = new Map();          // old id -> new ids
@@ -195,6 +199,57 @@ export function migrate(ledger) {
 
 /** One entry as the current extractor would record it: itself, or its pieces. */
 function migrateEntry(e) {
+  return splitHeadings(redecode(e));
+}
+
+// Up to 0.3, markup was decoded from a short list of names (`&amp;`,
+// `&mdash;`…) and the rest stayed as typed, so "Next &rarr;" could never
+// match the arrow a page shows. Attributes in Astro, JSX and Svelte, and
+// text in JSX and Svelte, were not decoded at all. This is that decoder,
+// frozen, so an old entry can be recognized for what it was.
+const DECODED_BEFORE = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', hellip: '…',
+  mdash: '—', ndash: '–', lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”',
+  copy: '©', reg: '®', trade: '™', middot: '·', bull: '•', laquo: '«', raquo: '»',
+};
+const decodedBefore = (s) => collapse(s).replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, body) => {
+  if (body[0] !== '#') return DECODED_BEFORE[body] ?? m;
+  const code = body[1].toLowerCase() === 'x' ? parseInt(body.slice(2), 16) : parseInt(body.slice(1), 10);
+  return String.fromCodePoint(code);
+});
+
+/** An occurrence's text as 0.3 recorded it, for the kinds that decode now. */
+function textBefore(o) {
+  const kind = o.kind || '';
+  if (kind === 'html-text' || kind.startsWith('html-attr:')) return decodedBefore(o.raw);
+  if (kind === 'jsx-text') return String(o.file).endsWith('.astro') ? decodedBefore(o.raw) : collapse(o.raw);
+  if (kind.startsWith('jsx-attr:') || kind === 'markup' || kind.startsWith('attr:')) return collapse(o.raw);
+  return null;
+}
+
+/**
+ * An entry whose source holds a reference the extractor now decodes, re-keyed
+ * to the decoded text with every decision on it. Only when each occurrence
+ * reproduces the entry's text the old way, so nothing is guessed: anything
+ * else is left for sync to settle as it always has.
+ */
+function redecode(e) {
+  const occs = e.occurrences || [];
+  if (!occs.length || !occs.some((o) => o.raw?.includes('&'))) return e;
+  let text = null;
+  for (const o of occs) {
+    if (typeof o.raw !== 'string' || textBefore(o) !== e.text) return e;
+    const now = decodedText(o.raw);
+    if (text !== null && now !== text) return e;
+    text = now;
+  }
+  if (text === e.text) return e;
+  const syntax = syntaxOf(occs);
+  return { ...e, id: idFor(text), text, words: wordCount(text, syntax), tier: tierFor(text, syntax) };
+}
+
+/** A Markdown block that holds a heading, split into what a page renders apart. */
+function splitHeadings(e) {
   const occs = e.occurrences || [];
   if (!occs.length || !occs.every((o) => o.kind === 'md-block')) return [e];
   const segs = splitBlock(e.text);

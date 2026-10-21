@@ -6,8 +6,9 @@
 // `{items.map((item) => (...))}` and the looser `>text<` scan reads every
 // `=>` as the end of a tag.
 
-import { blank, attrHits, collapse, decodeEntities } from './common.js';
+import { blank, attrHits, decodedText } from './common.js';
 import { extractJsStrings, afterTagText } from './js.js';
+import { renderedKeys, keyedStrings, componentProps } from './rendered.js';
 
 // The fence has to open the file. A `---` further down is a horizontal rule
 // someone typed, not frontmatter.
@@ -20,32 +21,41 @@ const EXPRESSION_RESIDUE = /^\)\s*[:?]|\?\s*\($|&&\s*\($|\?\./;
 // An arrow or a times sign written as an entity, with nothing else to read.
 const ENTITY_ONLY = /^(?:&[a-z]+;|&#\d+;|[^A-Za-z0-9])+$/i;
 
-export function extractAstro(file, src) {
-  const hits = [];
-  let template = src;
-
-  const fence = src.match(FENCE);
-  if (fence) {
-    hits.push(...extractJsStrings(file, fence[2], src, fence[1].length));
-    template = blank(template, FENCE);
-  }
-
-  // Client scripts: their strings can be copy (an alert, a toast), the
-  // same as a Svelte <script>. Collected before the block is blanked.
-  for (const m of template.matchAll(SCRIPT)) {
-    const offset = m.index + m[0].indexOf(m[1]);
-    hits.push(...extractJsStrings(file, m[1], src, offset));
-  }
-
+/** The template alone: frontmatter, scripts, styles and comments blanked. */
+export function astroTemplate(src) {
+  let template = blank(src, FENCE);
   template = blank(template, SCRIPT);
   template = blank(template, /<style\b[\s\S]*?<\/style>/g);
   template = blank(template, /<!--[\s\S]*?-->/g);
-  template = blank(template, /\{\/\*[\s\S]*?\*\/\}/g);
+  return blank(template, /\{\/\*[\s\S]*?\*\/\}/g);
+}
 
-  // Astro templates are HTML, so `&amp;` is common; show it decoded.
-  hits.push(...afterTagText(file, template, src, { text: (s) => decodeEntities(collapse(s)) })
+export function extractAstro(file, src, ctx = {}) {
+  const hits = [];
+  const template = astroTemplate(src);
+  // Short strings for the keys a template shows (rendered.js): this file's
+  // own, unless sync pooled every template's.
+  const keys = ctx.renderedKeys || renderedKeys(template);
+  const code = (body, offset) => [
+    ...extractJsStrings(file, body, src, offset),
+    ...keyedStrings(file, body, src, offset, keys, 'js-string', ctx.ignoreKeys),
+  ];
+
+  const fence = src.match(FENCE);
+  if (fence) hits.push(...code(fence[2], fence[1].length));
+
+  // Client scripts: their strings can be copy (an alert, a toast), the
+  // same as a Svelte <script>.
+  for (const m of blank(src, FENCE).matchAll(SCRIPT)) {
+    hits.push(...code(m[1], m.index + m[0].indexOf(m[1])));
+  }
+
+  // Astro templates are HTML, so `&amp;` is common. A page shows it decoded,
+  // in text and in attributes alike, and so does the ledger.
+  hits.push(...afterTagText(file, template, src, { text: decodedText })
     .filter((h) => !EXPRESSION_RESIDUE.test(h.text) && !ENTITY_ONLY.test(h.text)));
-  hits.push(...attrHits(file, template, src, 0, 'jsx-attr'));
+  hits.push(...attrHits(file, template, src, 0, 'jsx-attr', undefined, { text: decodedText }));
+  hits.push(...componentProps(file, template, src, 'jsx-attr', { text: decodedText }));
 
   // String literals inside `{…}`, e.g. `{upcoming ? 'Upcoming shows' : 'Past shows'}`.
   // Only inside expressions: the apostrophes in plain template text would

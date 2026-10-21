@@ -6,6 +6,10 @@
 // `import { … } from './x.js'`, `export function` / `export const`), and
 // wraps each in a function scope. Anything outside that shape, a Node
 // import above all, stops the build rather than shipping something broken.
+//
+// A module with a `.browser.js` sibling is bundled as that sibling, the way
+// a package's "browser" field swaps a file: entities.js holds a table the
+// browser already knows, and entities.browser.js asks the browser instead.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -57,7 +61,8 @@ export function bundleModules(entry) {
   const visit = (abs) => {
     if (seen.has(abs)) return;
     seen.add(abs);
-    const src = fs.readFileSync(abs, 'utf8');
+    const browser = abs.replace(/\.js$/, '.browser.js');
+    const src = fs.readFileSync(fs.existsSync(browser) ? browser : abs, 'utf8');
     const dir = path.dirname(abs);
     for (const [, , spec] of src.matchAll(IMPORT)) {
       if (!spec.startsWith('.')) throw new Error(`${path.relative(SRC, abs)}: cannot bundle "${spec}"`);
