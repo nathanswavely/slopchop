@@ -32,16 +32,18 @@ It is not built to be an AI detector or a "policing" service. It is self-reporte
 <img alt="The keyboard shortcut sheet, opened with the question mark key." src="https://raw.githubusercontent.com/nathanswavely/slopchop/main/docs/screenshots/shortcuts.png">
 </details>
 
-`slopchop apply` writes your versions into the source files. It is a dry run until you pass `--apply`, and it edits nothing unless it finds the exact original text where the ledger says it should be. Run it on a clean tree and read the diff.
+Saving a rewrite in the review page writes it into the source file straight away. It edits nothing unless it finds the exact original text where the ledger says it should be, and it refuses anything that would break the file. If it cannot write, the rewrite stays in the ledger as `rewritten` and the page says why. Moving words you saved back to unreviewed, or to leave as drafted, puts the model's draft back in the source. Start from a clean tree and read `git diff` before you commit.
 
-`slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it.
+`slopchop apply` writes the rewrites still waiting: ones read back from a draft, and ones the page could not write. It is a dry run until you pass `--apply`. The **Apply rewrites** button in the page does the same.
+
+`slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it, or when the ledger holds a rewrite the source does not have yet.
 
 ## The decisions
 
 | Status | Means |
 |---|---|
 | `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |
-| `rewritten` | Human wrote replacement but `apply` has not written it yet. |
+| `rewritten` | Human wrote a replacement that is not in the source yet: read back from a draft, or refused when the review page tried to write it. `apply` writes it, and `check` fails until then. |
 | `human` | Human wrote the copy, not a model. |
 | `ai-fine` | Human reviewed and accepted the slop. |
 | `ai-revised` | AI suggested a rewrite and you took it as new better slop. |
@@ -71,6 +73,8 @@ slopchop draft --file content/about.md    # writes copy/drafts/content/about.md.
 slopchop pull                             # reads your writing back into the ledger
 slopchop apply --apply
 ```
+
+`pull` records your writing in the ledger and leaves the source alone, so `apply` is the step that writes it in. Until then those strings are `rewritten`, and `check` fails on them.
 
 Each string sits between `<!-- copy:ID -->` markers. Write between them. A block you leave alone is skipped, so doing three and coming back later is fine. Replace a whole block with `@mine` if the words are already yours, or `@fine` to leave the draft in place.
 
@@ -109,9 +113,17 @@ steps:
   - uses: nathanswavely/slopchop@v1
 ```
 
-The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings in the job summary, with the file and line for each.
+The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings, and any rewrites not in the source yet, in the job summary, with the file and line for each.
 
-On a pull request it also says so on the pull request: one summary comment that stays current, and a comment on each new string the diff touches. If you wrote a rewrite in the ledger and never ran `apply`, it shows up as a suggestion block, and committing the suggestion counts the same as applying it. The next `sync` sees your words in the source and records them as yours. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.
+On a pull request it also says so in one comment that stays current: the new strings with no decision, and the rewrites the ledger has and the source does not, each linked to its line. Once nothing is waiting, the comment says everything is settled. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.
+
+For a comment on each line as well, set `inline: true`. Each new string the diff touches gets its own comment, and a rewrite not in the source shows up as a suggestion block. Committing the suggestion counts the same as applying it: the next `sync` sees your words in the source and records them as yours.
+
+```yaml
+  - uses: nathanswavely/slopchop@v1
+    with:
+      inline: true
+```
 
 ## Setting it up
 

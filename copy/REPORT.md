@@ -5,15 +5,15 @@ visitor-readable string in this repository and records who wrote it.
 
 | | strings | words |
 |---|---:|---:|
-| Written by a person | 6 | 273 |
+| Written by a person | 5 | 172 |
 | A person's words from the start | 0 | 0 |
 | Drafted by a model, edited by a person | 2 | 191 |
-| Left as drafted, deliberately | 103 | 2,120 |
-| Not yet reviewed | 0 | 0 |
-| **Total** | **111** | **2,584** |
+| Left as drafted, deliberately | 101 | 2,099 |
+| Not yet reviewed | 8 | 499 |
+| **Total** | **116** | **2,961** |
 
-Human-authored or deliberately accepted: **100%** of strings.
-A person's words: **5%** of strings, **11%** of words.
+Human-authored or deliberately accepted: **93%** of strings.
+A person's words: **4%** of strings, **6%** of words.
 Edited from a model's draft: **2%** of strings, counted apart, because an edit leaves most of the model's words in place.
 
 Whether a replacement was a rewrite or small edits is what the person said when they saved it. SlopChop records it and does not check it.
@@ -22,7 +22,7 @@ Whether a replacement was a rewrite or small edits is what the person said when 
 
 | Tier | Decided | Total |
 |---|---:|---:|
-| Paragraphs (16+ words) | 41 | 41 |
+| Paragraphs (16+ words) | 38 | 46 |
 | Helper text (6–15 words) | 15 | 15 |
 | Labels (1–5 words) | 55 | 55 |
 
@@ -39,7 +39,7 @@ Out of scope, on purpose:
 - `examples/`: Fixture copy for the test suite; it carries its own ledger.
 - `test/`: Test fixtures.
 
-## Replaced drafts (8)
+## Replaced drafts (7)
 
 Where a model's draft was replaced, both are kept. A replacement a model wrote and a person accepted unedited is marked as such.
 
@@ -55,9 +55,6 @@ Where a model's draft was replaced, both are kept. A replacement a model wrote a
 - `README.md`
   - draft: "`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `Ctrl+Enter` (`⌘↵` on a Mac) saves what you wrote. Tick several strings, or shift-click a run of them, and `h` or `a` decides them all at once. `?` lists the rest."
   - now: "`slopchop review` opens a page on localhost that allows you to review your repo's copy and clear it for release, either by rewriting it in your voice, marking it as already yours, or leaving as \"ai.\" Built in keyboard shortcuts make the process smooth."
-- `README.md`
-  - draft: "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |"
-  - now: "| Status | Means |\n|---|---|\n| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |\n| `rewritten` | Human wrote replacement but `apply` has not written it yet. |\n| `human` | Human wrote the copy, not a model. |\n| `ai-fine` | Human reviewed and accepted the slop. |\n| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |"
 - `README.md`
   - draft: "Rewriting two thousand strings once is a finite job. Keeping them rewritten is not, because the next AI session adds forty more and the site slides back without anyone noticing."
   - now: "It would be rough if you had to re-label already reviewed strings."

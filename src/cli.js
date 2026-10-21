@@ -7,9 +7,12 @@
 //   draft     write the queue out as Markdown, to edit anywhere
 //   pull      read edited drafts back into the ledger
 //   decide    bulk-decide a file or tier
-//   apply     write approved replacements into source (dry run by default)
+//   apply     write approved replacements into source (dry run by default);
+//             the review page does this on save, so it is for drafts read
+//             back with pull and for saves the source refused
 //   check     CI gate: fails on copy that entered source unreviewed
-//   comment   explain the gate on a pull request, with rewrites as suggestions
+//   comment   explain the gate on a pull request in one summary comment
+//             (--inline: a comment per new string, rewrites as suggestions)
 //   triage    ask a model which strings are worth your writing time (your key)
 //   suggest   ask a model for rewrites to start from (your key)
 //   report    render the ledger as a publishable summary, plus a badge,
@@ -333,7 +336,7 @@ function cmdApply() {
   const r = writeback(p, ledger, { apply });
 
   if (!r.entries && !r.blocked.length) {
-    console.log('Nothing to apply. Save a rewrite in the review UI or a draft first.');
+    console.log('Nothing to apply. The review page writes a rewrite into source when you save it; this is for drafts read back with pull, and for saves it refused.');
     return;
   }
 
@@ -373,7 +376,9 @@ function cmdCheck() {
   const g = gate(onDisk, fresh);
   const s = stats(fresh);
 
-  const ok = !g.unledgered.length && !g.unknown.length && !(g.strict && g.backlog.length);
+  // A rewrite the ledger records and the source lacks fails too: the ledger
+  // would be claiming words the page does not show.
+  const ok = !g.unledgered.length && !g.unknown.length && !g.pendingApply.length && !(g.strict && g.backlog.length);
   const where = (e) => ({ id: e.id, text: e.text, file: e.occurrences[0].file, line: e.occurrences[0].line });
 
   // Machine-readable: the JSON is the whole of stdout, nothing else.
@@ -382,7 +387,8 @@ function cmdCheck() {
       ok,
       unledgered: g.unledgered.map(where),
       unknown: g.unknown.map((e) => ({ ...where(e), status: e.status })),
-      backlog: g.backlog.length, pendingApply: g.pendingApply.length, strict: g.strict, stats: s,
+      pendingApply: g.pendingApply.map((e) => ({ ...where(e), replacement: e.replacement })),
+      backlog: g.backlog.length, strict: g.strict, stats: s,
     }, null, 2));
     writeSummary(p, g, s);
     process.exit(ok ? 0 : 1);
@@ -391,11 +397,23 @@ function cmdCheck() {
   if (g.backlog.length) {
     console.log(`${DIM}backlog: ${g.backlog.length} strings still unreviewed from baseline (not a failure)${OFF}`);
   }
-  if (g.pendingApply.length) {
-    console.log(`${YEL}${g.pendingApply.length} rewritten but not applied.${OFF} Run: slopchop apply`);
-  }
 
   writeSummary(p, g, s);
+
+  if (g.pendingApply.length) {
+    const n = g.pendingApply.length;
+    console.error(`\n${RED}✗ ${n} rewrite${n === 1 ? ' is' : 's are'} recorded in the ledger and not in the source:${OFF}\n`);
+    for (const e of g.pendingApply.slice(0, 25)) {
+      const o = e.occurrences[0];
+      console.error(`  ${o.file}:${o.line}`);
+      console.error(`    "${e.replacement.slice(0, 88)}${e.replacement.length > 88 ? '…' : ''}"`);
+    }
+    if (n > 25) console.error(`  ${DIM}…and ${n - 25} more${OFF}`);
+    console.error(`\n  Write ${n === 1 ? 'it' : 'them'} into source, then commit:`);
+    console.error(`    slopchop apply           ${DIM}# dry run: what would change, and anything blocked${OFF}`);
+    console.error(`    slopchop apply --apply   ${DIM}# write it${OFF}\n`);
+    if (!g.unledgered.length && !g.unknown.length) process.exit(1);
+  }
 
   if (g.unknown.length) {
     const kinds = [...new Set(g.unknown.map((e) => e.status))].map((st) => `"${st}"`).join(', ');
@@ -459,19 +477,24 @@ async function cmdComment() {
   const { ledger: fresh } = sync(p, onDisk);
   const g = gate(onDisk, fresh);
   const s = stats(fresh);
-  const { changes } = previewLines(p, fresh);
   const prefix = repoPrefix(p.root);
   const key = prefix || '.';
   const warn = (m) => console.log(process.env.GITHUB_ACTIONS ? `::warning title=SlopChop::${m}` : `${YEL}${m}${OFF}`);
+  // The summary is the default. Inline comments, one per new string and a
+  // suggestion per unapplied rewrite, only when asked for. Without them,
+  // inline comments an earlier run left are not touched.
+  const inline = flag('inline');
+  const none = { inline: [], settle: [], dropped: 0, outsideDiff: [] };
+  const changes = inline ? previewLines(p, fresh).changes : [];
 
   // Local preview: the same plan against `git diff`, printed, nothing sent.
   const base = val('base');
   if (base) {
     let diff;
-    try { diff = localDiff(p.root, base); }
+    try { diff = inline ? localDiff(p.root, base) : null; }
     catch (e) { console.error(`${RED}git diff against ${base} failed:${OFF} ${e.message}`); process.exit(1); }
-    const plan = planComments({ unledgered: g.unledgered, changes, diff, entries: fresh.entries, prefix });
-    console.log(summaryBody(key, g, s, { pending: g.pendingApply }));
+    const plan = inline ? planComments({ unledgered: g.unledgered, changes, diff, entries: fresh.entries, prefix }) : none;
+    console.log(summaryBody(key, g, s, { inline }));
     for (const c of plan.inline) {
       console.log(`${DIM}──${OFF} ${GREEN}${c.path}:${c.start_line ? `${c.start_line}-` : ''}${c.line}${OFF}`);
       console.log(c.body.split('\n').slice(1).join('\n'));
@@ -495,11 +518,14 @@ async function cmdComment() {
   const gh = apiClient({ token, api: process.env.GITHUB_API_URL || 'https://api.github.com' });
 
   try {
-    const diff = await pullDiff(gh, repo, pr.number);
-    const existing = await gh.all(`/repos/${repo}/pulls/${pr.number}/comments`);
-    const plan = planComments({ unledgered: g.unledgered, changes, diff, entries: fresh.entries, prefix, existing });
-    const summary = summaryBody(key, g, s, { link, pending: g.pendingApply });
-    const hasNews = g.unledgered.length > 0 || g.unknown.length > 0 || plan.inline.length > 0;
+    let plan = none;
+    if (inline) {
+      const diff = await pullDiff(gh, repo, pr.number);
+      const existing = await gh.all(`/repos/${repo}/pulls/${pr.number}/comments`);
+      plan = planComments({ unledgered: g.unledgered, changes, diff, entries: fresh.entries, prefix, existing });
+    }
+    const summary = summaryBody(key, g, s, { link, inline });
+    const hasNews = g.unledgered.length > 0 || g.unknown.length > 0 || g.pendingApply.length > 0 || plan.inline.length > 0;
     const log = await publish({ gh, repo, pr: pr.number, sha: pr.sha, key: prefix, summary, plan, hasNews });
     for (const line of log) console.log(line);
     if (!log.length) console.log('Nothing new to say on this pull request.');

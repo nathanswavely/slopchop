@@ -2,10 +2,13 @@
 //
 // `check` decides whether the build passes; this explains it where the
 // author is already looking. On a pull request it keeps one summary comment
-// up to date and leaves a review comment on each new string the diff
-// touches. A rewrite that is recorded in the ledger but not yet applied
-// goes up as a suggestion block, so it can land from the browser. The next
-// sync sees the rewrite in source and records it as the person's words.
+// up to date: the new strings with no decision, and the rewrites recorded
+// in the ledger but not in source, each linked to its line.
+//
+// Inline comments are opt-in (`--inline`). Then each new string the diff
+// touches gets a review comment, and an unapplied rewrite goes up as a
+// suggestion block, so it can land from the browser. The next sync sees
+// the rewrite in source and records it as the person's words.
 //
 // No dependencies: Node's fetch and the REST API. A comment is a nicety, so
 // every failure here is a warning and never fails the job. That is check's.
@@ -70,8 +73,10 @@ const pct = (n, d) => (d === 0 ? '100%' : `${Math.round((n / d) * 100)}%`);
 /**
  * The verdict as Markdown lines, shared by the job summary and the pull
  * request comment. `link(file, line)` turns a location into a URL, or null.
+ * `inline` says the rewrites were also offered as suggestion blocks.
  */
-export function renderVerdict(g, s, { link = () => null, pending = [] } = {}) {
+export function renderVerdict(g, s, { link = () => null, inline = false } = {}) {
+  const pending = g.pendingApply || [];
   const where = (o) => {
     const label = `\`${o.file}:${o.line}\``;
     const url = link(o.file, o.line);
@@ -89,8 +94,8 @@ export function renderVerdict(g, s, { link = () => null, pending = [] } = {}) {
     if (g.unledgered.length > 50) L.push(`| … | and ${g.unledgered.length - 50} more |`);
     L.push('');
     L.push('Run `slopchop sync` then `slopchop review` locally, decide each one, and commit the ledger.');
-  } else if (!g.unknown?.length) {
-    L.push('Every string in source has an author on record.');
+  } else if (!g.unknown?.length && !pending.length) {
+    L.push('Everything is settled: every string in source has an author on record, and every rewrite in the ledger is in the source.');
   }
   if (g.unknown?.length) {
     if (g.unledgered.length) L.push('');
@@ -102,8 +107,17 @@ export function renderVerdict(g, s, { link = () => null, pending = [] } = {}) {
     if (g.unknown.length > 50) L.push(`| … | | and ${g.unknown.length - 50} more |`);
   }
   if (pending.length) {
+    if (g.unledgered.length || g.unknown?.length) L.push('');
+    L.push(`**${plural(pending.length, 'rewrite')}** ${pending.length === 1 ? 'is' : 'are'} recorded in the ledger and not in the source yet.`);
     L.push('');
-    L.push(`${plural(pending.length, 'rewrite')} recorded in the ledger and not applied yet. Run \`slopchop apply\`, or commit the suggestions below where they appear.`);
+    L.push('| Where | Rewrite |');
+    L.push('|---|---|');
+    for (const e of pending.slice(0, 50)) L.push(`| ${where(e.occurrences[0])} | ${cell(e.replacement || '')} |`);
+    if (pending.length > 50) L.push(`| … | and ${pending.length - 50} more |`);
+    L.push('');
+    L.push(inline
+      ? 'Run `slopchop apply --apply` locally and commit the result, or commit the suggestions on those lines.'
+      : 'Run `slopchop apply --apply` locally and commit the result.');
   }
   L.push('');
   L.push(`${s.done}/${s.total} strings decided (${pct(s.done, s.total)}) · ${pct(s.byStatus.human, s.total)} written by a person` +

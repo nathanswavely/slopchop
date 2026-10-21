@@ -6,13 +6,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { load, save, stats, decide } from './ledger.js';
-import { writeback } from './writeback.js';
+import { writeback, isApplied, restoreDrafts } from './writeback.js';
+import { collapse } from './extract/common.js';
 import { outstandingDrafts, draftDirLabel } from './drafts.js';
 import { rewriteProblem } from './expressions.js';
 import { previewDisclosure, readBlock, writeBlock, disclosureOf, problemsOf, DEFAULT_PATH } from './disclosure.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BULK_STATUSES = ['human', 'ai-fine', 'not-copy', 'unreviewed'];
+// Moving applied words to one of these says the draft is what is there.
+const UNDOES = ['unreviewed', 'ai-fine'];
 
 // The page's design system, vendored so the review page has no network
 // dependency. Served by name from a fixed list, never by path.
@@ -124,10 +127,10 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
       }
 
       if (req.method === 'POST' && url.pathname === '/api/decide') {
-        const { id, status, replacement, note, kind, force } = await readBody(req);
+        const { id, status, replacement, note, kind, force, restore } = await readBody(req);
         const ledger = load(project);
         const entry = ledger.entries.find((e) => e.id === id);
-        if (!entry) return json(res, 404, { error: 'no such entry' });
+        if (!entry) return json(res, 404, { error: 'No longer in the ledger. It may have been saved from another page; reload.', code: 'gone' });
 
         // This string is checked out in a draft somewhere. Deciding it here
         // rewrites it, which retires its id, which orphans the marker holding
@@ -146,16 +149,43 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
         const problem = replacement ? rewriteProblem(entry, replacement) : null;
         if (problem) return json(res, 400, { error: `Not saved: this ${problem}.`, code: 'expressions' });
 
+        // Words in source that replaced a draft. Moving them back to
+        // unreviewed, or to "leave as drafted", is a claim about the draft,
+        // so the draft goes back into source first, or nothing changes.
+        if (isApplied(entry)) {
+          if (replacement && collapse(replacement) === collapse(entry.previous_ai_text)) {
+            return json(res, 400, { error: 'That is the draft these words replaced. Press u to put it back.', code: 'draft' });
+          }
+          if (!replacement && UNDOES.includes(status)) {
+            if (!restore) return json(res, 409, { error: 'This puts the draft back into source.', code: 'restore', count: 1 });
+            const r = restoreDrafts(project, [entry], status);
+            if (r.problem) return json(res, 409, { error: `Nothing changed: ${r.problem}.`, code: 'cannot-restore' });
+            if (note !== undefined) entry.note = note || null;
+            save(project, ledger);
+            return json(res, 200, { entry, stats: stats(ledger), restored: r.files });
+          }
+        }
+
         decide(entry, { status, replacement, note, kind });
         save(project, ledger);
-        return json(res, 200, { entry, stats: stats(ledger) });
+        if (entry.status !== 'rewritten') return json(res, 200, { entry, stats: stats(ledger) });
+
+        // A saved rewrite goes straight into source. The ledger already says
+        // `rewritten`, so if this process stops halfway, the next sync finds
+        // the words in source and records them as the person's.
+        const r = writeback(project, ledger, { apply: true, ids: [entry.id] });
+        if (!r.entries) {
+          return json(res, 200, { entry, stats: stats(ledger), refused: r.blocked[0]?.reason || 'nothing to write' });
+        }
+        save(project, ledger);
+        return json(res, 200, { entry, stats: stats(ledger), applied: r.files });
       }
 
       // Many strings, one answer. Only the plain statuses: a rewrite is
       // always one string at a time. Nothing changes if any of them is
       // checked out in a draft, unless the caller says to go ahead anyway.
       if (req.method === 'POST' && url.pathname === '/api/decide-many') {
-        const { ids, status, force } = await readBody(req);
+        const { ids, status, force, restore } = await readBody(req);
         if (!Array.isArray(ids) || !ids.length) return json(res, 400, { error: 'ids required' });
         if (!BULK_STATUSES.includes(status)) {
           return json(res, 400, { error: `status must be one of: ${BULK_STATUSES.join(', ')}` });
@@ -173,9 +203,27 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
           if (held.length) return json(res, 409, { error: `${held.length} checked out in drafts`, code: 'checked-out', held });
         }
 
-        const changed = ids.map((id) => decide(byId.get(id), { status, replacement: null }));
+        // The same undo as one at a time, for all of them or none.
+        const applied = UNDOES.includes(status) ? ids.map((id) => byId.get(id)).filter(isApplied) : [];
+        let restored = [];
+        if (applied.length) {
+          if (!restore) return json(res, 409, { error: 'This puts the drafts back into source.', code: 'restore', count: applied.length });
+          const r = restoreDrafts(project, applied, status);
+          if (r.problem) {
+            return json(res, 409, { error: `Nothing changed: ${r.problem} ("${r.entry.text.slice(0, 60)}").`, code: 'cannot-restore' });
+          }
+          restored = r.files;
+        }
+
+        // Ids from before a restore, so the page can match what it sent.
+        const sent = new Map(ids.map((id) => [byId.get(id), id]));
+        const changed = ids.map((id) => byId.get(id))
+          .map((e) => (applied.includes(e) ? e : decide(e, { status, replacement: null })));
         save(project, ledger);
-        return json(res, 200, { entries: changed, stats: stats(ledger) });
+        return json(res, 200, {
+          entries: changed, was: changed.map((e) => sent.get(e)), stats: stats(ledger),
+          ...(restored.length ? { restored } : {}),
+        });
       }
 
       // The copy disclosure. The page edits only the `disclosure` block of
@@ -236,7 +284,8 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
   const announce = () => {
     const { port: p } = server.address();
     console.log(`\n  SlopChop  →  \x1b[36mhttp://localhost:${p}\x1b[0m`);
-    console.log(`  \x1b[2mEdits save to ${project.rel(project.ledgerPath)} as you go. Ctrl-C when done.\x1b[0m\n`);
+    console.log(`  \x1b[2mDecisions save to ${project.rel(project.ledgerPath)} as you go, and a saved rewrite goes straight into source.\x1b[0m`);
+    console.log(`  \x1b[2mRead git diff before you commit. Ctrl-C when done.\x1b[0m\n`);
   };
 
   // Windows reserves moving port ranges for Hyper-V and WSL, so a port that

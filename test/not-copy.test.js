@@ -158,7 +158,7 @@ async function running(project, fn) {
 }
 
 test('the review server: not-copy in bulk, the scanner for the page, and no rewrite that breaks code', async () => {
-  await withProject({ ...files, 'Seat.svelte': '<p>{count} seats are open on the council this spring.</p>\n' }, async (project) => {
+  await withProject({ ...files, 'Seat.svelte': '<p>{count} seats are open on the council this spring.</p>\n' }, async (project, dir) => {
     const { ledger } = sync(project, load(project));
     save(project, ledger);
     const fmt = ledger.entries.find((e) => e.text.startsWith('Order'));
@@ -181,7 +181,10 @@ test('the review server: not-copy in bulk, the scanner for the page, and no rewr
 
       const good = await post('/api/decide', { id: seat.id, status: 'rewritten', replacement: 'This spring, {count} seats are open.' });
       assert.equal(good.status, 200);
-      assert.equal(good.body.entry.status, 'rewritten');
+      // Saved means written: into source, with the expression as it was.
+      assert.equal(good.body.entry.status, 'human');
+      assert.deepEqual(good.body.applied, [{ file: 'Seat.svelte', edits: 1 }]);
+      assert.equal(fs.readFileSync(path.join(dir, 'Seat.svelte'), 'utf8'), '<p>This spring, {count} seats are open.</p>\n');
     });
     assert.equal(load(project).entries.find((e) => e.id === fmt.id).status, 'not-copy');
   });

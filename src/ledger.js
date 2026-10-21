@@ -401,7 +401,9 @@ export const DECLARABLE = ['written', 'edited'];
  * judgment of it: that lands as ai-revised.
  */
 export function setReplacement(entry, text, { kind } = {}) {
-  entry.replacement = text || null;
+  // Line breaks as \n, whatever the browser or editor sent. Writeback
+  // writes them the way each file does.
+  entry.replacement = text ? text.replace(/\r\n?/g, '\n') : null;
   if (entry.replacement && entry.suggestion?.text === entry.replacement) {
     entry.replacement_source = 'model';
     delete entry.authorship;
@@ -452,6 +454,28 @@ export function promote(entry, newText) {
   entry.replacement = null;
   if (entry.status !== 'human') delete entry.authorship;
   delete entry.replacement_source;
+  delete entry.suggestion;
+  delete entry.triage;
+  return entry;
+}
+
+/**
+ * Undo a promote, once the draft is back in source: the draft becomes the
+ * entry's text again, with `status`, and the words that replaced it are
+ * dropped from the ledger. Git still has them until the change is committed.
+ */
+export function demote(entry, status = 'unreviewed') {
+  const draft = entry.previous_ai_text;
+  if (!draft) return entry;
+  entry.text = draft;
+  entry.id = idFor(draft);
+  entry.words = wordCount(draft, syntaxOf(entry.occurrences));
+  entry.tier = tierFor(draft, syntaxOf(entry.occurrences));
+  entry.status = status;
+  entry.replacement = null;
+  delete entry.previous_ai_text;
+  delete entry.replacement_source;
+  delete entry.authorship;
   delete entry.suggestion;
   delete entry.triage;
   return entry;

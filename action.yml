@@ -19,9 +19,13 @@ inputs:
     required: false
     default: '22'
   comment:
-    description: 'On a pull request, comment on new strings and offer unapplied rewrites as suggestions. Needs pull-requests: write.'
+    description: 'On a pull request, keep one summary comment current: new strings with no decision, and rewrites not in the source yet. false turns off all commenting. Needs pull-requests: write.'
     required: false
     default: 'true'
+  inline:
+    description: 'Also leave a review comment on each new string the diff touches, and offer each unapplied rewrite as a suggestion block. Off by default.'
+    required: false
+    default: 'false'
   github-token:
     description: 'Token used to comment on the pull request'
     required: false
@@ -45,13 +49,13 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       env:
         CONFIG: ${{ inputs.config }}
+        INLINE: ${{ inputs.inline }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
-        if [ -n "$CONFIG" ]; then
-          node "${{ github.action_path }}/bin/slopchop.js" comment --config "$CONFIG" || true
-        else
-          node "${{ github.action_path }}/bin/slopchop.js" comment || true
-        fi
+        args=()
+        if [ -n "$CONFIG" ]; then args+=(--config "$CONFIG"); fi
+        if [ "$INLINE" = 'true' ]; then args+=(--inline); fi
+        node "${{ github.action_path }}/bin/slopchop.js" comment "${args[@]}" || true
 
     - name: SlopChop check
       shell: bash
