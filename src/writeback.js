@@ -64,10 +64,15 @@ export function encodeFor(kind, quote, text, occ = {}) {
     return { value: text };
   }
 
-  if (kind === 'js-string' || kind === 'go-string') {
+  // The ledger holds the text as it renders; the literal needs it escaped
+  // again for its own quote. In a template literal `${` would open an
+  // expression, so a bare one is escaped too (the expressions themselves
+  // never reach here: encodeAround puts them back as written).
+  if (kind === 'js-string' || kind === 'go-string' || (kind === 'jsx-string' && isJsLiteral(occ.raw, quote))) {
     const q = quote || (kind === 'go-string' ? '"' : "'");
     if (/\n/.test(text)) return { problem: 'a single-line string literal cannot hold a newline' };
-    const escaped = text.replace(/\\/g, '\\\\').replace(new RegExp(q, 'g'), `\\${q}`);
+    let escaped = text.replace(/\\/g, '\\\\').replace(new RegExp(q, 'g'), `\\${q}`);
+    if (q === '`') escaped = escaped.replace(/\$\{/g, '\\${');
     return { value: escaped };
   }
 
@@ -131,6 +136,15 @@ export function encodeFor(kind, quote, text, occ = {}) {
   }
 
   return { problem: `unknown occurrence kind: ${kind}` };
+}
+
+/**
+ * Is a `jsx-string` occurrence a JS string literal rather than an attribute
+ * value? It is when the source escapes its own quote: an attribute value
+ * cannot hold the quote that closes it, escaped or not.
+ */
+function isJsLiteral(raw, quote) {
+  return typeof raw === 'string' && !!quote && raw.includes(`\\${quote}`);
 }
 
 /**

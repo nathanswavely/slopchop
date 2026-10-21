@@ -1,7 +1,7 @@
 // JavaScript and TypeScript: sentence-shaped string literals. JSX/TSX adds
 // the text between tags and the copy-bearing attributes on them.
 
-import { blank, pushHit, isProseLiteral, isMarkupNoise, collapse, decodedText, attrHits, splitOnDirectives, verbatim } from './common.js';
+import { blank, pushHit, isProseLiteral, isMarkupNoise, collapse, decodedText, attrHits, splitOnDirectives, verbatim, unescapeString } from './common.js';
 
 /** Strip line and block comments so commentary never enters the ledger. */
 export function stripComments(code) {
@@ -14,10 +14,13 @@ export function extractJsStrings(file, code, fullSrc, offset = 0, kind = 'js-str
   const re = /(['"`])((?:[^\\\n]|\\.)*?)\1/g;
   let m;
   while ((m = re.exec(clean)) !== null) {
-    const val = m[2];
-    if (!isProseLiteral(val)) continue;
+    // Judged and recorded as it renders (`I\'m` is "I'm"); `raw` keeps the
+    // escapes, since writeback has to find the literal as it is on disk.
+    const shown = unescapeString(m[2], { template: m[1] === '`' });
+    if (!isProseLiteral(shown)) continue;
+    const index = offset + m.index + 1;
     pushHit(hits, {
-      file, raw: val, index: offset + m.index + 1, src: fullSrc, kind, quote: m[1],
+      file, raw: verbatim(fullSrc, index, m[2]), index, src: fullSrc, kind, quote: m[1], text: collapse(shown),
     });
   }
   return hits;

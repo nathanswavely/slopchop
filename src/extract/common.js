@@ -21,9 +21,14 @@ export const COPY_ATTRS = ['placeholder', 'title', 'aria-label', 'alt', 'aria-de
 // filter is deliberately loose. A false positive costs one keystroke to mark
 // `ai-fine` forever, while a false negative is a string that silently never
 // gets reviewed. Over-collect on purpose.
+//
+// It is tested against the string as it renders, escapes already resolved:
+// `I\'m` is an apostrophe, not a backslash. A backslash left after that was
+// typed as one (`C:\\Users`, `^\\d+$`), and that is code.
 export const CODEish = new RegExp([
-  '[<>{}=_|\\\\]',                    // markup, template or path syntax
-  '^https?:', '\\/\\/',               // URLs
+  '[<>{}=\\\\]',                      // markup, template or path syntax
+  '(?<! )\\||\\|(?! )',               // a pipe, unless it stands between words: "Docs | Patchwork"
+  '^https?:', '(?<!https?:)\\/\\/',   // URLs, unless one sits inside a sentence
   '\\.(js|go|svelte|css|json|md|ts|tsx|jsx|vue|html)$',   // filenames
   '^[a-z-]+\\/[a-z-]+$',              // mime types, route fragments
   '\\b\\d+(px|rem|em|vh|vw|ch)\\b',   // CSS lengths
@@ -36,6 +41,79 @@ export const CODEish = new RegExp([
 
 export function collapse(s) {
   return s.replace(/\s+/g, ' ').trim();
+}
+
+const SIMPLE_ESCAPES = { n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', v: '\v' };
+
+/**
+ * The body of a JS or Go string literal as the program sees it: `\'` is an
+ * apostrophe, `\u2014` a dash, `\\` one backslash. This is the text a page
+ * shows, so it is what an entry records and what its ID hashes; `raw` keeps
+ * the escapes, because that is what is on disk.
+ *
+ * Go's `\x` and octal escapes are bytes, so a run of them is read as UTF-8.
+ * In a JS template literal, `${…}` is code and is left exactly as written.
+ */
+export function unescapeString(body, { go = false, template = false } = {}) {
+  if (!body.includes('\\')) return body;
+  let out = '';
+  let bytes = [];
+  const flush = () => {
+    if (bytes.length) out += new TextDecoder().decode(new Uint8Array(bytes));
+    bytes = [];
+  };
+  for (let i = 0; i < body.length; i++) {
+    const c = body[i];
+    if (template && c === '$' && body[i + 1] === '{') {
+      const end = closeBrace(body, i + 1);
+      if (end > 0) { flush(); out += body.slice(i, end); i = end - 1; continue; }
+    }
+    if (c !== '\\' || i === body.length - 1) { flush(); out += c; continue; }
+    const n = body[++i];
+    let m;
+    if (go && (m = /^[0-7]{3}/.exec(body.slice(i)))) { bytes.push(parseInt(m[0], 8)); i += 2; continue; }
+    if ((m = /^x([0-9a-f]{2})/i.exec(body.slice(i)))) {
+      if (go) bytes.push(parseInt(m[1], 16));
+      else { flush(); out += String.fromCharCode(parseInt(m[1], 16)); }
+      i += 2;
+      continue;
+    }
+    flush();
+    if ((m = /^u\{([0-9a-f]{1,6})\}/i.exec(body.slice(i))) && !go) {
+      out += String.fromCodePoint(Math.min(parseInt(m[1], 16), 0x10ffff));
+      i += m[0].length - 1;
+    } else if ((m = /^u([0-9a-f]{4})/i.exec(body.slice(i))) || (go && (m = /^U([0-9a-f]{8})/i.exec(body.slice(i))))) {
+      out += String.fromCodePoint(Math.min(parseInt(m[1], 16), 0x10ffff));
+      i += m[0].length - 1;
+    } else if (n in SIMPLE_ESCAPES) {
+      out += SIMPLE_ESCAPES[n];
+    } else if (go && n === 'a') {
+      out += '\x07';
+    } else if (n === '0' && !/[0-9]/.test(body[i + 1] || '')) {
+      out += '\0';
+    } else if (n === '\r' || n === '\n') {
+      if (n === '\r' && body[i + 1] === '\n') i++;      // a line continuation: nothing
+    } else {
+      out += n;                                          // \' \" \` \\ \$ and the rest
+    }
+  }
+  flush();
+  return out;
+}
+
+/** The index just past the `}` closing the `{` at `i`, or -1. Quotes inside are skipped. */
+function closeBrace(s, i) {
+  let depth = 0;
+  for (let j = i; j < s.length; j++) {
+    const c = s[j];
+    if (c === '\\') { j++; continue; }
+    if (c === '{') depth++;
+    else if (c === '}' && --depth === 0) return j + 1;
+    else if (c === '"' || c === "'" || c === '`') {
+      for (j++; j < s.length && s[j] !== c; j++) if (s[j] === '\\') j++;
+    }
+  }
+  return -1;
 }
 
 /**

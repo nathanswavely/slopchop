@@ -23,7 +23,7 @@
 // Keys are pooled across the project, since a list of services usually lives
 // in one file and the template that shows it in another.
 
-import { COPY_ATTRS, isCatalogCopy, isProseLiteral, pushHit, verbatim, collapse } from './common.js';
+import { COPY_ATTRS, isCatalogCopy, isProseLiteral, pushHit, verbatim, collapse, unescapeString } from './common.js';
 import { stripComments } from './js.js';
 
 // Props whose value a component shows a person, on top of COPY_ATTRS.
@@ -129,9 +129,12 @@ export function keyedStrings(file, code, fullSrc, offset, keys, kind = 'js-strin
     if (!keys.has(key) || ignoreKeys?.has(key)) continue;
     if (m[3] === '=' && m[1]) continue;              // `'a' = …` is not a default
     if (quote === '`' && val.includes('${')) continue;
-    if (val.includes('\\') || FORMAT_OPTION.test(val) || isProseLiteral(val) || !isCatalogCopy(val)) continue;
+    // Judged as it renders: `'Don\'t'` is "Don't". A backslash still there
+    // after that was typed as one, and is not copy.
+    const shown = unescapeString(val);
+    if (shown.includes('\\') || FORMAT_OPTION.test(shown) || isProseLiteral(shown) || !isCatalogCopy(shown)) continue;
     const index = offset + m.index + m[0].length - val.length - 1;
-    pushHit(hits, { file, raw: val, index, src: fullSrc, kind, quote, at: key });
+    pushHit(hits, { file, raw: verbatim(fullSrc, index, val), index, src: fullSrc, kind, quote, at: key, text: collapse(shown) });
   }
   return hits;
 }
