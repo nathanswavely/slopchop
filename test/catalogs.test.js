@@ -139,7 +139,7 @@ test('Markdown frontmatter values are copy, and the fence is not a paragraph', (
   const texts = hits.map((h) => h.text);
   assert.ok(texts.includes('About Northwind'));
   assert.ok(texts.includes('A small shop, since 1987.'));
-  assert.ok(texts.includes('# About'));
+  assert.ok(texts.includes('About'));
   assert.ok(texts.includes('We make chisels.'));
   assert.ok(!texts.some((t) => t.includes('---')));
   assert.equal(hits.find((h) => h.text === 'About Northwind').line, 2);

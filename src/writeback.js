@@ -96,6 +96,13 @@ export function encodeFor(kind, quote, text, occ = {}) {
 
   if (kind === 'md-block') return { value: text };
 
+  // A heading's raw is its words, between marks that stay in source.
+  if (kind === 'md-heading') {
+    if (/\n/.test(text)) return { problem: 'a Markdown heading must stay on one line' };
+    if (/^#{1,6}(\s|$)/.test(text)) return { problem: 'starts with # marks. The heading keeps its own, so write only its words' };
+    return { value: text };
+  }
+
   if (kind === 'html-text') return { value: encodeEntities(text) };
 
   if (kind.startsWith('html-attr:')) {

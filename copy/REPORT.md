@@ -8,9 +8,9 @@ visitor-readable string in this repository and records who wrote it.
 | Written by a person | 6 | 273 |
 | A person's words from the start | 0 | 0 |
 | Drafted by a model, edited by a person | 2 | 191 |
-| Left as drafted, deliberately | 104 | 2,134 |
+| Left as drafted, deliberately | 103 | 2,120 |
 | Not yet reviewed | 0 | 0 |
-| **Total** | **112** | **2,598** |
+| **Total** | **111** | **2,584** |
 
 Human-authored or deliberately accepted: **100%** of strings.
 A person's words: **5%** of strings, **11%** of words.
@@ -23,7 +23,7 @@ Whether a replacement was a rewrite or small edits is what the person said when 
 | Tier | Decided | Total |
 |---|---:|---:|
 | Paragraphs (16+ words) | 41 | 41 |
-| Helper text (6–15 words) | 16 | 16 |
+| Helper text (6–15 words) | 15 | 15 |
 | Labels (1–5 words) | 55 | 55 |
 
 ## Scope

@@ -3,9 +3,9 @@
   "strict": false,
   "entries": [
     {
-      "id": "8012034e88f7",
-      "text": "# SlopChop",
-      "words": 2,
+      "id": "d38ab294e6b6",
+      "text": "SlopChop",
+      "words": 1,
       "tier": "label",
       "status": "ai-fine",
       "replacement": null,
@@ -14,8 +14,22 @@
         {
           "file": "README.md",
           "line": 1,
-          "kind": "md-block",
-          "raw": "# SlopChop",
+          "kind": "md-heading",
+          "raw": "SlopChop",
+          "quote": null
+        },
+        {
+          "file": "src/ui.html",
+          "line": 6,
+          "kind": "html-text",
+          "raw": "SlopChop",
+          "quote": null
+        },
+        {
+          "file": "src/ui.html",
+          "line": 166,
+          "kind": "html-text",
+          "raw": "SlopChop",
           "quote": null
         }
       ]
@@ -61,9 +75,9 @@
       ]
     },
     {
-      "id": "0b1f06a21098",
-      "text": "## Why this exists",
-      "words": 4,
+      "id": "54e879ed145c",
+      "text": "Why this exists",
+      "words": 3,
       "tier": "label",
       "status": "ai-fine",
       "replacement": null,
@@ -72,8 +86,8 @@
         {
           "file": "README.md",
           "line": 18,
-          "kind": "md-block",
-          "raw": "## Why this exists",
+          "kind": "md-heading",
+          "raw": "Why this exists",
           "quote": null
         }
       ]
@@ -123,9 +137,9 @@
       }
     },
     {
-      "id": "5ae438610cf1",
-      "text": "## How it works",
-      "words": 4,
+      "id": "9c870aa6e5e9",
+      "text": "How it works",
+      "words": 3,
       "tier": "label",
       "status": "ai-fine",
       "replacement": null,
@@ -134,8 +148,8 @@
         {
           "file": "README.md",
           "line": 24,
-          "kind": "md-block",
-          "raw": "## How it works",
+          "kind": "md-heading",
+          "raw": "How it works",
           "quote": null
         }
       ]
@@ -260,9 +274,9 @@
       ]
     },
     {
-      "id": "43a398969a22",
-      "text": "## The decisions",
-      "words": 3,
+      "id": "3b28faf5fcd8",
+      "text": "The decisions",
+      "words": 2,
       "tier": "label",
       "status": "ai-fine",
       "replacement": null,
@@ -271,8 +285,8 @@
         {
           "file": "README.md",
           "line": 39,
-          "kind": "md-block",
-          "raw": "## The decisions",
+          "kind": "md-heading",
+          "raw": "The decisions",
           "quote": null
         }
       ]
@@ -318,9 +332,9 @@
       ]
     },
     {
-      "id": "33d33ec3137f",
-      "text": "## Getting through it without losing a weekend",
-      "words": 8,
+      "id": "18361b050054",
+      "text": "Getting through it without losing a weekend",
+      "words": 7,
       "tier": "helper",
       "status": "ai-fine",
       "replacement": null,
@@ -329,8 +343,8 @@
         {
           "file": "README.md",
           "line": 52,
-          "kind": "md-block",
-          "raw": "## Getting through it without losing a weekend",
+          "kind": "md-heading",
+          "raw": "Getting through it without losing a weekend",
           "quote": null
         }
       ]
@@ -444,9 +458,9 @@
       ]
     },
     {
-      "id": "116d8472876a",
-      "text": "## A first pass from a model",
-      "words": 7,
+      "id": "fb80a6d89ad3",
+      "text": "A first pass from a model",
+      "words": 6,
       "tier": "helper",
       "status": "ai-fine",
       "replacement": null,
@@ -455,8 +469,8 @@
         {
           "file": "README.md",
           "line": 79,
-          "kind": "md-block",
-          "raw": "## A first pass from a model",
+          "kind": "md-heading",
+          "raw": "A first pass from a model",
           "quote": null
         }
       ]
@@ -534,9 +548,9 @@
       ]
     },
     {
-      "id": "02a0a48a4b29",
-      "text": "## Keeping it that way",
-      "words": 5,
+      "id": "098cbfd71b90",
+      "text": "Keeping it that way",
+      "words": 4,
       "tier": "label",
       "status": "ai-fine",
       "replacement": null,
@@ -545,8 +559,8 @@
         {
           "file": "README.md",
           "line": 97,
-          "kind": "md-block",
-          "raw": "## Keeping it that way",
+          "kind": "md-heading",
+          "raw": "Keeping it that way",
           "quote": null
         }
       ]
@@ -634,9 +648,9 @@
       }
     },
     {
-      "id": "2e9efc2248fe",
-      "text": "## Setting it up",
-      "words": 4,
+      "id": "95141c38695c",
+      "text": "Setting it up",
+      "words": 3,
       "tier": "label",
       "status": "ai-fine",
       "replacement": null,
@@ -645,8 +659,8 @@
         {
           "file": "README.md",
           "line": 116,
-          "kind": "md-block",
-          "raw": "## Setting it up",
+          "kind": "md-heading",
+          "raw": "Setting it up",
           "quote": null
         }
       ]
@@ -724,9 +738,9 @@
       ]
     },
     {
-      "id": "f4a43bdd0d6b",
-      "text": "## Where it will get in your way",
-      "words": 8,
+      "id": "b3afeed07834",
+      "text": "Where it will get in your way",
+      "words": 7,
       "tier": "helper",
       "status": "ai-fine",
       "replacement": null,
@@ -735,8 +749,8 @@
         {
           "file": "README.md",
           "line": 150,
-          "kind": "md-block",
-          "raw": "## Where it will get in your way",
+          "kind": "md-heading",
+          "raw": "Where it will get in your way",
           "quote": null
         }
       ]
@@ -796,10 +810,10 @@
       ]
     },
     {
-      "id": "c5aa7fec5641",
-      "text": "## What it does not do",
-      "words": 6,
-      "tier": "helper",
+      "id": "b3a53baf5dfd",
+      "text": "What it does not do",
+      "words": 5,
+      "tier": "label",
       "status": "ai-fine",
       "replacement": null,
       "note": null,
@@ -807,8 +821,8 @@
         {
           "file": "README.md",
           "line": 158,
-          "kind": "md-block",
-          "raw": "## What it does not do",
+          "kind": "md-heading",
+          "raw": "What it does not do",
           "quote": null
         }
       ]
@@ -832,9 +846,9 @@
       ]
     },
     {
-      "id": "4a658ef4b0b9",
-      "text": "## Report and badge",
-      "words": 4,
+      "id": "09d913d2a273",
+      "text": "Report and badge",
+      "words": 3,
       "tier": "label",
       "status": "ai-fine",
       "replacement": null,
@@ -843,8 +857,8 @@
         {
           "file": "README.md",
           "line": 164,
-          "kind": "md-block",
-          "raw": "## Report and badge",
+          "kind": "md-heading",
+          "raw": "Report and badge",
           "quote": null
         }
       ]
@@ -868,9 +882,9 @@
       ]
     },
     {
-      "id": "2a9ecf52b78d",
-      "text": "## A copy disclosure, for a site whose source is closed",
-      "words": 11,
+      "id": "2a4cdb551463",
+      "text": "A copy disclosure, for a site whose source is closed",
+      "words": 10,
       "tier": "helper",
       "status": "ai-fine",
       "replacement": null,
@@ -879,8 +893,8 @@
         {
           "file": "README.md",
           "line": 172,
-          "kind": "md-block",
-          "raw": "## A copy disclosure, for a site whose source is closed",
+          "kind": "md-heading",
+          "raw": "A copy disclosure, for a site whose source is closed",
           "quote": null
         }
       ]
@@ -1070,9 +1084,9 @@
       ]
     },
     {
-      "id": "88cae4fc43af",
-      "text": "## Next",
-      "words": 2,
+      "id": "1ff57a29d7c9",
+      "text": "Next",
+      "words": 1,
       "tier": "label",
       "status": "ai-fine",
       "replacement": null,
@@ -1081,8 +1095,8 @@
         {
           "file": "README.md",
           "line": 224,
-          "kind": "md-block",
-          "raw": "## Next",
+          "kind": "md-heading",
+          "raw": "Next",
           "quote": null
         }
       ]
@@ -1123,31 +1137,6 @@
           "line": 228,
           "kind": "md-block",
           "raw": "To start, run `npx slopchop init` in the repo, then `sync`. The first sync stamps the baseline, so the check passes from the beginning. After that, open `slopchop review` and start with the paragraphs.",
-          "quote": null
-        }
-      ]
-    },
-    {
-      "id": "d38ab294e6b6",
-      "text": "SlopChop",
-      "words": 1,
-      "tier": "label",
-      "status": "ai-fine",
-      "replacement": null,
-      "note": null,
-      "occurrences": [
-        {
-          "file": "src/ui.html",
-          "line": 6,
-          "kind": "html-text",
-          "raw": "SlopChop",
-          "quote": null
-        },
-        {
-          "file": "src/ui.html",
-          "line": 166,
-          "kind": "html-text",
-          "raw": "SlopChop",
           "quote": null
         }
       ]
@@ -2150,12 +2139,12 @@
     }
   ],
   "baseline": [
-    "8012034e88f7",
+    "d38ab294e6b6",
     "aaeababbfc74",
-    "0b1f06a21098",
+    "54e879ed145c",
     "957b3e2cc00d",
     "00d80b6f74d1",
-    "5ae438610cf1",
+    "9c870aa6e5e9",
     "622d34635d80",
     "da51d253ae02",
     "9fd4638e44bb",
@@ -2163,33 +2152,32 @@
     "1e4c3372a5d2",
     "8ed588e980dd",
     "4b880144de98",
-    "33d33ec3137f",
+    "18361b050054",
     "d78c6c433bac",
     "611c62264e44",
     "7d12cc60277e",
     "d986bab8506b",
     "4683518a93b2",
-    "02a0a48a4b29",
+    "098cbfd71b90",
     "081218b81647",
     "37607732d9ab",
     "f2d88b7996fb",
-    "2e9efc2248fe",
+    "95141c38695c",
     "eddaeb766c91",
     "733c543e200e",
     "1fd07944acd4",
     "fe7ded79e306",
-    "f4a43bdd0d6b",
+    "b3afeed07834",
     "6b0fdc437cca",
     "dc65d1533022",
     "82ff4c657728",
-    "c5aa7fec5641",
+    "b3a53baf5dfd",
     "318e866dbc04",
-    "4a658ef4b0b9",
+    "09d913d2a273",
     "4ad50a9edb27",
-    "88cae4fc43af",
+    "1ff57a29d7c9",
     "2a6723c8cee5",
     "08d5560916c7",
-    "d38ab294e6b6",
     "fbc6d752fe52",
     "5c4fcf9baf2d",
     "0f36d92c78c9",

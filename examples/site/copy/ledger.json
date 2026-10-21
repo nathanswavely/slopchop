@@ -41,9 +41,9 @@
       ]
     },
     {
-      "id": "c3b8576c4125",
-      "text": "# About us",
-      "words": 3,
+      "id": "b4b580a9ad8c",
+      "text": "About us",
+      "words": 2,
       "tier": "label",
       "status": "unreviewed",
       "replacement": null,
@@ -52,9 +52,17 @@
         {
           "file": "content/about.md",
           "line": 7,
-          "kind": "md-block",
-          "raw": "# About us",
+          "kind": "md-heading",
+          "raw": "About us",
           "quote": null
+        },
+        {
+          "file": "locales/en.json",
+          "line": 6,
+          "kind": "json-value",
+          "raw": "About us",
+          "quote": "\"",
+          "at": "nav.about"
         }
       ]
     },
@@ -95,9 +103,9 @@
       ]
     },
     {
-      "id": "65d50e51b33e",
-      "text": "## What we believe",
-      "words": 4,
+      "id": "0e1aadb565a5",
+      "text": "What we believe",
+      "words": 3,
       "tier": "label",
       "status": "unreviewed",
       "replacement": null,
@@ -106,8 +114,8 @@
         {
           "file": "content/about.md",
           "line": 17,
-          "kind": "md-block",
-          "raw": "## What we believe",
+          "kind": "md-heading",
+          "raw": "What we believe",
           "quote": null
         }
       ]
@@ -131,9 +139,9 @@
       ]
     },
     {
-      "id": "63208b6400a7",
-      "text": "# Pricing",
-      "words": 2,
+      "id": "dfe95783edfe",
+      "text": "Pricing",
+      "words": 1,
       "tier": "label",
       "status": "unreviewed",
       "replacement": null,
@@ -142,8 +150,8 @@
         {
           "file": "content/pricing.mdx",
           "line": 7,
-          "kind": "md-block",
-          "raw": "# Pricing",
+          "kind": "md-heading",
+          "raw": "Pricing",
           "quote": null
         }
       ]
@@ -237,25 +245,6 @@
           "raw": "Shop",
           "quote": "\"",
           "at": "nav.shop"
-        }
-      ]
-    },
-    {
-      "id": "b4b580a9ad8c",
-      "text": "About us",
-      "words": 2,
-      "tier": "label",
-      "status": "unreviewed",
-      "replacement": null,
-      "note": null,
-      "occurrences": [
-        {
-          "file": "locales/en.json",
-          "line": 6,
-          "kind": "json-value",
-          "raw": "About us",
-          "quote": "\"",
-          "at": "nav.about"
         }
       ]
     },
@@ -1067,18 +1056,17 @@
   "baseline": [
     "d0f96c5b3417",
     "6d43ba3e1418",
-    "c3b8576c4125",
+    "b4b580a9ad8c",
     "c5ab420a29b2",
     "c1ee25843265",
-    "65d50e51b33e",
+    "0e1aadb565a5",
     "5fa2ae6e0bf3",
-    "63208b6400a7",
+    "dfe95783edfe",
     "9c1a15c224df",
     "039217c57f16",
     "f4d5362f6df7",
     "3a78695388b3",
     "d00aae6b7fbf",
-    "b4b580a9ad8c",
     "cdefccfa695c",
     "cb559e28c2f2",
     "326e405a5be3",
