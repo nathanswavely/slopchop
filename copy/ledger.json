@@ -242,7 +242,7 @@
       "text": "Saving a rewrite in the review page writes it into the source file straight away. It edits nothing unless it finds the exact original text where the ledger says it should be, and it refuses anything that would break the file. If it cannot write, the rewrite stays in the ledger as `rewritten` and the page says why. Moving words you saved back to unreviewed, or to leave as drafted, puts the model's draft back in the source. Start from a clean tree and read `git diff` before you commit.",
       "words": 90,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -260,7 +260,7 @@
       "text": "`slopchop apply` writes the rewrites still waiting: ones read back from a draft, and ones the page could not write. It is a dry run until you pass `--apply`. The **Apply rewrites** button in the page does the same.",
       "words": 39,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -278,7 +278,7 @@
       "text": "`slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it, or when the ledger holds a rewrite the source does not have yet.",
       "words": 33,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -314,7 +314,7 @@
       "text": "| Status | Means |\n|---|---|\n| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |\n| `rewritten` | Human wrote a replacement that is not in the source yet: read back from a draft, or refused when the review page tried to write it. `apply` writes it, and `check` fails until then. |\n| `human` | Human wrote the copy, not a model. |\n| `ai-fine` | Human reviewed and accepted the slop. |\n| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
       "words": 125,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -440,7 +440,7 @@
       "text": "`pull` records your writing in the ledger and leaves the source alone, so `apply` is the step that writes it in. Until then those strings are `rewritten`, and `check` fails on them.",
       "words": 32,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -642,7 +642,7 @@
       "text": "The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings, and any rewrites not in the source yet, in the job summary, with the file and line for each.",
       "words": 41,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -660,7 +660,7 @@
       "text": "On a pull request it also says so in one comment that stays current: the new strings with no decision, and the rewrites the ledger has and the source does not, each linked to its line. Once nothing is waiting, the comment says everything is settled. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.",
       "words": 82,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -678,7 +678,7 @@
       "text": "For a comment on each line as well, set `inline: true`. Each new string the diff touches gets its own comment, and a rewrite not in the source shows up as a suggestion block. Committing the suggestion counts the same as applying it: the next `sync` sees your words in the source and records them as yours.",
       "words": 57,
       "tier": "prose",
-      "status": "unreviewed",
+      "status": "ai-fine",
       "replacement": null,
       "note": null,
       "occurrences": [
