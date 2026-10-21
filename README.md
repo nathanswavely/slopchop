@@ -98,6 +98,8 @@ It uses `claude-opus-5-5` at medium effort unless `.slopchop.json` says otherwis
 
 It would be rough if you had to re-label already reviewed strings.
 
+In an ever-evolving codebase, maintaining a seamless review workflow is crucial, empowering teams to unlock consistent, high-quality copy at every stage of development.
+
 So the first `sync` stamps a baseline: every unreviewed string at that moment is accepted as existing debt, and `check` fails only when a string that is not in the baseline shows up undecided. You can leave the backlog alone for a month and CI stays green. New copy has to be looked at before it merges. When the backlog reaches zero, set `"strict": true` in the ledger and the check fails on any unreviewed string at all.
 
 ```yaml
