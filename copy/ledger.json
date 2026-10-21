@@ -238,11 +238,11 @@
       ]
     },
     {
-      "id": "9fd4638e44bb",
-      "text": "`slopchop apply` writes your versions into the source files. It is a dry run until you pass `--apply`, and it edits nothing unless it finds the exact original text where the ledger says it should be. Run it on a clean tree and read the diff.",
-      "words": 46,
+      "id": "7ad385a456d9",
+      "text": "Saving a rewrite in the review page writes it into the source file straight away. It edits nothing unless it finds the exact original text where the ledger says it should be, and it refuses anything that would break the file. If it cannot write, the rewrite stays in the ledger as `rewritten` and the page says why. Moving words you saved back to unreviewed, or to leave as drafted, puts the model's draft back in the source. Start from a clean tree and read `git diff` before you commit.",
+      "words": 90,
       "tier": "prose",
-      "status": "ai-fine",
+      "status": "unreviewed",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -250,17 +250,17 @@
           "file": "README.md",
           "line": 35,
           "kind": "md-block",
-          "raw": "`slopchop apply` writes your versions into the source files. It is a dry run until you pass `--apply`, and it edits nothing unless it finds the exact original text where the ledger says it should be. Run it on a clean tree and read the diff.",
+          "raw": "Saving a rewrite in the review page writes it into the source file straight away. It edits nothing unless it finds the exact original text where the ledger says it should be, and it refuses anything that would break the file. If it cannot write, the rewrite stays in the ledger as `rewritten` and the page says why. Moving words you saved back to unreviewed, or to leave as drafted, puts the model's draft back in the source. Start from a clean tree and read `git diff` before you commit.",
           "quote": null
         }
       ]
     },
     {
-      "id": "7ce292edbd3e",
-      "text": "`slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it.",
-      "words": 20,
+      "id": "9a64b82c8b94",
+      "text": "`slopchop apply` writes the rewrites still waiting: ones read back from a draft, and ones the page could not write. It is a dry run until you pass `--apply`. The **Apply rewrites** button in the page does the same.",
+      "words": 39,
       "tier": "prose",
-      "status": "ai-fine",
+      "status": "unreviewed",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -268,7 +268,25 @@
           "file": "README.md",
           "line": 37,
           "kind": "md-block",
-          "raw": "`slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it.",
+          "raw": "`slopchop apply` writes the rewrites still waiting: ones read back from a draft, and ones the page could not write. It is a dry run until you pass `--apply`. The **Apply rewrites** button in the page does the same.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "282a4037c5cd",
+      "text": "`slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it, or when the ledger holds a rewrite the source does not have yet.",
+      "words": 33,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 39,
+          "kind": "md-block",
+          "raw": "`slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it, or when the ledger holds a rewrite the source does not have yet.",
           "quote": null
         }
       ]
@@ -284,7 +302,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 39,
+          "line": 41,
           "kind": "md-heading",
           "raw": "The decisions",
           "quote": null
@@ -292,26 +310,22 @@
       ]
     },
     {
-      "id": "a49feca62157",
-      "text": "| Status | Means |\n|---|---|\n| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |\n| `rewritten` | Human wrote replacement but `apply` has not written it yet. |\n| `human` | Human wrote the copy, not a model. |\n| `ai-fine` | Human reviewed and accepted the slop. |\n| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
-      "words": 101,
+      "id": "a93a70f7e330",
+      "text": "| Status | Means |\n|---|---|\n| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |\n| `rewritten` | Human wrote a replacement that is not in the source yet: read back from a draft, or refused when the review page tried to write it. `apply` writes it, and `check` fails until then. |\n| `human` | Human wrote the copy, not a model. |\n| `ai-fine` | Human reviewed and accepted the slop. |\n| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+      "words": 125,
       "tier": "prose",
-      "status": "human",
+      "status": "unreviewed",
       "replacement": null,
       "note": null,
       "occurrences": [
         {
           "file": "README.md",
-          "line": 41,
+          "line": 43,
           "kind": "md-block",
-          "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |\n| `rewritten` | Human wrote replacement but `apply` has not written it yet. |\n| `human` | Human wrote the copy, not a model. |\n| `ai-fine` | Human reviewed and accepted the slop. |\n| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+          "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |\n| `rewritten` | Human wrote a replacement that is not in the source yet: read back from a draft, or refused when the review page tried to write it. `apply` writes it, and `check` fails until then. |\n| `human` | Human wrote the copy, not a model. |\n| `ai-fine` | Human reviewed and accepted the slop. |\n| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
           "quote": null
         }
-      ],
-      "previous_ai_text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
-      "authorship": {
-        "kind": "written"
-      }
+      ]
     },
     {
       "id": "4b880144de98",
@@ -324,7 +338,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 50,
+          "line": 52,
           "kind": "md-block",
           "raw": "`ai-fine` is the one that makes this bearable. \"Failed to load comments\" does not need your voice, and neither do most of the labels around it. Marking them is one keystroke each, or one command for a whole file. The report counts them separately from `human`, so the number you end up with is honest about which is which.",
           "quote": null
@@ -342,7 +356,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 52,
+          "line": 54,
           "kind": "md-heading",
           "raw": "Getting through it without losing a weekend",
           "quote": null
@@ -360,7 +374,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 54,
+          "line": 56,
           "kind": "md-block",
           "raw": "Every string is sorted into a tier by length: paragraphs (16 words and up), helper text (6 to 15), and labels (under 6). Paragraphs are where the writing happens. Labels mostly need a glance, and a lot of them can go in bulk:",
           "quote": null
@@ -378,7 +392,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 62,
+          "line": 64,
           "kind": "md-block",
           "raw": "`decide` only ever moves strings out of `unreviewed`, so running it again cannot undo something you decided by hand. It is a dry run until you pass `--apply`.",
           "quote": null
@@ -396,7 +410,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 64,
+          "line": 66,
           "kind": "html-attr:alt",
           "raw": "The review page filtered to strings of four words or fewer, with four labels ticked and a bar at the foot offering already mine, leave as drafted, and back to unreviewed for all of them.",
           "quote": "\""
@@ -414,9 +428,27 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 66,
+          "line": 68,
           "kind": "md-block",
           "raw": "The queue also comes out as Markdown, for the places writing actually happens (a phone, a train, the GitHub web editor):",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "e1ef9e7e1388",
+      "text": "`pull` records your writing in the ledger and leaves the source alone, so `apply` is the step that writes it in. Until then those strings are `rewritten`, and `check` fails on them.",
+      "words": 32,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 77,
+          "kind": "md-block",
+          "raw": "`pull` records your writing in the ledger and leaves the source alone, so `apply` is the step that writes it in. Until then those strings are `rewritten`, and `check` fails on them.",
           "quote": null
         }
       ]
@@ -432,7 +464,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 75,
+          "line": 79,
           "kind": "md-block",
           "raw": "Each string sits between `                ` markers. Write between them. A block you leave alone is skipped, so doing three and coming back later is fine. Replace a whole block with `@mine` if the words are already yours, or `@fine` to leave the draft in place.",
           "quote": null
@@ -450,7 +482,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 77,
+          "line": 81,
           "kind": "md-block",
           "raw": "A draft is a checkout. While one exists, decide that file in the draft and not in the review page, because the page can rewrite a string out from under a marker and then your writing has nowhere to land. The page refuses a decision on a checked-out string and names the file. `pull` never records a block you did not touch. If the source moves anyway, `pull --redraft` saves any stranded writing to a file beside the draft and cuts a fresh one. `SLOPCHOP_DRAFTS_DIR` points the drafts at a private repo, so the half-finished sentences stay out of a public one.",
           "quote": null
@@ -468,7 +500,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 79,
+          "line": 83,
           "kind": "md-heading",
           "raw": "A first pass from a model",
           "quote": null
@@ -486,7 +518,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 81,
+          "line": 85,
           "kind": "md-block",
           "raw": "Two hundred paragraphs is still a lot to sort by hand. `triage` sends the unreviewed strings to Claude on your own key and asks which ones carry your voice and read as drafted, which are worth a glance, and which nobody needs to touch. It quotes the phrases that gave each one away. Nothing changes status; the review page just puts the rewrite pile first and underlines the tells.",
           "quote": null
@@ -504,7 +536,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 91,
+          "line": 95,
           "kind": "md-block",
           "raw": "Labels are skipped unless you ask for them with `--tier label`. `--file`, `--limit`, and `--id` narrow either command, and running one again only sends what has no answer yet.",
           "quote": null
@@ -522,7 +554,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 93,
+          "line": 97,
           "kind": "md-block",
           "raw": "A suggestion sits under your own box in the review page, not in it. `s` copies it in when you want a starting point. If you save it without changing anything, it lands as `ai-revised`, and the report and badge count it apart from `human`. Change one word and it is yours, which is the point: the suggestion is there to get you unstuck, not to finish the job.",
           "quote": null
@@ -540,7 +572,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 95,
+          "line": 99,
           "kind": "md-block",
           "raw": "It uses `claude-opus-5-5` at medium effort unless `.slopchop.json` says otherwise (`\"model\"`, `\"effort\"`). Point `\"voice\"` at a file of notes on how you write, and both commands read it.",
           "quote": null
@@ -558,7 +590,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 97,
+          "line": 101,
           "kind": "md-heading",
           "raw": "Keeping it that way",
           "quote": null
@@ -576,7 +608,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 99,
+          "line": 103,
           "kind": "md-block",
           "raw": "It would be rough if you had to re-label already reviewed strings.",
           "quote": null
@@ -598,7 +630,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 101,
+          "line": 105,
           "kind": "md-block",
           "raw": "So the first `sync` stamps a baseline: every unreviewed string at that moment is accepted as existing debt, and `check` fails only when a string that is not in the baseline shows up undecided. You can leave the backlog alone for a month and CI stays green. New copy has to be looked at before it merges. When the backlog reaches zero, set `\"strict\": true` in the ledger and the check fails on any unreviewed string at all.",
           "quote": null
@@ -606,46 +638,58 @@
       ]
     },
     {
-      "id": "f2d88b7996fb",
-      "text": "The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings in the job summary, with the file and line for each.",
-      "words": 33,
+      "id": "47546b62fc8b",
+      "text": "The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings, and any rewrites not in the source yet, in the job summary, with the file and line for each.",
+      "words": 41,
       "tier": "prose",
-      "status": "ai-fine",
+      "status": "unreviewed",
       "replacement": null,
       "note": null,
       "occurrences": [
         {
           "file": "README.md",
-          "line": 112,
+          "line": 116,
           "kind": "md-block",
-          "raw": "The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings in the job summary, with the file and line for each.",
+          "raw": "The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings, and any rewrites not in the source yet, in the job summary, with the file and line for each.",
           "quote": null
         }
       ]
     },
     {
-      "id": "87cfe9082a61",
-      "text": "On a pull request it also says so on the pull request: one summary comment that stays current, and a comment on each new string the diff touches. If you wrote a rewrite in the ledger and never ran `apply`, it shows up as a suggestion block, and committing the suggestion counts the same as applying it. The next `sync` sees your words in the source and records them as yours. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.",
-      "words": 107,
+      "id": "d9a262f62070",
+      "text": "On a pull request it also says so in one comment that stays current: the new strings with no decision, and the rewrites the ledger has and the source does not, each linked to its line. Once nothing is waiting, the comment says everything is settled. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.",
+      "words": 82,
       "tier": "prose",
-      "status": "ai-fine",
+      "status": "unreviewed",
       "replacement": null,
       "note": null,
       "occurrences": [
         {
           "file": "README.md",
-          "line": 114,
+          "line": 118,
           "kind": "md-block",
-          "raw": "On a pull request it also says so on the pull request: one summary comment that stays current, and a comment on each new string the diff touches. If you wrote a rewrite in the ledger and never ran `apply`, it shows up as a suggestion block, and committing the suggestion counts the same as applying it. The next `sync` sees your words in the source and records them as yours. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.",
+          "raw": "On a pull request it also says so in one comment that stays current: the new strings with no decision, and the rewrites the ledger has and the source does not, each linked to its line. Once nothing is waiting, the comment says everything is settled. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.",
           "quote": null
         }
-      ],
-      "suggestion": {
-        "text": "On a pull request the action also leaves comments, so nobody has to open the job log to find out why it failed. There is one summary comment, which it edits in place rather than adding new ones. Each new string in the lines the pull request changed gets a comment of its own.\n\nIf you saved a rewrite in the ledger and never ran `apply`, it shows up on that line as a suggestion block. Pressing GitHub's \"Commit suggestion\" button does what `apply` would have done, and the next `sync` records the wording as yours. Pull requests from forks only get the job summary, because GitHub gives them a read-only token. Set `comment: false` to turn the comments off, or run `slopchop comment --base main` to see what it would post.",
-        "why": "Split into what the comments are and what the suggestion blocks do; cut the repeated \"on a pull request\".",
-        "model": "claude-opus-5-5",
-        "at": "2026-10-05"
-      }
+      ]
+    },
+    {
+      "id": "45bd4cdf1458",
+      "text": "For a comment on each line as well, set `inline: true`. Each new string the diff touches gets its own comment, and a rewrite not in the source shows up as a suggestion block. Committing the suggestion counts the same as applying it: the next `sync` sees your words in the source and records them as yours.",
+      "words": 57,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 120,
+          "kind": "md-block",
+          "raw": "For a comment on each line as well, set `inline: true`. Each new string the diff touches gets its own comment, and a rewrite not in the source shows up as a suggestion block. Committing the suggestion counts the same as applying it: the next `sync` sees your words in the source and records them as yours.",
+          "quote": null
+        }
+      ]
     },
     {
       "id": "95141c38695c",
@@ -658,7 +702,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 116,
+          "line": 128,
           "kind": "md-heading",
           "raw": "Setting it up",
           "quote": null
@@ -676,7 +720,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 122,
+          "line": 134,
           "kind": "md-block",
           "raw": "`init` looks at the repo and writes a `.slopchop.json` with the patterns that matched something. Edit it to taste:",
           "quote": null
@@ -694,7 +738,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 136,
+          "line": 148,
           "kind": "md-block",
           "raw": "What counts as copy, by file type:",
           "quote": null
@@ -712,7 +756,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 138,
+          "line": 150,
           "kind": "md-block",
           "raw": "| Files | What comes out |\n|---|---|\n| `.md` `.mdx` | Paragraphs, headings, and list blocks. Frontmatter values. Text inside HTML or JSX blocks. MDX imports, exports, and expressions are skipped. |\n| `.json` `.yml` `.yaml` | Every string value in a message catalog, with its key path. URLs, identifiers, colors, and booleans are dropped. |\n| `.html` | Text nodes, `placeholder`, `title`, `alt`, `aria-label`, and `<meta>` descriptions and share titles. Not `<meta name=\"keywords\">`, which nothing shows anyone, and not `<script>`, `<style>`, `<pre>`, or comments. Liquid and Jinja tags split copy; `{{ }}` stays inside it. |\n| `.astro` | Template text and copy attributes, sentence-shaped strings in the frontmatter, `{expressions}` and client `<script>`s. |\n| `.svelte` `.vue` | Markup text and attributes, plus sentence-shaped strings in `<script>`. |\n| `.jsx` `.tsx` | Text between tags, copy attributes, and prose string literals. |\n| `.js` `.ts` | Sentence-shaped string literals: toasts, error messages, option labels. |",
           "quote": null
@@ -730,7 +774,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 148,
+          "line": 160,
           "kind": "md-block",
           "raw": "Markup is recorded as a page shows it: `Next &rarr;` is `Next →`, with every character reference HTML defines decoded the way a browser decodes it. A lone symbol, like that arrow on its own, is not copy.",
           "quote": null
@@ -748,7 +792,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 150,
+          "line": 162,
           "kind": "md-block",
           "raw": "Two things come out of Astro, JSX and Svelte components on top of that. A string passed to a component under a name like copy (`description`, `label`, `heading`, `subtitle`, `caption`, `summary`, `text`, `message`) is copy: `<BaseLayout description=\"…\">` ends up in a `<meta>` a search result shows. And a short string is copy when a template shows its key: `<span>{service.name}</span>` makes `name: 'Hello'` copy, in any file in scope, where a short string alone would be taken for an identifier. Values that look like ids, paths, URLs or colours are still dropped, and `ignoreKeys` still wins. A key a template shows only through code (`{format(service.name)}`) is not followed, and neither are Vue's `{{ }}` templates.\n| `.go` | Raw-string documents a paragraph at a time, interpreted strings that read as sentences, and the messages inside `{\"error\":\"...\"}` bodies. |",
           "quote": null
@@ -766,7 +810,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 153,
+          "line": 165,
           "kind": "md-block",
           "raw": "The filters over-collect on purpose. A false positive costs one keystroke; a false negative is a string you never see. If something odd shows up in the queue, mark it and keep going.",
           "quote": null
@@ -784,7 +828,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 155,
+          "line": 167,
           "kind": "md-heading",
           "raw": "Where it will get in your way",
           "quote": null
@@ -802,7 +846,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 157,
+          "line": 169,
           "kind": "md-block",
           "raw": "In HTML, JSX, and Vue, an inline element splits the sentence around it. `Call us at <code>555-0100</code> or stop by` shows up as two entries. Markdown does not have this problem, since a paragraph is one block whatever is inside it.",
           "quote": null
@@ -820,7 +864,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 159,
+          "line": 171,
           "kind": "md-block",
           "raw": "The YAML reader is a subset: block mappings, sequences, plain and quoted scalars, and `|` and `>` blocks. Flow collections, anchors, and tags are skipped rather than guessed at.",
           "quote": null
@@ -838,7 +882,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 161,
+          "line": 173,
           "kind": "md-block",
           "raw": "Writeback refuses anything that would break the file it lands in (a `{` in JSX text, a quote that would close a YAML scalar, a newline in an attribute) and tells you which entry and why. It would rather leave a string undone than produce a file that does not build.",
           "quote": null
@@ -856,7 +900,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 163,
+          "line": 175,
           "kind": "md-heading",
           "raw": "What it does not do",
           "quote": null
@@ -874,7 +918,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 165,
+          "line": 177,
           "kind": "md-block",
           "raw": "- It does not send your text anywhere you did not ask it to. There is no server and no account. The review page is a local process reading local files, the pull request comments go to the same GitHub that holds the code, and the only model calls are `triage` and `suggest`, on your key, after a dry run.\n- It does not certify anything. The report and badge exist so you can see your own progress. If you want proof for someone else, this is not it, and I am not sure anything is.\n- It does not write for you. It will suggest, if you ask, but a suggestion you take without editing is recorded as `ai-revised`, so `human` only ever means a person typed it.",
           "quote": null
@@ -892,7 +936,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 169,
+          "line": 181,
           "kind": "md-heading",
           "raw": "Report and badge",
           "quote": null
@@ -910,7 +954,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 175,
+          "line": 187,
           "kind": "md-block",
           "raw": "writes `copy/REPORT.md` with the counts by status and tier, the scope and what was left out of it, and every replaced draft next to the text that replaced it. It also writes `copy/badge.json` for shields.io and `copy/badge.svg` for a repo that would rather not call out. The badge shows two numbers, reviewed and human-written, because either one alone overstates things.",
           "quote": null
@@ -928,7 +972,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 177,
+          "line": 189,
           "kind": "md-heading",
           "raw": "A copy disclosure, for a site whose source is closed",
           "quote": null
@@ -946,7 +990,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 179,
+          "line": 191,
           "kind": "md-block",
           "raw": "The report lives in the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what human declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.",
           "quote": null
@@ -968,7 +1012,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 181,
+          "line": 193,
           "kind": "md-block",
           "raw": "It is off until you add a block to `.slopchop.json`. `init` never adds one.",
           "quote": null
@@ -986,7 +1030,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 192,
+          "line": 204,
           "kind": "md-block",
           "raw": "`declarant` and `contact` are optional, and `\"enabled\": true` alone turns it on. Leave them out and the file names nobody: a Reader says it is declared by the owner of the site's domain.",
           "quote": null
@@ -1004,7 +1048,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 194,
+          "line": 206,
           "kind": "md-block",
           "raw": "Or open **Disclosure** in the review page, which edits only this block, previews exactly what would be published, and asks once before the first switch-on. Then:",
           "quote": null
@@ -1022,7 +1066,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 203,
+          "line": 215,
           "kind": "md-block",
           "raw": "The file looks like this:",
           "quote": null
@@ -1040,7 +1084,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 217,
+          "line": 229,
           "kind": "md-block",
           "raw": "The statuses are the ledger's, with nothing added. `human` says the declarant put the words there, not a model: a testimonial they chose and pasted in is `human`, and one a model drafted into the page is not. A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `\"enabled\": false` and the next `report` deletes the file instead of leaving the last one deployed.",
           "quote": null
@@ -1058,7 +1102,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 219,
+          "line": 231,
           "kind": "md-block",
           "raw": "For each page, a Reader lists the declared copy with its status, lists the undeclared copy by its text, and shows your out-of-scope reasons beside it. It counts `not-copy` strings separately and leaves them out of the page's total. The bookmarklet does the same on whatever page you are looking at, and marks each string on the page in its status's colour.",
           "quote": null
@@ -1076,7 +1120,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 221,
+          "line": 233,
           "kind": "md-block",
           "raw": "Where a Reader comes up short:",
           "quote": null
@@ -1094,7 +1138,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 223,
+          "line": 235,
           "kind": "md-block",
           "raw": "- Template strings never match. `about {event.name}` in source renders as `about Spring Fair`, so it reads as undeclared, and so does anything a script builds at runtime, `© {new Date().getFullYear()}` included.\n- Strings are cut the way `sync` cuts HTML: an inline element splits a sentence. A Markdown paragraph with a link or emphasis in it renders as several strings, none of which hash to the paragraph in the ledger.\n- Short labels are easy to guess from their hash. Leaving the text out keeps the file small and focused, but it is not a privacy measure.",
           "quote": null
@@ -1112,7 +1156,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 227,
+          "line": 239,
           "kind": "md-block",
           "raw": "The ID is a public, frozen algorithm, `slop: 1`: the first 12 hex characters of SHA-256 over the UTF-8 text, with each run of whitespace collapsed to one space and the ends trimmed, and no Unicode normalization. A Reader anyone writes can compute it. [docs/adr](docs/adr) has the reasoning.",
           "quote": null
@@ -1130,7 +1174,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 229,
+          "line": 241,
           "kind": "md-heading",
           "raw": "Next",
           "quote": null
@@ -1148,7 +1192,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 231,
+          "line": 243,
           "kind": "md-block",
           "raw": "A review page that is more purpose built than just a code review.",
           "quote": null
@@ -1170,7 +1214,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 233,
+          "line": 245,
           "kind": "md-block",
           "raw": "To start, run `npx slopchop init` in the repo, then `sync`. The first sync stamps the baseline, so the check passes from the beginning. After that, open `slopchop review` and start with the paragraphs.",
           "quote": null
@@ -2208,6 +2252,106 @@
           "quote": null
         }
       ]
+    },
+    {
+      "id": "9fd4638e44bb",
+      "text": "`slopchop apply` writes your versions into the source files. It is a dry run until you pass `--apply`, and it edits nothing unless it finds the exact original text where the ledger says it should be. Run it on a clean tree and read the diff.",
+      "words": 46,
+      "tier": "prose",
+      "status": "ai-fine",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 35,
+          "kind": "md-block",
+          "raw": "`slopchop apply` writes your versions into the source files. It is a dry run until you pass `--apply`, and it edits nothing unless it finds the exact original text where the ledger says it should be. Run it on a clean tree and read the diff.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "7ce292edbd3e",
+      "text": "`slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it.",
+      "words": 20,
+      "tier": "prose",
+      "status": "ai-fine",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 37,
+          "kind": "md-block",
+          "raw": "`slopchop check` runs in CI and fails when a string shows up in the source with no decision behind it.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "a49feca62157",
+      "text": "| Status | Means |\n|---|---|\n| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |\n| `rewritten` | Human wrote replacement but `apply` has not written it yet. |\n| `human` | Human wrote the copy, not a model. |\n| `ai-fine` | Human reviewed and accepted the slop. |\n| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+      "words": 101,
+      "tier": "prose",
+      "status": "human",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 41,
+          "kind": "md-block",
+          "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |\n| `rewritten` | Human wrote replacement but `apply` has not written it yet. |\n| `human` | Human wrote the copy, not a model. |\n| `ai-fine` | Human reviewed and accepted the slop. |\n| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+          "quote": null
+        }
+      ],
+      "previous_ai_text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+      "authorship": {
+        "kind": "written"
+      }
+    },
+    {
+      "id": "f2d88b7996fb",
+      "text": "The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings in the job summary, with the file and line for each.",
+      "words": 33,
+      "tier": "prose",
+      "status": "ai-fine",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 112,
+          "kind": "md-block",
+          "raw": "The action carries the tool inside it, so there is nothing to install. It fails the job and lists the new strings in the job summary, with the file and line for each.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "87cfe9082a61",
+      "text": "On a pull request it also says so on the pull request: one summary comment that stays current, and a comment on each new string the diff touches. If you wrote a rewrite in the ledger and never ran `apply`, it shows up as a suggestion block, and committing the suggestion counts the same as applying it. The next `sync` sees your words in the source and records them as yours. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.",
+      "words": 107,
+      "tier": "prose",
+      "status": "ai-fine",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 114,
+          "kind": "md-block",
+          "raw": "On a pull request it also says so on the pull request: one summary comment that stays current, and a comment on each new string the diff touches. If you wrote a rewrite in the ledger and never ran `apply`, it shows up as a suggestion block, and committing the suggestion counts the same as applying it. The next `sync` sees your words in the source and records them as yours. A fork's token cannot comment, so on a fork you get the job summary and nothing else. Set `comment: false` to turn it off, or run `slopchop comment --base main` to see what it would say.",
+          "quote": null
+        }
+      ],
+      "suggestion": {
+        "text": "On a pull request the action also leaves comments, so nobody has to open the job log to find out why it failed. There is one summary comment, which it edits in place rather than adding new ones. Each new string in the lines the pull request changed gets a comment of its own.\n\nIf you saved a rewrite in the ledger and never ran `apply`, it shows up on that line as a suggestion block. Pressing GitHub's \"Commit suggestion\" button does what `apply` would have done, and the next `sync` records the wording as yours. Pull requests from forks only get the job summary, because GitHub gives them a read-only token. Set `comment: false` to turn the comments off, or run `slopchop comment --base main` to see what it would post.",
+        "why": "Split into what the comments are and what the suggestion blocks do; cut the repeated \"on a pull request\".",
+        "model": "claude-opus-5-5",
+        "at": "2026-10-05"
+      }
     }
   ],
   "baseline": [
