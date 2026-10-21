@@ -19,7 +19,9 @@ import { COPY_ATTRS } from './extract/common.js';
 const HOST = 'slopchop-reader';
 const MARK = 'data-slopchop';
 const OUTLINE = 'data-slopchop-outline';
-const SKIP = 'script, style, pre, noscript, textarea, template';
+// Where a <mark> would break the page: raw-text elements, form options, and
+// SVG or MathML, which have no <mark>. The strings are still listed.
+const SKIP = 'script, style, pre, noscript, textarea, template, select, option, svg, math';
 
 // One colour per status, and a dashed outline for undeclared copy, so the
 // two read apart at a glance. Hues, not a scale: none is better than another.
