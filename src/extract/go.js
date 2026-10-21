@@ -1,7 +1,7 @@
 // Go: raw-string documents split into paragraphs, interpreted strings that
 // read as sentences, and the messages inside `{"error":"..."}` bodies.
 
-import { blank, pushHit, isData, isProseLiteral, blocks, collapse } from './common.js';
+import { blank, pushHit, isData, isProseLiteral, blocks, collapse, unescapeString } from './common.js';
 
 function stripComments(src) {
   return blank(blank(src, /\/\*[\s\S]*?\*\//g), /(^|[^:])\/\/[^\n]*/g);
@@ -71,9 +71,9 @@ export function extractGo(file, src, { frozen } = {}) {
   const strRe = /"((?:[^"\\\n]|\\.)*)"/g;
   const withoutRaw = blank(clean, /`[^`]*`/g);
   while ((m = strRe.exec(withoutRaw)) !== null) {
-    const val = m[1];
-    if (!isProseLiteral(val)) continue;
-    pushHit(hits, { file, raw: val, index: m.index + 1, src, kind: 'go-string', quote: '"' });
+    const shown = unescapeString(m[1], { go: true });
+    if (!isProseLiteral(shown)) continue;
+    pushHit(hits, { file, raw: m[1], index: m.index + 1, src, kind: 'go-string', quote: '"', text: collapse(shown) });
   }
 
   return hits;
