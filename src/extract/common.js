@@ -341,11 +341,17 @@ export function verbatim(src, index, seen) {
 // a static value a person reads.
 const ATTR_BOUNDARY = '(?<![:.@\\w\\[-])';
 
+// A quoted value runs to the quote that opened it, so `alt="Nathan's
+// guitar"` and `title='Say "hi"'` are each one value. A `{` or `}` refuses
+// the match: that value is an expression, not copy. `n` is the number of
+// the group that captures the opening quote; the value is the group after.
+export const quotedValue = (n) => `(["'])((?:(?!\\${n})[^{}])*)\\${n}`;
+
 /** Copy-bearing attributes with static values. */
 export function attrHits(file, markup, src, offset, kindPrefix, attrs = COPY_ATTRS, { text = (s) => collapse(s) } = {}) {
   const hits = [];
   for (const attr of attrs) {
-    const re = new RegExp(`${ATTR_BOUNDARY}${attr}\\s*=\\s*(["'])([^"'{}]*?)\\1`, 'g');
+    const re = new RegExp(`${ATTR_BOUNDARY}${attr}\\s*=\\s*${quotedValue(1)}`, 'g');
     let m;
     while ((m = re.exec(markup)) !== null) {
       const val = m[2];
