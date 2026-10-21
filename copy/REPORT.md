@@ -5,16 +5,16 @@ visitor-readable string in this repository and records who wrote it.
 
 | | strings | words |
 |---|---:|---:|
-| Written by a person | 5 | 172 |
+| Written by a person | 6 | 273 |
 | A person's words from the start | 0 | 0 |
-| Drafted by a model, edited by a person | 1 | 125 |
-| Left as drafted, deliberately | 77 | 1,726 |
+| Drafted by a model, edited by a person | 2 | 191 |
+| Left as drafted, deliberately | 104 | 2,134 |
 | Not yet reviewed | 0 | 0 |
-| **Total** | **83** | **2,023** |
+| **Total** | **112** | **2,598** |
 
 Human-authored or deliberately accepted: **100%** of strings.
-A person's words: **6%** of strings, **9%** of words.
-Edited from a model's draft: **1%** of strings, counted apart, because an edit leaves most of the model's words in place.
+A person's words: **5%** of strings, **11%** of words.
+Edited from a model's draft: **2%** of strings, counted apart, because an edit leaves most of the model's words in place.
 
 Whether a replacement was a rewrite or small edits is what the person said when they saved it. SlopChop records it and does not check it.
 
@@ -22,9 +22,9 @@ Whether a replacement was a rewrite or small edits is what the person said when 
 
 | Tier | Decided | Total |
 |---|---:|---:|
-| Paragraphs (16+ words) | 32 | 32 |
-| Helper text (6–15 words) | 9 | 9 |
-| Labels (1–5 words) | 42 | 42 |
+| Paragraphs (16+ words) | 41 | 41 |
+| Helper text (6–15 words) | 16 | 16 |
+| Labels (1–5 words) | 55 | 55 |
 
 ## Scope
 
@@ -39,7 +39,7 @@ Out of scope, on purpose:
 - `examples/`: Fixture copy for the test suite; it carries its own ledger.
 - `test/`: Test fixtures.
 
-## Replaced drafts (6)
+## Replaced drafts (8)
 
 Where a model's draft was replaced, both are kept. A replacement a model wrote and a person accepted unedited is marked as such.
 
@@ -56,8 +56,14 @@ Where a model's draft was replaced, both are kept. A replacement a model wrote a
   - draft: "`slopchop review` opens a page on localhost. Paragraphs come first, because that is where the voice is. For each string you see the text, where it lives in the source, a few lines of context, and a box to write in. You write your version and save it, or you say the words are already yours, or you leave it as drafted and move on. `j` and `k` move through the queue, `h` marks a string as yours, `a` leaves it alone, and `Ctrl+Enter` (`⌘↵` on a Mac) saves what you wrote. Tick several strings, or shift-click a run of them, and `h` or `a` decides them all at once. `?` lists the rest."
   - now: "`slopchop review` opens a page on localhost that allows you to review your repo's copy and clear it for release, either by rewriting it in your voice, marking it as already yours, or leaving as \"ai.\" Built in keyboard shortcuts make the process smooth."
 - `README.md`
+  - draft: "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |"
+  - now: "| Status | Means |\n|---|---|\n| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |\n| `rewritten` | Human wrote replacement but `apply` has not written it yet. |\n| `human` | Human wrote the copy, not a model. |\n| `ai-fine` | Human reviewed and accepted the slop. |\n| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |"
+- `README.md`
   - draft: "Rewriting two thousand strings once is a finite job. Keeping them rewritten is not, because the next AI session adds forty more and the site slides back without anyone noticing."
   - now: "It would be rough if you had to re-label already reviewed strings."
+- `README.md`
+  - draft: "The report lives in the repo, which only helps if people can see the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what you declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up."
+  - now (edited): "The report lives in the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what human declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up."
 - `README.md`
   - draft: "A review page that feels like a writing tool rather than a code review: the draft beside your version, the tells marked inline, a sense of being done for the day. GitLab. A hosted version for people who would rather not run anything, and the same container for people who would rather run it themselves."
   - now: "A review page that is more purpose built than just a code review."

@@ -5,7 +5,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { idFor, tierFor, wordCount } from './common.js';
+import { tierFor, wordCount } from './common.js';
+import { idFor } from './id.js';
 import { syntaxOf } from '../expressions.js';
 import { extractSvelte } from './svelte.js';
 import { extractAstro } from './astro.js';
@@ -16,7 +17,8 @@ import { extractHtml, extractVue } from './html.js';
 import { extractJson } from './json.js';
 import { extractYaml } from './yaml.js';
 
-export { collapse, idFor, tierFor, wordCount, BLOCK_KINDS } from './common.js';
+export { collapse, tierFor, wordCount, BLOCK_KINDS } from './common.js';
+export { idFor } from './id.js';
 
 export const EXTRACTORS = {
   svelte: extractSvelte,

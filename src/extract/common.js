@@ -1,4 +1,5 @@
-// Helpers every extractor shares.
+// Helpers every extractor shares. No Node imports: the Reader runs the
+// markup half of this in a browser.
 //
 // Two texts are recorded for each hit, and the difference matters:
 //
@@ -10,7 +11,6 @@
 //                     either finds an exact match or reports drift and
 //                     refuses, and never guesses.
 
-import crypto from 'node:crypto';
 import { countWords } from '../expressions.js';
 
 // Attributes whose values a person reads.
@@ -35,10 +35,6 @@ export const CODEish = new RegExp([
 
 export function collapse(s) {
   return s.replace(/\s+/g, ' ').trim();
-}
-
-export function idFor(text) {
-  return crypto.createHash('sha256').update(collapse(text)).digest('hex').slice(0, 12);
 }
 
 /**

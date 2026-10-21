@@ -40,11 +40,11 @@ It is not built to be an AI detector or a "policing" service. It is self-reporte
 
 | Status | Means |
 |---|---|
-| `unreviewed` | A model drafted it and nobody has reviewed. The default. |
-| `rewritten` | You wrote a replacement and `apply` has not written it yet. |
-| `human` | The text in source is your words. |
-| `ai-fine` | You looked, and it is fine as drafted. |
-| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |
+| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |
+| `rewritten` | Human wrote replacement but `apply` has not written it yet. |
+| `human` | Human wrote the copy, not a model. |
+| `ai-fine` | Human reviewed and accepted the slop. |
+| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |
 | `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |
 
 `ai-fine` is the one that makes this bearable. "Failed to load comments" does not need your voice, and neither do most of the labels around it. Marking them is one keystroke each, or one command for a whole file. The report counts them separately from `human`, so the number you end up with is honest about which is which.
@@ -168,6 +168,58 @@ slopchop report
 ```
 
 writes `copy/REPORT.md` with the counts by status and tier, the scope and what was left out of it, and every replaced draft next to the text that replaced it. It also writes `copy/badge.json` for shields.io and `copy/badge.svg` for a repo that would rather not call out. The badge shows two numbers, reviewed and human-written, because either one alone overstates things.
+
+## A copy disclosure, for a site whose source is closed
+
+The report lives in the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what human declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.
+
+It is off until you add a block to `.slopchop.json`. `init` never adds one.
+
+```json
+"disclosure": {
+  "enabled": true,
+  "path": "public/slop.json",
+  "declarant": "Your name or your studio's",
+  "contact": "you@example.com"
+}
+```
+
+`declarant` and `contact` are optional, and `"enabled": true` alone turns it on. Leave them out and the file names nobody: a Reader says it is declared by the owner of the site's domain.
+
+Or open **Disclosure** in the review page, which edits only this block, previews exactly what would be published, and asks once before the first switch-on. Then:
+
+```sh
+slopchop report                          # writes public/slop.json beside the report
+slopchop read https://example.com/       # what a Reader makes of a page
+slopchop read dist/index.html            # a local build, against the project's slop.json
+slopchop bookmarklet --out reader.txt    # the Reader, for any page in your browser
+```
+
+The file looks like this:
+
+```json
+{
+  "slop": 1,
+  "declarant": "Your name or your studio's",
+  "contact": "you@example.com",
+  "generated": "2026-10-20",
+  "statement": "Self-reported. These are the declarant's own statements about who wrote this copy.",
+  "outOfScope": ["Translations follow the English; review the source language."],
+  "copy": { "925dab06b202": "human+", "fae650861c27": "human", "3fa7c5ef191f": "ai-fine", "71a53ee68c81": "not-copy" }
+}
+```
+
+The statuses are the ledger's, with nothing added. `human` says the declarant put the words there, not a model: a testimonial they chose and pasted in is `human`, and one a model drafted into the page is not. A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `"enabled": false` and the next `report` deletes the file instead of leaving the last one deployed.
+
+For each page, a Reader lists the declared copy with its status, lists the undeclared copy by its text, and shows your out-of-scope reasons beside it. It counts `not-copy` strings separately and leaves them out of the page's total. The bookmarklet does the same on whatever page you are looking at, and marks each string on the page in its status's colour.
+
+Where a Reader comes up short:
+
+- Template strings never match. `about {event.name}` in source renders as `about Spring Fair`, so it reads as undeclared, and so does anything a script builds at runtime.
+- Strings are cut the way `sync` cuts HTML: an inline element splits a sentence. A Markdown paragraph with a link or emphasis in it renders as several strings, none of which hash to the paragraph in the ledger.
+- Short labels are easy to guess from their hash. Leaving the text out keeps the file small and focused, but it is not a privacy measure.
+
+The ID is a public, frozen algorithm, `slop: 1`: the first 12 hex characters of SHA-256 over the UTF-8 text, with each run of whitespace collapsed to one space and the ends trimmed, and no Unicode normalization. A Reader anyone writes can compute it. [docs/adr](docs/adr) has the reasoning.
 
 ## Next
 
