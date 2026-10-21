@@ -2,6 +2,7 @@
 
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import fs from 'node:fs';
 import test from 'node:test';
 import { serve } from '../src/serve.js';
 import { sync, load, save, decide } from '../src/ledger.js';
@@ -91,5 +92,78 @@ test('decide-many changes nothing when a string is checked out, unless forced', 
       assert.equal(forced.status, 200);
       assert.equal(forced.body.entries.length, 3);
     });
+  });
+});
+
+// ------------------------------------------------------- copy disclosure ---
+
+const CONFIG = '{\n  "include": ["a.md", "b.md"],\n  "outOfScope": [{ "path": "x/", "reason": "Fixtures." }]\n}\n';
+
+test('the disclosure panel previews what report would publish', async () => {
+  await withProject(files, async (project, dir) => {
+    fs.writeFileSync(project.configPath, CONFIG);
+    const { ledger } = sync(project, load(project));
+    decide(ledger.entries[0], { status: 'human' });
+    decide(ledger.entries[1], { status: 'rewritten', replacement: 'Not applied yet.' });
+    save(project, ledger);
+
+    await running(project, async (post) => {
+      const p = await (await post.get('/api/disclosure')).json();
+      assert.equal(p.block, null);
+      assert.equal(p.count, 1);
+      assert.deepEqual(Object.keys(p.byStatus), ['human']);
+      assert.equal(p.byStatus.human[0].text, 'First paragraph a model wrote for us.');
+      assert.deepEqual(p.left, { unreviewed: 1, pending: 1 });
+      assert.deepEqual(p.outOfScope, ['Fixtures.']);
+    });
+    assert.equal(fs.readFileSync(project.configPath, 'utf8'), CONFIG);
+    // Loaded with a block that is no longer on disk: the disk wins.
+  }, { outOfScope: [{ path: 'x/', reason: 'Fixtures.' }], disclosure: { enabled: true, declarant: 'Stale', contact: 'x' } });
+});
+
+test('the first switch-on asks once, and only the disclosure block is written', async () => {
+  await withProject(files, async (project) => {
+    fs.writeFileSync(project.configPath, CONFIG);
+    const fields = { declarant: ' Pat Example ', contact: 'pat@example.com', path: '' };
+
+    await running(project, async (post) => {
+      // Off, with no block yet: nothing to record.
+      assert.equal((await post('/api/disclosure', { ...fields, enabled: false })).status, 200);
+      assert.equal(fs.readFileSync(project.configPath, 'utf8'), CONFIG);
+
+      const ask = await post('/api/disclosure', { ...fields, enabled: true });
+      assert.equal(ask.status, 409);
+      assert.equal(ask.body.code, 'confirm');
+      assert.equal(ask.body.error, 'This puts your name on a public file at /slop.json.');
+      assert.equal(fs.readFileSync(project.configPath, 'utf8'), CONFIG);
+
+      const on = await post('/api/disclosure', { ...fields, enabled: true, confirm: true });
+      assert.equal(on.status, 200);
+      assert.deepEqual(on.body.disclosure, { enabled: true, path: 'public/slop.json', declarant: 'Pat Example', contact: 'pat@example.com' });
+      const text = fs.readFileSync(project.configPath, 'utf8');
+      assert.ok(text.startsWith(CONFIG.slice(0, CONFIG.lastIndexOf(']') + 1)), 'the rest of the config is untouched');
+      assert.deepEqual(JSON.parse(text).disclosure, { enabled: true, path: 'public/slop.json', declarant: 'Pat Example', contact: 'pat@example.com' });
+
+      // Once there is a block, off and on again need no confirm.
+      assert.equal((await post('/api/disclosure', { ...fields, enabled: false })).status, 200);
+      assert.equal(JSON.parse(fs.readFileSync(project.configPath, 'utf8')).disclosure.enabled, false);
+      assert.equal((await post('/api/disclosure', { ...fields, enabled: true })).status, 200);
+      assert.equal(JSON.parse(fs.readFileSync(project.configPath, 'utf8')).disclosure.enabled, true);
+    });
+  });
+});
+
+test('the disclosure panel refuses a block report could not act on', async () => {
+  await withProject(files, async (project) => {
+    fs.writeFileSync(project.configPath, CONFIG);
+    await running(project, async (post) => {
+      const base = { enabled: true, confirm: true, declarant: 'Pat', contact: 'pat@example.com' };
+      for (const [over, re] of [[{ path: '../out/slop.json' }, /inside the project/], [{ path: 'public/x.json' }, /slop\.json/], [{ declarant: '' }, /declarant/]]) {
+        const r = await post('/api/disclosure', { ...base, ...over });
+        assert.equal(r.status, 400);
+        assert.match(r.body.error, re);
+      }
+    });
+    assert.equal(fs.readFileSync(project.configPath, 'utf8'), CONFIG);
   });
 });

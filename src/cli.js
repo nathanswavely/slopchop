@@ -12,7 +12,10 @@
 //   comment   explain the gate on a pull request, with rewrites as suggestions
 //   triage    ask a model which strings are worth your writing time (your key)
 //   suggest   ask a model for rewrites to start from (your key)
-//   report    render the ledger as a publishable summary, plus a badge
+//   report    render the ledger as a publishable summary, plus a badge,
+//             and the copy disclosure (slop.json) when one is switched on
+//   read      check a live page against its site's /slop.json
+//   bookmarklet  the same Reader, as a bookmarklet
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,6 +24,8 @@ import { load, save, sync, stats, gate, decide, STATUSES, CHOOSABLE } from './le
 import { select, triage, suggest, settings, VERDICTS } from './advice.js';
 import { writeback, previewLines } from './writeback.js';
 import { writeReport } from './report.js';
+import { writeDisclosure, disclosureOf } from './disclosure.js';
+import { readPage, disclosureUrl, describeStatus, byStatusOrder } from './reader.js';
 import {
   renderVerdict, summaryBody, planComments, publish, apiClient,
   repoPrefix, localDiff, pullDiff, pullFromEvent,
@@ -510,12 +515,123 @@ async function cmdComment() {
 
 // ---------------------------------------------------------------- report ---
 
-function cmdReport() {
+async function cmdReport() {
   const p = project();
-  const out = writeReport(p, load(p));
+  const ledger = load(p);
+  const out = writeReport(p, ledger);
   console.log(`${GREEN}wrote${OFF} ${p.rel(out.report)}`);
   console.log(`${GREEN}wrote${OFF} ${p.rel(out.badge)} ${DIM}(shields.io endpoint)${OFF}`);
   console.log(`${GREEN}wrote${OFF} ${p.rel(out.svg)}`);
+
+  // The copy disclosure, only when .slopchop.json has a block for it.
+  let d;
+  try { d = await writeDisclosure(p, ledger); }
+  catch (e) { console.error(`${RED}${e.message}${OFF}`); process.exit(1); }
+  if (!d) return;
+  if (d.action === 'wrote') {
+    const parts = byStatusOrder(d.byStatus).map(([st, n]) => `${n} ${st}`).join(' · ');
+    console.log(`${GREEN}wrote${OFF} ${d.path} ${DIM}(copy disclosure: ${d.count} ID${d.count === 1 ? '' : 's'}${parts ? `, ${parts}` : ''})${OFF}`);
+  } else if (d.action === 'removed') {
+    console.log(`${YEL}removed${OFF} ${d.path} ${DIM}(the copy disclosure is switched off)${OFF}`);
+  } else {
+    console.log(`${DIM}copy disclosure is switched off; there is no ${d.path} to remove${OFF}`);
+  }
+}
+
+// ------------------------------------------------------------------ read ---
+
+// For an owner checking coverage: what a Reader makes of one page. Reads
+// a URL, or a local HTML file with --disclosure (or the project's own).
+async function cmdRead() {
+  const target = argv.filter((a) => !a.startsWith('--') && a !== val('disclosure') && a !== val('config'))[1];
+  if (!target) {
+    console.error('usage: slopchop read <url | file.html> [--disclosure <url | slop.json>] [--json]');
+    process.exit(1);
+  }
+  const isUrl = (s) => /^https?:\/\//i.test(s);
+  const remote = isUrl(target);
+  const fetchText = async (where) => {
+    if (isUrl(where)) {
+      const r = await fetch(where, { headers: { 'User-Agent': 'slopchop-reader' }, redirect: 'follow' });
+      if (!r.ok) throw new Error(`${where}: HTTP ${r.status}`);
+      return { text: await r.text(), url: r.url || where };
+    }
+    return { text: fs.readFileSync(path.resolve(where), 'utf8'), url: where };
+  };
+
+  let disclosureAt = val('disclosure');
+  if (!disclosureAt && !remote) {
+    try {
+      const p = loadProject({ configPath: val('config') });
+      const d = disclosureOf(p);
+      if (d) disclosureAt = path.relative(process.cwd(), d.abs) || d.abs;
+    } catch { /* no project: --disclosure is required */ }
+    if (!disclosureAt) {
+      console.error(`${RED}${target} is a local file.${OFF} Pass --disclosure <path to slop.json>.`);
+      process.exit(1);
+    }
+  }
+
+  let page, result;
+  try {
+    page = await fetchText(target);
+    disclosureAt ||= disclosureUrl(page.url);
+    let disclosure;
+    try { disclosure = JSON.parse((await fetchText(disclosureAt)).text); }
+    catch (e) {
+      throw new Error(e instanceof SyntaxError ? `${disclosureAt} is not valid JSON` : `no copy disclosure at ${disclosureAt} (${e.message.replace(/^.*: /, '')})`);
+    }
+    result = await readPage(page.text, disclosure);
+  } catch (e) {
+    console.error(`${RED}${e.message}${OFF}`);
+    process.exit(1);
+  }
+
+  if (flag('json')) {
+    console.log(JSON.stringify({ page: page.url, disclosure: disclosureAt, ...result }, null, 2));
+    return;
+  }
+
+  const r = result, n = r.counts;
+  console.log(`\n  ${page.url}`);
+  console.log(`  ${DIM}${disclosureAt}${r.generated ? ` · generated ${r.generated}` : ''}${OFF}`);
+  const who = [r.declarant, r.contact].filter(Boolean).join(' · ');
+  if (who) console.log(`  declarant: ${who}`);
+  if (r.statement) console.log(`  ${DIM}${r.statement}${OFF}`);
+  console.log(`\n  ${bar(n.declared, n.total)}  ${n.declared}/${n.total} strings declared (${pct(n.declared, n.total)}) · ${n.undeclared} undeclared`);
+  if (n.notCopy) console.log(`  ${DIM}not counted: ${n.notCopy} declared not copy${OFF}`);
+  if (Object.keys(n.byStatus).length) console.log('');
+  for (const [st, k] of byStatusOrder(n.byStatus)) {
+    console.log(`  ${st.padEnd(12)} ${String(k).padStart(4)}  ${DIM}${describeStatus(st)}${OFF}`);
+  }
+  if (r.undeclared.length) {
+    console.log(`\n  ${YEL}undeclared copy (${r.undeclared.length})${OFF}`);
+    for (const u of r.undeclared) {
+      const where = u.where.filter((w) => w !== 'text');
+      console.log(`    "${u.text.length > 88 ? `${u.text.slice(0, 88)}…` : u.text}"${where.length ? ` ${DIM}(${where.join(', ')})${OFF}` : ''}`);
+    }
+  }
+  if (r.outOfScope.length) {
+    console.log(`\n  ${DIM}out of scope, in the declarant's words:${OFF}`);
+    for (const reason of r.outOfScope) console.log(`    - ${reason}`);
+  }
+  console.log(`\n  ${DIM}A Reader repeats what the disclosure declares. It checks none of it.${OFF}\n`);
+}
+
+// ----------------------------------------------------------- bookmarklet ---
+
+async function cmdBookmarklet() {
+  const { bookmarkletUrl } = await import('./bundle.js');
+  const url = bookmarkletUrl();
+  const out = val('out');
+  if (out) {
+    fs.writeFileSync(out, url + '\n');
+    console.log(`${GREEN}wrote${OFF} ${out} ${DIM}(${Math.round(url.length / 1024)} KB)${OFF}`);
+    console.log(`${DIM}Make a bookmark and paste the file's contents in as its URL.${OFF}`);
+    return;
+  }
+  process.stdout.write(url + '\n');
+  if (process.stdout.isTTY) console.error(`\n${DIM}Paste that in as a bookmark's URL, or: slopchop bookmarklet --out reader.txt${OFF}`);
 }
 
 // ---------------------------------------------------------------- review ---
@@ -602,7 +718,7 @@ async function cmdAdvise(mode) {
 const COMMANDS = {
   init: cmdInit, sync: cmdSync, stats: cmdStats, apply: cmdApply, check: cmdCheck,
   report: cmdReport, decide: cmdDecide, draft: cmdDraft, pull: cmdPull, review: cmdReview,
-  comment: cmdComment,
+  comment: cmdComment, read: cmdRead, bookmarklet: cmdBookmarklet,
   triage: () => cmdAdvise('triage'), suggest: () => cmdAdvise('suggest'),
 };
 

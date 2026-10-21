@@ -133,6 +133,19 @@
   .warn { color: var(--lt-color-warning-text); font-size: var(--lt-text-sm); margin-top: 8px; }
   .empty { color: var(--lt-color-text-muted); text-align: center; padding: 64px 20px; }
 
+  /* The copy disclosure drawer. */
+  #disc .lt-form { max-width: none; margin-top: 14px; }
+  #disc .lt-check { margin-top: 14px; }
+  #disc .lt-eyebrow { margin: 22px 0 6px; }
+  #disc details { border-bottom: 1px solid var(--lt-color-border); padding: 6px 0; }
+  #disc summary { cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: var(--lt-text-sm); }
+  #disc summary .n { margin-left: auto; font-family: var(--lt-font-mono); }
+  #disc ul.ids { list-style: none; margin: 6px 0 4px; padding: 0; font-size: 12px; max-height: 220px; overflow-y: auto; }
+  #disc ul.ids li { display: flex; gap: 10px; padding: 2px 0; min-width: 0; }
+  #disc ul.ids code { flex: none; color: var(--lt-color-text-muted); }
+  #disc ul.ids span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #disc ul.reasons { margin: 4px 0 0; padding-left: 18px; font-size: var(--lt-text-sm); }
+
   #drafts { display: none; margin-top: 8px; }
   #drafts.on { display: block; }
   #drafts .files { color: var(--lt-color-text-muted); }
@@ -154,6 +167,7 @@
     <div class="bar"><i id="progress"></i></div>
     <span class="lt-muted small" id="counts">loading…</span>
     <button class="lt-btn lt-btn-sm lt-btn-primary" id="applyBtn" title="Write approved rewrites into source">Apply rewrites</button>
+    <button class="lt-btn lt-btn-sm" id="discBtn" title="Publish a self-reported copy disclosure (slop.json)">Disclosure</button>
     <button class="lt-btn lt-btn-sm lt-btn-icon" id="themeBtn" title="Switch theme" aria-label="Switch theme">◐</button>
   </div>
   <div class="row" style="margin-top:8px">
@@ -214,6 +228,42 @@
   <strong id="helpTitle">Keyboard</strong>
   <table id="helpTable"></table>
   <p class="lt-muted small" style="margin:12px 0 0">Esc closes this. Letter keys do nothing while you are typing.</p>
+</dialog>
+
+<dialog class="lt-drawer" id="disc" aria-labelledby="discTitle">
+  <div class="lt-drawer-head">
+    <strong id="discTitle">Copy disclosure</strong>
+    <button type="button" class="lt-dialog-close lt-btn lt-btn-ghost lt-btn-sm lt-btn-icon" data-close aria-label="Close">×</button>
+  </div>
+  <div class="lt-drawer-body">
+    <p class="small lt-muted" style="margin:0">A public, self-reported <code>slop.json</code>: an ID and a status for each string you have decided, with no text and no file paths. A Reader hashes the text on a page and looks the IDs up. <code>slopchop report</code> writes the file, and deletes it once this is off.</p>
+    <label class="lt-check">
+      <input type="checkbox" role="switch" class="lt-switch" id="discOn">
+      <span>Publish a copy disclosure</span>
+    </label>
+    <form class="lt-form" id="discForm" autocomplete="off">
+      <label class="lt-label">
+        <span>Declarant</span>
+        <input class="lt-field" id="discDeclarant" spellcheck="false">
+        <span class="lt-hint">The one person or organization making these statements.</span>
+      </label>
+      <label class="lt-label">
+        <span>Contact</span>
+        <input class="lt-field" id="discContact" spellcheck="false">
+        <span class="lt-hint">An email address or URL for questions about it.</span>
+      </label>
+      <label class="lt-label">
+        <span>Path</span>
+        <input class="lt-field" id="discPath" placeholder="public/slop.json" spellcheck="false">
+        <span class="lt-hint">Where report writes it, so the site serves it at /slop.json.</span>
+      </label>
+      <div class="lt-actions">
+        <button type="submit" class="lt-btn lt-btn-sm" id="discSave">Save</button>
+        <span class="lt-muted small" id="discNote"></span>
+      </div>
+    </form>
+    <div id="discPreview"></div>
+  </div>
 </dialog>
 
 <script type="module">
@@ -1014,6 +1064,118 @@ $('#applyBtn').onclick = () => applyRewrites().catch((e) => flash(e.message));
 $('#selAll').onclick = (ev) => { ev.preventDefault(); selectAll(selected.size !== view.length); };
 $('#sideBtn').onclick = () => setCollapsed(!document.body.classList.contains('collapsed'));
 
+// ------------------------------------------------------- copy disclosure ---
+
+// The page writes only the `disclosure` block of .slopchop.json. The file
+// itself is written, or deleted, by the next `slopchop report`.
+const discBox = dialog($('#disc'));
+let disc = null;
+const DISC_ORDER = ['human+', 'human', 'ai-revised+', 'ai-revised', 'ai-fine', 'not-copy'];
+
+async function openDisclosure() {
+  disc = await api('/api/disclosure');
+  const d = disc.disclosure;
+  $('#discOn').checked = !!d?.enabled;
+  $('#discDeclarant').value = d?.declarant || '';
+  $('#discContact').value = d?.contact || '';
+  $('#discPath').value = d?.path || '';
+  renderDisclosure();
+  discBox.open();
+}
+
+function renderDisclosure() {
+  const d = disc.disclosure;
+  const on = !!d?.enabled;
+  // Before it has ever been switched on there is no block to save into.
+  $('#discSave').disabled = !disc.block;
+  $('#discNote').textContent = !disc.block ? 'Switching it on saves these.'
+    : on ? `On. The next report writes ${d.path}.`
+    : `Off. The next report deletes ${d.path} if it is there.`;
+
+  const box = $('#discPreview');
+  box.textContent = '';
+  const el = (name, cls, text) => {
+    const n = document.createElement(name);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+
+  if (disc.problems?.length) {
+    const warn = el('div', 'lt-callout lt-tone-warning small', `report will refuse this block: ${disc.problems.join('; ')}.`);
+    warn.style.marginTop = '14px';
+    box.append(warn);
+  }
+
+  box.append(el('p', 'lt-eyebrow', on ? 'What report publishes' : 'What report would publish'));
+  const statuses = [
+    ...DISC_ORDER.filter((s) => disc.byStatus[s]),
+    ...Object.keys(disc.byStatus).filter((s) => !DISC_ORDER.includes(s)),
+  ];
+  if (!statuses.length) box.append(el('p', 'small lt-muted', 'Nothing yet. Decided strings are listed; unreviewed ones are not.'));
+  for (const st of statuses) {
+    const rows = disc.byStatus[st];
+    const det = el('details');
+    const sum = el('summary');
+    sum.append(tag(st, TONE[st.endsWith('+') ? st.slice(0, -1) : st]), el('span', 'lt-muted', disc.labels?.[st] || ''), el('span', 'n', String(rows.length)));
+    const ul = el('ul', 'ids');
+    for (const r of rows) {
+      const li = el('li');
+      li.append(el('code', '', r.id), el('span', '', r.text));
+      li.title = r.text;
+      ul.append(li);
+    }
+    det.append(sum, ul);
+    box.append(det);
+  }
+  const { unreviewed, pending } = disc.left;
+  box.append(el('p', 'small lt-muted',
+    `${disc.count} ID${disc.count === 1 ? '' : 's'} and their statuses; the text stays here. ` +
+    `Not listed: ${unreviewed} unreviewed, and ${pending} pending rewrite${pending === 1 ? '' : 's'} (decided, not yet applied). ` +
+    'A Reader shows those as undeclared copy.'));
+
+  box.append(el('p', 'lt-eyebrow', 'Out-of-scope reasons, published as written'));
+  if (disc.outOfScope.length) {
+    const ul = el('ul', 'reasons');
+    for (const r of disc.outOfScope) ul.append(el('li', '', r));
+    box.append(ul, el('p', 'small lt-muted', 'From outOfScope in .slopchop.json. The paths beside them stay private.'));
+  } else {
+    box.append(el('p', 'small lt-muted', 'None. Reasons in outOfScope in .slopchop.json explain copy left out on purpose.'));
+  }
+}
+
+async function saveDisclosure({ confirm = false } = {}) {
+  const enabled = $('#discOn').checked;
+  const body = {
+    enabled, confirm,
+    declarant: $('#discDeclarant').value, contact: $('#discContact').value, path: $('#discPath').value,
+  };
+  try {
+    disc = await api('/api/disclosure', { method: 'POST', body: JSON.stringify(body) });
+  } catch (e) {
+    // The first time it goes on, it asks once.
+    if (e.body?.code === 'confirm') {
+      if (await ask('Turn on the copy disclosure?', 'This puts your name on a public file at /slop.json.', { yes: 'Turn it on', no: 'Not now' })) {
+        return saveDisclosure({ confirm: true });
+      }
+      $('#discOn').checked = !!disc?.disclosure?.enabled;
+      renderDisclosure();
+      return;
+    }
+    $('#discOn').checked = !!disc?.disclosure?.enabled;
+    renderDisclosure();
+    // Said in the drawer: a toast would sit underneath it.
+    $('#discNote').textContent = `Not saved: ${e.message}.`;
+    return;
+  }
+  if (disc.disclosure) $('#discPath').value = disc.disclosure.path;
+  renderDisclosure();
+}
+
+$('#discBtn').onclick = () => openDisclosure().catch((e) => flash(e.message));
+$('#discOn').onchange = () => saveDisclosure();
+$('#discForm').onsubmit = (ev) => { ev.preventDefault(); saveDisclosure(); };
+
 // --------------------------------------------------------------- keyboard ---
 
 const SHORTCUTS = [
@@ -1062,7 +1224,7 @@ function focusEditor() {
 }
 
 addEventListener('keydown', (ev) => {
-  if (help.isOpen || askBox.isOpen) return;
+  if (help.isOpen || askBox.isOpen || discBox.isOpen) return;
   const mod = ev.metaKey || ev.ctrlKey;
   const editing = !!document.activeElement?.closest?.('#editor');
   const key = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;

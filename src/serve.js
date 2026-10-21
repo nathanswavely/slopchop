@@ -9,6 +9,7 @@ import { load, save, stats, decide } from './ledger.js';
 import { writeback } from './writeback.js';
 import { outstandingDrafts, draftDirLabel } from './drafts.js';
 import { rewriteProblem } from './expressions.js';
+import { previewDisclosure, readBlock, writeBlock, disclosureOf, problemsOf, DEFAULT_PATH } from './disclosure.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const BULK_STATUSES = ['human', 'ai-fine', 'not-copy', 'unreviewed'];
@@ -75,6 +76,11 @@ function draftState(project, ledger) {
     })),
     checkedOut,
   };
+}
+
+/** The disclosure block on disk, which the page can have changed since startup. */
+function currentBlock(project) {
+  return fs.existsSync(project.configPath) ? readBlock(project.configPath) : project.config.disclosure;
 }
 
 export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175), portRequested = !!process.env.SLOPCHOP_PORT } = {}) {
@@ -170,6 +176,40 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
         const changed = ids.map((id) => decide(byId.get(id), { status, replacement: null }));
         save(project, ledger);
         return json(res, 200, { entries: changed, stats: stats(ledger) });
+      }
+
+      // The copy disclosure. The page edits only the `disclosure` block of
+      // .slopchop.json; `report` is what writes or deletes slop.json.
+      if (req.method === 'GET' && url.pathname === '/api/disclosure') {
+        return json(res, 200, await previewDisclosure(project, load(project), currentBlock(project)));
+      }
+
+      if (req.method === 'POST' && url.pathname === '/api/disclosure') {
+        const { enabled, declarant, contact, path: where, confirm } = await readBody(req);
+        if (!fs.existsSync(project.configPath)) return json(res, 404, { error: `no ${project.rel(project.configPath)} to write to` });
+        const before = readBlock(project.configPath);
+        const block = {
+          ...(before && typeof before === 'object' && !Array.isArray(before) ? before : {}),
+          enabled: enabled === true,
+          path: String(where || '').trim() || DEFAULT_PATH,
+          declarant: String(declarant || '').trim(),
+          contact: String(contact || '').trim(),
+        };
+        const problems = problemsOf(project, disclosureOf(project, block));
+        if (problems.length) return json(res, 400, { error: problems.join('; '), code: 'invalid', problems });
+
+        // A block only exists once the disclosure has been switched on, so
+        // switching it off when there is none has nothing to record, and
+        // the first switch-on is the one that asks.
+        if (before == null && !block.enabled) {
+          return json(res, 200, await previewDisclosure(project, load(project), before));
+        }
+        if (before == null && !confirm) {
+          return json(res, 409, { error: 'This puts your name on a public file at /slop.json.', code: 'confirm' });
+        }
+        writeBlock(project.configPath, block);
+        project.config.disclosure = block;
+        return json(res, 200, await previewDisclosure(project, load(project), block));
       }
 
       if (req.method === 'POST' && url.pathname === '/api/apply') {
