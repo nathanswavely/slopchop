@@ -290,14 +290,14 @@
           "file": "README.md",
           "line": 41,
           "kind": "md-block",
-          "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+          "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | AI wrote it and nobody has reviewed. Default Status. |\n| `rewritten` | Human wrote replacement but `apply` has not written it yet. |\n| `human` | Human wrote the copy, not a model. |\n| `ai-fine` | Human reviewed and accepted the slop. |\n| `ai-revised` | AI suggested a rewrite and you took it as new better slop. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
           "quote": null
         }
       ],
+      "previous_ai_text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
       "authorship": {
         "kind": "written"
-      },
-      "previous_ai_text": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | You put the words there, not a model. A quote counts as whoever included it: a testimonial you chose and pasted in is `human`, and one a model drafted into the page is not. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |"
+      }
     },
     {
       "id": "4b880144de98",
@@ -898,14 +898,14 @@
           "file": "README.md",
           "line": 174,
           "kind": "md-block",
-          "raw": "The report lives in the repo, which only helps if people can see the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what you declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.",
+          "raw": "The report lives in the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what human declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.",
           "quote": null
         }
       ],
+      "previous_ai_text": "The report lives in the repo, which only helps if people can see the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what you declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.",
       "authorship": {
         "kind": "edited"
-      },
-      "previous_ai_text": "The report lives in the repo, which only helps if people can see the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what you declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up."
+      }
     },
     {
       "id": "70e3c2636f3a",
@@ -926,6 +926,24 @@
       ]
     },
     {
+      "id": "c36afd3fe8bd",
+      "text": "`declarant` and `contact` are optional, and `\"enabled\": true` alone turns it on. Leave them out and the file names nobody: a Reader says it is declared by the owner of the site's domain.",
+      "words": 33,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 187,
+          "kind": "md-block",
+          "raw": "`declarant` and `contact` are optional, and `\"enabled\": true` alone turns it on. Leave them out and the file names nobody: a Reader says it is declared by the owner of the site's domain.",
+          "quote": null
+        }
+      ]
+    },
+    {
       "id": "a652148b4b05",
       "text": "Or open **Disclosure** in the review page, which edits only this block, previews exactly what would be published, and asks once before the first switch-on. Then:",
       "words": 26,
@@ -936,7 +954,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 187,
+          "line": 189,
           "kind": "md-block",
           "raw": "Or open **Disclosure** in the review page, which edits only this block, previews exactly what would be published, and asks once before the first switch-on. Then:",
           "quote": null
@@ -954,7 +972,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 196,
+          "line": 198,
           "kind": "md-block",
           "raw": "The file looks like this:",
           "quote": null
@@ -972,7 +990,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 210,
+          "line": 212,
           "kind": "md-block",
           "raw": "The statuses are the ledger's, with nothing added. `human` says the declarant put the words there, not a model: a testimonial they chose and pasted in is `human`, and one a model drafted into the page is not. A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `\"enabled\": false` and the next `report` deletes the file instead of leaving the last one deployed.",
           "quote": null
@@ -990,7 +1008,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 212,
+          "line": 214,
           "kind": "md-block",
           "raw": "For each page, a Reader lists the declared copy with its status, lists the undeclared copy by its text, and shows your out-of-scope reasons beside it. It counts `not-copy` strings separately and leaves them out of the page's total. The bookmarklet does the same on whatever page you are looking at, and marks each string on the page in its status's colour.",
           "quote": null
@@ -1008,7 +1026,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 214,
+          "line": 216,
           "kind": "md-block",
           "raw": "Where a Reader comes up short:",
           "quote": null
@@ -1026,7 +1044,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 216,
+          "line": 218,
           "kind": "md-block",
           "raw": "- Template strings never match. `about {event.name}` in source renders as `about Spring Fair`, so it reads as undeclared, and so does anything a script builds at runtime.\n- Strings are cut the way `sync` cuts HTML: an inline element splits a sentence. A Markdown paragraph with a link or emphasis in it renders as several strings, none of which hash to the paragraph in the ledger.\n- Short labels are easy to guess from their hash. Leaving the text out keeps the file small and focused, but it is not a privacy measure.",
           "quote": null
@@ -1044,7 +1062,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 220,
+          "line": 222,
           "kind": "md-block",
           "raw": "The ID is a public, frozen algorithm, `slop: 1`: the first 12 hex characters of SHA-256 over the UTF-8 text, with each run of whitespace collapsed to one space and the ends trimmed, and no Unicode normalization. A Reader anyone writes can compute it. [docs/adr](docs/adr) has the reasoning.",
           "quote": null
@@ -1062,7 +1080,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 222,
+          "line": 224,
           "kind": "md-block",
           "raw": "## Next",
           "quote": null
@@ -1080,7 +1098,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 224,
+          "line": 226,
           "kind": "md-block",
           "raw": "A review page that is more purpose built than just a code review.",
           "quote": null
@@ -1102,7 +1120,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 226,
+          "line": 228,
           "kind": "md-block",
           "raw": "To start, run `npx slopchop init` in the repo, then `sync`. The first sync stamps the baseline, so the check passes from the beginning. After that, open `slopchop review` and start with the paragraphs.",
           "quote": null
@@ -1927,11 +1945,11 @@
       ]
     },
     {
-      "id": "016a2452a58c",
-      "text": "The one person or organization making these statements.",
-      "words": 8,
-      "tier": "helper",
-      "status": "ai-fine",
+      "id": "b9b91f89b535",
+      "text": "Optional. The one person or organization making these statements. Left empty, the declarant is whoever owns the site's domain.",
+      "words": 19,
+      "tier": "prose",
+      "status": "unreviewed",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1939,7 +1957,7 @@
           "file": "src/ui.html",
           "line": 248,
           "kind": "html-text",
-          "raw": "The one person or organization making these statements.",
+          "raw": "Optional. The one person or organization making these statements. Left empty, the declarant is whoever owns the site's domain.",
           "quote": null
         }
       ]
@@ -1963,11 +1981,11 @@
       ]
     },
     {
-      "id": "379cdf34ad81",
-      "text": "An email address or URL for questions about it.",
-      "words": 9,
+      "id": "99f34d1bd7d1",
+      "text": "Optional. An email address or URL for questions about it.",
+      "words": 10,
       "tier": "helper",
-      "status": "ai-fine",
+      "status": "unreviewed",
       "replacement": null,
       "note": null,
       "occurrences": [
@@ -1975,7 +1993,7 @@
           "file": "src/ui.html",
           "line": 253,
           "kind": "html-text",
-          "raw": "An email address or URL for questions about it.",
+          "raw": "Optional. An email address or URL for questions about it.",
           "quote": null
         }
       ]
@@ -2090,6 +2108,42 @@
           "line": 41,
           "kind": "md-block",
           "raw": "| Status | Means |\n|---|---|\n| `unreviewed` | A model drafted it and nobody has reviewed. The default. |\n| `rewritten` | You wrote a replacement and `apply` has not written it yet. |\n| `human` | The text in source is your words. |\n| `ai-fine` | You looked, and it is fine as drafted. |\n| `ai-revised` | A model suggested a rewrite and you took it without changing a word. |\n| `not-copy` | Nobody reads it: a format string, an identifier, a test fixture that got into scope. Left out of the totals and listed by name in the report. |",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "016a2452a58c",
+      "text": "The one person or organization making these statements.",
+      "words": 8,
+      "tier": "helper",
+      "status": "ai-fine",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 248,
+          "kind": "html-text",
+          "raw": "The one person or organization making these statements.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "379cdf34ad81",
+      "text": "An email address or URL for questions about it.",
+      "words": 9,
+      "tier": "helper",
+      "status": "ai-fine",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 253,
+          "kind": "html-text",
+          "raw": "An email address or URL for questions about it.",
           "quote": null
         }
       ]

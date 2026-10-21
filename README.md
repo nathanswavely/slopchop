@@ -184,6 +184,8 @@ It is off until you add a block to `.slopchop.json`. `init` never adds one.
 }
 ```
 
+`declarant` and `contact` are optional, and `"enabled": true` alone turns it on. Leave them out and the file names nobody: a Reader says it is declared by the owner of the site's domain.
+
 Or open **Disclosure** in the review page, which edits only this block, previews exactly what would be published, and asks once before the first switch-on. Then:
 
 ```sh

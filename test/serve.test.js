@@ -134,7 +134,7 @@ test('the first switch-on asks once, and only the disclosure block is written', 
       const ask = await post('/api/disclosure', { ...fields, enabled: true });
       assert.equal(ask.status, 409);
       assert.equal(ask.body.code, 'confirm');
-      assert.equal(ask.body.error, 'This puts your name on a public file at /slop.json.');
+      assert.equal(ask.body.error, 'This publishes /slop.json on the site, for anyone to read.');
       assert.equal(fs.readFileSync(project.configPath, 'utf8'), CONFIG);
 
       const on = await post('/api/disclosure', { ...fields, enabled: true, confirm: true });
@@ -143,6 +143,10 @@ test('the first switch-on asks once, and only the disclosure block is written', 
       const text = fs.readFileSync(project.configPath, 'utf8');
       assert.ok(text.startsWith(CONFIG.slice(0, CONFIG.lastIndexOf(']') + 1)), 'the rest of the config is untouched');
       assert.deepEqual(JSON.parse(text).disclosure, { enabled: true, path: 'public/slop.json', declarant: 'Pat Example', contact: 'pat@example.com' });
+
+      // Emptied, a name or contact comes out of the block rather than staying as "".
+      await post('/api/disclosure', { ...fields, contact: '', enabled: true });
+      assert.ok(!('contact' in JSON.parse(fs.readFileSync(project.configPath, 'utf8')).disclosure));
 
       // Once there is a block, off and on again need no confirm.
       assert.equal((await post('/api/disclosure', { ...fields, enabled: false })).status, 200);
@@ -153,12 +157,23 @@ test('the first switch-on asks once, and only the disclosure block is written', 
   });
 });
 
+test('turning it on needs no name', async () => {
+  await withProject(files, async (project) => {
+    fs.writeFileSync(project.configPath, CONFIG);
+    await running(project, async (post) => {
+      const r = await post('/api/disclosure', { enabled: true, confirm: true, declarant: '', contact: '' });
+      assert.equal(r.status, 200);
+      assert.deepEqual(JSON.parse(fs.readFileSync(project.configPath, 'utf8')).disclosure, { enabled: true, path: 'public/slop.json' });
+    });
+  });
+});
+
 test('the disclosure panel refuses a block report could not act on', async () => {
   await withProject(files, async (project) => {
     fs.writeFileSync(project.configPath, CONFIG);
     await running(project, async (post) => {
       const base = { enabled: true, confirm: true, declarant: 'Pat', contact: 'pat@example.com' };
-      for (const [over, re] of [[{ path: '../out/slop.json' }, /inside the project/], [{ path: 'public/x.json' }, /slop\.json/], [{ declarant: '' }, /declarant/]]) {
+      for (const [over, re] of [[{ path: '../out/slop.json' }, /inside the project/], [{ path: 'public/x.json' }, /slop\.json/]]) {
         const r = await post('/api/disclosure', { ...base, ...over });
         assert.equal(r.status, 400);
         assert.match(r.body.error, re);

@@ -4,7 +4,7 @@ status: proposed
 
 # A copy disclosure is a hash-only slop.json, and a Reader finds the copy
 
-Closed-source sites need a way to say who wrote their copy without publishing their source. The site publishes `/slop.json`: a declarant, a contact, a plain statement that it is self-reported, out-of-scope reasons, and a map of string **ID** to **Status**. It contains no text and no locations. A **Reader** hashes the text on a live page and looks each ID up, so where a string appears is worked out from the page itself rather than declared. Pending rewrites and unreviewed strings are left out, so anything a Reader cannot find reads as undeclared: when the file is stale or incomplete, it errs toward understating.
+Closed-source sites need a way to say who wrote their copy without publishing their source. The site publishes `/slop.json`: an optional declarant and contact, a plain statement that it is self-reported, out-of-scope reasons, and a map of string **ID** to **Status**. It contains no text and no locations. A **Reader** hashes the text on a live page and looks each ID up, so where a string appears is worked out from the page itself rather than declared. Pending rewrites and unreviewed strings are left out, so anything a Reader cannot find reads as undeclared: when the file is stale or incomplete, it errs toward understating.
 
 ## Considered options
 
@@ -17,5 +17,6 @@ Closed-source sites need a way to say who wrote their copy without publishing th
 ## Consequences
 
 - Publishing is opt-in through a `disclosure` block in `.slopchop.json`, written by `report`. Switching it off deletes the file instead of leaving the last one deployed.
+- `"enabled": true` alone turns it on. The declarant's name and contact are optional and left out of the file when unset; an unnamed disclosure is declared by whoever owns the site's domain, and a Reader says so.
 - Template strings (`about {event.event}`) never match rendered text and read as undeclared.
 - Short labels are guessable from their hash. The missing text is a matter of size and focus, not privacy.

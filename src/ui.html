@@ -245,12 +245,12 @@
       <label class="lt-label">
         <span>Declarant</span>
         <input class="lt-field" id="discDeclarant" spellcheck="false">
-        <span class="lt-hint">The one person or organization making these statements.</span>
+        <span class="lt-hint">Optional. The one person or organization making these statements. Left empty, the declarant is whoever owns the site's domain.</span>
       </label>
       <label class="lt-label">
         <span>Contact</span>
         <input class="lt-field" id="discContact" spellcheck="false">
-        <span class="lt-hint">An email address or URL for questions about it.</span>
+        <span class="lt-hint">Optional. An email address or URL for questions about it.</span>
       </label>
       <label class="lt-label">
         <span>Path</span>
@@ -1155,7 +1155,10 @@ async function saveDisclosure({ confirm = false } = {}) {
   } catch (e) {
     // The first time it goes on, it asks once.
     if (e.body?.code === 'confirm') {
-      if (await ask('Turn on the copy disclosure?', 'This puts your name on a public file at /slop.json.', { yes: 'Turn it on', no: 'Not now' })) {
+      const name = $('#discDeclarant').value.trim();
+      const what = 'This publishes /slop.json on your site, for anyone to read.' +
+        (name ? ` It names ${name} as the declarant.` : '');
+      if (await ask('Turn on the copy disclosure?', what, { yes: 'Turn it on', no: 'Not now' })) {
         return saveDisclosure({ confirm: true });
       }
       $('#discOn').checked = !!disc?.disclosure?.enabled;

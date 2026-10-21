@@ -192,9 +192,12 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
           ...(before && typeof before === 'object' && !Array.isArray(before) ? before : {}),
           enabled: enabled === true,
           path: String(where || '').trim() || DEFAULT_PATH,
-          declarant: String(declarant || '').trim(),
-          contact: String(contact || '').trim(),
         };
+        // Optional, so an empty field takes the key out rather than writing "".
+        for (const [key, value] of Object.entries({ declarant, contact })) {
+          const v = String(value || '').trim();
+          if (v) block[key] = v; else delete block[key];
+        }
         const problems = problemsOf(project, disclosureOf(project, block));
         if (problems.length) return json(res, 400, { error: problems.join('; '), code: 'invalid', problems });
 
@@ -205,7 +208,7 @@ export function serve(project, { port = Number(process.env.SLOPCHOP_PORT || 5175
           return json(res, 200, await previewDisclosure(project, load(project), before));
         }
         if (before == null && !confirm) {
-          return json(res, 409, { error: 'This puts your name on a public file at /slop.json.', code: 'confirm' });
+          return json(res, 409, { error: 'This publishes /slop.json on the site, for anyone to read.', code: 'confirm' });
         }
         writeBlock(project.configPath, block);
         project.config.disclosure = block;

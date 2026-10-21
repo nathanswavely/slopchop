@@ -25,7 +25,7 @@ import { select, triage, suggest, settings, VERDICTS } from './advice.js';
 import { writeback, previewLines } from './writeback.js';
 import { writeReport } from './report.js';
 import { writeDisclosure, disclosureOf } from './disclosure.js';
-import { readPage, disclosureUrl, describeStatus, byStatusOrder } from './reader.js';
+import { readPage, disclosureUrl, describeStatus, byStatusOrder, declaredBy } from './reader.js';
 import {
   renderVerdict, summaryBody, planComments, publish, apiClient,
   repoPrefix, localDiff, pullDiff, pullFromEvent,
@@ -595,8 +595,7 @@ async function cmdRead() {
   const r = result, n = r.counts;
   console.log(`\n  ${page.url}`);
   console.log(`  ${DIM}${disclosureAt}${r.generated ? ` · generated ${r.generated}` : ''}${OFF}`);
-  const who = [r.declarant, r.contact].filter(Boolean).join(' · ');
-  if (who) console.log(`  declarant: ${who}`);
+  console.log(`  declared by ${[declaredBy(r.declarant, page.url), r.contact].filter(Boolean).join(' · ')}`);
   if (r.statement) console.log(`  ${DIM}${r.statement}${OFF}`);
   console.log(`\n  ${bar(n.declared, n.total)}  ${n.declared}/${n.total} strings declared (${pct(n.declared, n.total)}) · ${n.undeclared} undeclared`);
   if (n.notCopy) console.log(`  ${DIM}not counted: ${n.notCopy} declared not copy${OFF}`);

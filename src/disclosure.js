@@ -1,8 +1,9 @@
 // The copy disclosure: a public, self-reported slop.json for a site whose
 // source is closed (docs/adr/0001-copy-disclosure-is-hash-only-slop-json.md).
 //
-// It carries a declarant, a contact, a plain statement that it is
-// self-reported, the out-of-scope reasons, and a map of ID to status. No
+// It carries a plain statement that it is self-reported, a declarant and
+// a contact if the owner names them (unnamed, the declarant is whoever owns
+// the site's domain), the out-of-scope reasons, and a map of ID to status. No
 // text and no locations: a Reader hashes the live page and looks the IDs
 // up. What it leaves out (unreviewed strings, rewrites not yet applied) a
 // Reader shows as undeclared, so a stale or partial file understates.
@@ -57,8 +58,6 @@ export function problemsOf(project, d) {
   const rel = path.relative(project.root, d.abs);
   if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) out.push(`path must be inside the project (got "${d.path}")`);
   else if (path.basename(d.abs) !== FILE_NAME) out.push(`path must name a file called ${FILE_NAME} (got "${d.path}")`);
-  if (d.enabled && !d.declarant) out.push('declarant is required: the person or organization making the disclosure');
-  if (d.enabled && !d.contact) out.push('contact is required: how to reach the declarant about it');
   return out;
 }
 
@@ -94,10 +93,12 @@ export async function buildDisclosure(project, ledger, { now = new Date(), block
   const { publish } = classify(ledger);
   const pairs = await Promise.all(publish.map(async (p) => [await slopId(p.entry.text), p.status]));
   pairs.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  // Declarant and contact are optional, and left out rather than written
+  // empty: unnamed, the declarant is whoever owns the site's domain.
   return {
     slop: SLOP_VERSION,
-    declarant: d?.declarant ?? '',
-    contact: d?.contact ?? '',
+    ...(d?.declarant ? { declarant: d.declarant } : {}),
+    ...(d?.contact ? { contact: d.contact } : {}),
     generated: localDate(now),
     statement: STATEMENT,
     outOfScope: outOfScopeReasons(project),

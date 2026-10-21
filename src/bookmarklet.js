@@ -12,7 +12,7 @@
 // Browser only. Everything it shows from the disclosure goes in as text,
 // never as markup.
 
-import { readPage, disclosureUrl, describeStatus, byStatusOrder } from './reader.js';
+import { readPage, disclosureUrl, describeStatus, byStatusOrder, declaredBy } from './reader.js';
 import { slopText } from './slop.js';
 import { COPY_ATTRS } from './extract/common.js';
 
@@ -152,8 +152,7 @@ function panel(doc, { url, result, error }) {
     box.append(el('p', { className: 'error' }, error));
   } else {
     const r = result;
-    const who = [r.declarant, r.contact].filter(Boolean).join(' · ');
-    if (who) box.append(el('div', {}, who));
+    box.append(el('div', {}, `Declared by ${[declaredBy(r.declarant, url), r.contact].filter(Boolean).join(' · ')}`));
     box.append(el('div', { className: 'muted' }, `${url}${r.generated ? ` · ${r.generated}` : ''}`));
     if (r.statement) box.append(el('p', { className: 'statement' }, r.statement));
 

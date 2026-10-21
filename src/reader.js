@@ -117,6 +117,17 @@ export async function readPage(page, disclosure) {
   };
 }
 
+/**
+ * Who a disclosure is declared by: its declarant, or, when it names none,
+ * whoever owns the domain that serves it.
+ */
+export function declaredBy(declarant, pageUrl) {
+  if (declarant) return declarant;
+  let host = '';
+  try { host = new URL(pageUrl).host; } catch { /* a local file has no domain */ }
+  return host ? `the owner of ${host}` : "the owner of the site's domain";
+}
+
 /** Where a page's disclosure lives: /slop.json at the page's origin. */
 export function disclosureUrl(pageUrl) {
   return new URL('/slop.json', pageUrl).href;

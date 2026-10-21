@@ -39,7 +39,7 @@ A tool that checks a live **Page** against a **Copy disclosure** by hashing the 
 _Avoid_: Validator, checker, scanner (all imply verifying authorship)
 
 **Declarant**:
-The one named person or organization who makes a **Copy disclosure** and can be contacted about it. A disclosure has exactly one.
+The person or organization who makes a **Copy disclosure**. Naming one, and giving a contact, is optional; when a disclosure names nobody, the declarant is whoever owns the site's domain. A disclosure has at most one named declarant.
 _Avoid_: Auditor, reviewer (the **Ledger** does not record who reviewed each string)
 
 **Replaced draft**:

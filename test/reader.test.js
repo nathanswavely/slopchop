@@ -7,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { pageStrings, readPage, checkDisclosure, disclosureUrl, describeStatus } from '../src/reader.js';
+import { pageStrings, readPage, checkDisclosure, disclosureUrl, describeStatus, declaredBy } from '../src/reader.js';
 import { extractHtml } from '../src/extract/html.js';
 import { slopId } from '../src/slop.js';
 
@@ -98,6 +98,15 @@ test('the disclosure lives at /slop.json on the page\'s origin', () => {
   assert.equal(disclosureUrl('http://localhost:4321/'), 'http://localhost:4321/slop.json');
 });
 
+test('an unnamed disclosure is declared by whoever owns the domain', async () => {
+  assert.equal(declaredBy('Pat Example', 'https://example.com/'), 'Pat Example');
+  assert.equal(declaredBy('', 'https://www.example.com/about'), 'the owner of www.example.com');
+  assert.equal(declaredBy(undefined, 'src/index.html'), "the owner of the site's domain");
+  const r = await readPage('<p>Hi there</p>', { slop: 1, copy: {} });
+  assert.equal(r.declarant, '');
+  assert.equal(r.contact, '');
+});
+
 test('statuses read as the ledger means them', () => {
   assert.equal(describeStatus('human'), 'written by a person');
   assert.equal(describeStatus('human+'), 'written by a person, replacing a draft');
@@ -147,6 +156,7 @@ test('report then read against the example site', () => {
     assert.ok(r.undeclared.some((u) => u.text === 'Browse the shop'));
 
     const human = cli(dir, 'read', 'src/index.html');
+    assert.match(human, /declared by Northwind Tools · hello@example.com/);
     assert.match(human, /4\/12 strings declared \(33%\) · 8 undeclared/);
     assert.match(human, /"Welcome back, \{\{ user\.name \}\}\."/);
 

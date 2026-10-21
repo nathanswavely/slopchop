@@ -100,8 +100,6 @@ test('a block report cannot act on is refused before anything is written', async
   const cases = [
     [{ path: '../elsewhere/slop.json' }, /inside the project/],
     [{ path: 'public/copy.json' }, /called slop\.json/],
-    [{ declarant: '  ' }, /declarant is required/],
-    [{ contact: undefined }, /contact is required/],
   ];
   for (const [over, re] of cases) {
     await withProject({ 'a.md': 'x\n' }, async (project, dir) => {
@@ -115,11 +113,19 @@ test('a block report cannot act on is refused before anything is written', async
   }, { disclosure: { enabled: false } });
 });
 
-test('path defaults to public/slop.json', async () => {
+test('enabled alone turns it on: path defaults, and an unnamed declarant is left out', async () => {
   await withProject({ 'a.md': 'x\n' }, async (project, dir) => {
     assert.equal((await writeDisclosure(project, ledger)).path, 'public/slop.json');
-    assert.ok(fs.existsSync(path.join(dir, 'public/slop.json')));
-  }, { disclosure: { enabled: true, declarant: 'Pat', contact: 'pat@example.com' } });
+    const file = JSON.parse(read(dir, 'public/slop.json'));
+    assert.deepEqual(Object.keys(file), ['slop', 'generated', 'statement', 'outOfScope', 'copy'], 'no declarant or contact keys, not even empty ones');
+  }, { disclosure: { enabled: true } });
+
+  await withProject({ 'a.md': 'x\n' }, async (project, dir) => {
+    await writeDisclosure(project, ledger);
+    const file = JSON.parse(read(dir, 'public/slop.json'));
+    assert.equal(file.contact, 'pat@example.com');
+    assert.ok(!('declarant' in file));
+  }, { disclosure: { enabled: true, declarant: '  ', contact: 'pat@example.com' } });
 });
 
 test('init never adds a disclosure block', () => {
