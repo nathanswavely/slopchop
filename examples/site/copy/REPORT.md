@@ -9,8 +9,8 @@ visitor-readable string in this repository and records who wrote it.
 | A person's words from the start | 0 | 0 |
 | Drafted by a model, edited by a person | 0 | 0 |
 | Left as drafted, deliberately | 0 | 0 |
-| Not yet reviewed | 57 | 371 |
-| **Total** | **57** | **371** |
+| Not yet reviewed | 56 | 366 |
+| **Total** | **56** | **366** |
 
 Human-authored or deliberately accepted: **0%** of strings.
 A person's words: **0%** of strings, **0%** of words.
@@ -24,7 +24,7 @@ Whether a replacement was a rewrite or small edits is what the person said when 
 |---|---:|---:|
 | Paragraphs (16+ words) | 0 | 7 |
 | Helper text (6–15 words) | 0 | 14 |
-| Labels (1–5 words) | 0 | 36 |
+| Labels (1–5 words) | 0 | 35 |
 
 ## Scope
 

@@ -153,7 +153,7 @@ test('MDX: imports, exports and expressions are skipped; component text is copy'
   ].join('\n');
   const hits = extractOne('pricing.mdx', 'mdx', src);
   const texts = hits.map((h) => h.text);
-  assert.deepEqual(texts, ['# Pricing', 'No tiers, no bundles.', 'Sharpening is free for anything we made.']);
+  assert.deepEqual(texts, ['Pricing', 'No tiers, no bundles.', 'Sharpening is free for anything we made.']);
   assert.equal(hits[2].kind, 'html-text');
   assert.equal(hits[2].line, 11);
 });

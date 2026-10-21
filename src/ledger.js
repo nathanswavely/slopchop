@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { extractEntries, idFor, tierFor, wordCount } from './extract/index.js';
 import { syntaxOf } from './expressions.js';
+import { splitBlock, headingText } from './extract/md.js';
 
 // unreviewed → a model drafted it and nobody has looked yet (the default)
 // rewritten  → a replacement is chosen; writeback has not applied it
@@ -48,7 +49,7 @@ export const EMPTY = { version: 1, strict: false, entries: [], retired: [] };
 export function load(project) {
   if (!fs.existsSync(project.ledgerPath)) return structuredClone(EMPTY);
   const raw = JSON.parse(fs.readFileSync(project.ledgerPath, 'utf8'));
-  return { ...structuredClone(EMPTY), ...raw };
+  return migrate({ ...structuredClone(EMPTY), ...raw });
 }
 
 export function save(project, ledger) {
@@ -69,6 +70,7 @@ export function sync(project, existing = load(project)) {
 
 /** The pure half of sync: fold fresh entries into an existing ledger. */
 export function merge(existing, fresh) {
+  existing = migrate(existing);
   const prior = new Map(existing.entries.map((e) => [e.id, e]));
   const retired = new Map((existing.retired || []).map((e) => [e.id, e]));
 
@@ -141,6 +143,119 @@ export function merge(existing, fresh) {
     removed,
     landed: [...landed],
   };
+}
+
+// ---------------------------------------------------------- migration ---
+
+/**
+ * Bring a ledger written by an older SlopChop up to date. Pure, and safe to
+ * run on a ledger that needs nothing.
+ *
+ * Up to 0.3, a Markdown heading was recorded with its `#` marks
+ * ("## How it works"), and a heading with no blank line after it shared one
+ * entry with the paragraph below. A page renders neither the marks nor the
+ * two as one string, so those IDs could never match a live page. Each such
+ * entry is re-keyed to what the extractor records now, and every decision
+ * on it (status, authorship, note, the draft it replaced) moves with it.
+ * Nobody reviews a heading twice because the extractor changed its mind.
+ */
+export function migrate(ledger) {
+  const remap = new Map();          // old id -> new ids
+  const fix = (e) => {
+    const out = migrateEntry(e);
+    if (out.length !== 1 || out[0].id !== e.id) remap.set(e.id, out.map((x) => x.id));
+    return out;
+  };
+  const entries = (ledger.entries || []).flatMap(fix);
+  const retired = (ledger.retired || []).flatMap(fix);
+  if (!remap.size) return ledger;
+
+  // Re-keying can land two entries on one ID ("## Next" beside a paragraph
+  // that says "Next"). The source has one string there now, and the entry
+  // that holds a decision is the one kept; the other is retired.
+  const kept = new Map();
+  const bumped = [];
+  for (const e of entries) {
+    const have = kept.get(e.id);
+    if (!have) { kept.set(e.id, e); continue; }
+    const keepNew = have.status === 'unreviewed' && e.status !== 'unreviewed';
+    if (keepNew) kept.set(e.id, e);
+    bumped.push(keepNew ? have : e);
+  }
+  const out = {
+    ...ledger,
+    entries: [...kept.values()],
+    retired: [...retired, ...bumped.filter((e) => e.status && e.status !== 'unreviewed')],
+  };
+  if (Array.isArray(ledger.baseline)) {
+    out.baseline = [...new Set(ledger.baseline.flatMap((id) => remap.get(id) || [id]))];
+  }
+  return out;
+}
+
+/** One entry as the current extractor would record it: itself, or its pieces. */
+function migrateEntry(e) {
+  const occs = e.occurrences || [];
+  if (!occs.length || !occs.every((o) => o.kind === 'md-block')) return [e];
+  const segs = splitBlock(e.text);
+  if (!segs.some((s) => s.heading)) return [e];
+
+  if (segs.length === 1) {
+    const seg = segs[0];
+    const out = rekey(e, seg);
+    if (e.replacement) out.replacement = stripHeading(e.replacement);
+    if (e.previous_ai_text) out.previous_ai_text = stripHeading(e.previous_ai_text);
+    if (e.suggestion?.text) out.suggestion = { ...e.suggestion, text: stripHeading(e.suggestion.text) };
+    return [out];
+  }
+
+  // A heading and its paragraph, recorded as one. A pending rewrite of the
+  // pair cannot be split for the person, so it is left for them to redo:
+  // sync retires it with its replacement, and both pieces come up anew.
+  if (e.status === 'rewritten') return [e];
+  const drafts = e.previous_ai_text ? splitBlock(e.previous_ai_text) : [];
+  const aligned = drafts.length === segs.length;
+  return segs.map((seg, i) => {
+    const out = rekey(e, seg);
+    out.replacement = null;
+    delete out.suggestion;
+    delete out.triage;
+    if (e.previous_ai_text) {
+      // The draft goes with its piece where the two line up, and otherwise
+      // once, on the first, so it is never counted twice.
+      if (aligned) out.previous_ai_text = textOf(drafts[i]);
+      else if (i > 0) delete out.previous_ai_text;
+    }
+    return out;
+  });
+}
+
+function textOf(seg) {
+  return seg.heading ? headingText(seg.raw) : seg.raw;
+}
+
+function rekey(e, seg) {
+  const text = textOf(seg);
+  const linesBefore = (e.text.slice(0, seg.offset).match(/\n/g) || []).length;
+  return {
+    ...e,
+    id: idFor(text),
+    text,
+    words: wordCount(text),
+    tier: tierFor(text),
+    occurrences: e.occurrences.map((o) => ({
+      ...o,
+      line: o.line + linesBefore,
+      kind: seg.heading ? 'md-heading' : 'md-block',
+      raw: seg.raw,
+    })),
+  };
+}
+
+/** A lone heading's words, without its marks. Anything else as it is. */
+function stripHeading(text) {
+  const segs = splitBlock(text);
+  return segs.length === 1 && segs[0].heading ? headingText(segs[0].raw) : text;
 }
 
 /** Statuses whose text in source is somebody's deliberate writing. */
