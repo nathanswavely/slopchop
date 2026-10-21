@@ -5,13 +5,15 @@
 // occurrence keeps the escapes, because writeback matches what is on disk.
 
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
 import { extractOne } from '../src/extract/index.js';
 import { unescapeString, isProseLiteral } from '../src/extract/common.js';
 import { idFor } from '../src/extract/id.js';
 import { encodeFor, writeback } from '../src/writeback.js';
-import { sync, load, decide } from '../src/ledger.js';
+import { sync, load, save, decide, migrate, gate } from '../src/ledger.js';
 import { pageStrings } from '../src/reader.js';
 import { slopId } from '../src/slop.js';
 import { withProject, read } from './helpers.js';
@@ -185,4 +187,65 @@ test('escaped literals round-trip through sync, apply and sync again', async () 
       assert.ok(out.includes(e.occurrences[0].raw), `raw is on disk: ${e.occurrences[0].raw}`);
     }
   });
+});
+
+// ----------------------------------------------------------- migration ---
+
+const ESCAPED = "It\\'s the table\\'s night";
+const SHOWN = "It's the table's night";
+const legacyLedger = () => ({
+  version: 1, strict: false, retired: [],
+  baseline: [idFor(ESCAPED)],
+  entries: [
+    // As a ledger could hold one before: the escapes kept as typed.
+    {
+      id: idFor(ESCAPED), text: ESCAPED, words: 4, tier: 'label', status: 'human',
+      authorship: { kind: 'claimed' }, note: 'mine', replacement: null,
+      occurrences: [
+        { file: 'src/a.ts', line: 1, kind: 'js-string', raw: ESCAPED, quote: "'" },
+        { file: 'src/b.ts', line: 1, kind: 'js-string', raw: ESCAPED, quote: "'" },
+      ],
+    },
+  ],
+});
+
+test('a ledger with escapes as typed keeps its decisions under the text as it renders', async () => {
+  const src = `export const t = '${ESCAPED}';\n`;
+  await withProject({ 'src/a.ts': src, 'src/b.ts': src }, (project, dir) => {
+    fs.mkdirSync(path.join(dir, 'copy'));
+    fs.writeFileSync(project.ledgerPath, JSON.stringify(legacyLedger(), null, 2));
+    const onDisk = load(project);
+    const { ledger, added } = sync(project, onDisk);
+    assert.deepEqual(added, [], 'nothing comes up as new');
+    assert.deepEqual(ledger.retired, [], 'nothing is orphaned');
+
+    const [e] = ledger.entries;
+    assert.equal(e.text, SHOWN);
+    assert.equal(e.id, idFor(SHOWN));
+    assert.equal(e.status, 'human');
+    assert.deepEqual(e.authorship, { kind: 'claimed' });
+    assert.equal(e.note, 'mine');
+    assert.equal(e.occurrences.length, 2);
+    assert.deepEqual(ledger.baseline, [idFor(SHOWN)], 'baseline debt follows its string');
+    assert.deepEqual(gate(onDisk, ledger).unledgered, []);
+
+    save(project, ledger);
+    assert.deepEqual(sync(project, load(project)).ledger, ledger, 'idempotent');
+  });
+});
+
+test('an escaped entry the old way cannot reproduce is left for sync, not guessed at', () => {
+  const mixed = legacyLedger();
+  mixed.entries[0].occurrences[1] = { file: 'src/b.astro', line: 1, kind: 'jsx-text', raw: ESCAPED, quote: null };
+  assert.equal(migrate(mixed), mixed, 'JSX text shows its backslash, so the two are not one string any more');
+
+  const drifted = legacyLedger();
+  drifted.entries[0].occurrences[1].raw = "It\\'s a different night";
+  assert.equal(migrate(drifted), drifted, 'an occurrence that does not give the stored text');
+
+  const plain = legacyLedger();
+  for (const o of plain.entries[0].occurrences) o.raw = SHOWN;
+  plain.entries[0].text = SHOWN;
+  plain.entries[0].id = idFor(SHOWN);
+  assert.equal(migrate(plain), plain, 'nothing to read: untouched');
 });

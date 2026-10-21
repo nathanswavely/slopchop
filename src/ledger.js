@@ -11,7 +11,7 @@ import path from 'node:path';
 import { extractEntries, idFor, tierFor, wordCount } from './extract/index.js';
 import { syntaxOf } from './expressions.js';
 import { splitBlock, headingText } from './extract/md.js';
-import { collapse, decodedText } from './extract/common.js';
+import { collapse, decodedText, unescapeString } from './extract/common.js';
 
 // unreviewed → a model drafted it and nobody has looked yet (the default)
 // rewritten  → a replacement is chosen; writeback has not applied it
@@ -161,7 +161,8 @@ export function merge(existing, fresh) {
  * Nobody reviews a heading twice because the extractor changed its mind.
  *
  * Likewise a string whose source holds a character reference the extractor
- * now decodes the way a browser does ("Next &rarr;" is now "Next →").
+ * now decodes the way a browser does ("Next &rarr;" is now "Next →"), and a
+ * string literal whose escapes it now reads ("I\'m in" is now "I'm in").
  */
 export function migrate(ledger) {
   const remap = new Map();          // old id -> new ids
@@ -199,7 +200,33 @@ export function migrate(ledger) {
 
 /** One entry as the current extractor would record it: itself, or its pieces. */
 function migrateEntry(e) {
-  return splitHeadings(redecode(e));
+  return splitHeadings(redecode(unescaped(e)));
+}
+
+// The string-literal kinds, each read the way its language reads escapes.
+const STRING_KINDS = new Set(['js-string', 'jsx-string', 'go-string']);
+
+/**
+ * Up to 0.4, a string literal holding an escape was refused as code, so a
+ * ledger that has one recorded it some other way, escapes as typed ("I\'m
+ * in"), and its ID can never match the "I'm in" a page shows. Re-keyed to
+ * the text as it renders, with every decision on it, under the same rule as
+ * redecode: only when each occurrence gives the entry's text the old way and
+ * one text the new way.
+ */
+function unescaped(e) {
+  const occs = e.occurrences || [];
+  if (!occs.length || !occs.some((o) => o.raw?.includes('\\'))) return e;
+  let text = null;
+  for (const o of occs) {
+    if (!STRING_KINDS.has(o.kind) || typeof o.raw !== 'string' || collapse(o.raw) !== e.text) return e;
+    const now = collapse(unescapeString(o.raw, { go: o.kind === 'go-string', template: o.quote === '`' }));
+    if (text !== null && now !== text) return e;
+    text = now;
+  }
+  if (text === e.text) return e;
+  const syntax = syntaxOf(occs);
+  return { ...e, id: idFor(text), text, words: wordCount(text, syntax), tier: tierFor(text, syntax) };
 }
 
 // Up to 0.3, markup was decoded from a short list of names (`&amp;`,
