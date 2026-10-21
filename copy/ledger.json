@@ -198,7 +198,7 @@
         },
         {
           "file": "src/ui.html",
-          "line": 185,
+          "line": 199,
           "kind": "html-attr:title",
           "raw": "Keyboard shortcuts",
           "quote": "\""
@@ -864,6 +864,186 @@
       ]
     },
     {
+      "id": "2a9ecf52b78d",
+      "text": "## A copy disclosure, for a site whose source is closed",
+      "words": 11,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 172,
+          "kind": "md-block",
+          "raw": "## A copy disclosure, for a site whose source is closed",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "e58f9d811c12",
+      "text": "The report lives in the repo, which only helps if people can see the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what you declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.",
+      "words": 75,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 174,
+          "kind": "md-block",
+          "raw": "The report lives in the repo, which only helps if people can see the repo. For a closed-source site, `report` can also publish a copy disclosure: a `slop.json` at the site root that says, string by string, what you declared. It holds IDs and statuses only, with no text and no file paths. Anyone can check a page against it with a Reader, which hashes the text on the page and looks each ID up.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "70e3c2636f3a",
+      "text": "It is off until you add a block to `.slopchop.json`. `init` never adds one.",
+      "words": 14,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 176,
+          "kind": "md-block",
+          "raw": "It is off until you add a block to `.slopchop.json`. `init` never adds one.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "a652148b4b05",
+      "text": "Or open **Disclosure** in the review page, which edits only this block, previews exactly what would be published, and asks once before the first switch-on. Then:",
+      "words": 26,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 187,
+          "kind": "md-block",
+          "raw": "Or open **Disclosure** in the review page, which edits only this block, previews exactly what would be published, and asks once before the first switch-on. Then:",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "5d7eafa7fcbf",
+      "text": "The file looks like this:",
+      "words": 5,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 196,
+          "kind": "md-block",
+          "raw": "The file looks like this:",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "ef60da8d8571",
+      "text": "A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `\"enabled\": false` and the next `report` deletes the file instead of leaving the last one deployed.",
+      "words": 70,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 210,
+          "kind": "md-block",
+          "raw": "A `+` means the string replaced a model's draft. The draft is never published. `outOfScope` carries the reasons from your config and leaves the paths out. Unreviewed strings and rewrites you have not applied yet are left out, so a Reader shows that text as undeclared: a stale file understates rather than overstates. Set `\"enabled\": false` and the next `report` deletes the file instead of leaving the last one deployed.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "3001d95c1a16",
+      "text": "For each page, a Reader lists the declared copy with its status, lists the undeclared copy by its text, and shows your out-of-scope reasons beside it. It counts `not-copy` strings separately and leaves them out of the page's total. The bookmarklet does the same on whatever page you are looking at, and marks each string on the page in its status's colour.",
+      "words": 62,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 212,
+          "kind": "md-block",
+          "raw": "For each page, a Reader lists the declared copy with its status, lists the undeclared copy by its text, and shows your out-of-scope reasons beside it. It counts `not-copy` strings separately and leaves them out of the page's total. The bookmarklet does the same on whatever page you are looking at, and marks each string on the page in its status's colour.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "953357704048",
+      "text": "Where a Reader comes up short:",
+      "words": 6,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 214,
+          "kind": "md-block",
+          "raw": "Where a Reader comes up short:",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "766ecae7384f",
+      "text": "- Template strings never match. `about {event.name}` in source renders as `about Spring Fair`, so it reads as undeclared, and so does anything a script builds at runtime.\n- Strings are cut the way `sync` cuts HTML: an inline element splits a sentence. A Markdown paragraph with a link or emphasis in it renders as several strings, none of which hash to the paragraph in the ledger.\n- Short labels are easy to guess from their hash. Leaving the text out keeps the file small and focused, but it is not a privacy measure.",
+      "words": 94,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 216,
+          "kind": "md-block",
+          "raw": "- Template strings never match. `about {event.name}` in source renders as `about Spring Fair`, so it reads as undeclared, and so does anything a script builds at runtime.\n- Strings are cut the way `sync` cuts HTML: an inline element splits a sentence. A Markdown paragraph with a link or emphasis in it renders as several strings, none of which hash to the paragraph in the ledger.\n- Short labels are easy to guess from their hash. Leaving the text out keeps the file small and focused, but it is not a privacy measure.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "89f56d8481ca",
+      "text": "The ID is a public, frozen algorithm, `slop: 1`: the first 12 hex characters of SHA-256 over the UTF-8 text, with each run of whitespace collapsed to one space and the ends trimmed, and no Unicode normalization. A Reader anyone writes can compute it. [docs/adr](docs/adr) has the reasoning.",
+      "words": 48,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "README.md",
+          "line": 220,
+          "kind": "md-block",
+          "raw": "The ID is a public, frozen algorithm, `slop: 1`: the first 12 hex characters of SHA-256 over the UTF-8 text, with each run of whitespace collapsed to one space and the ends trimmed, and no Unicode normalization. A Reader anyone writes can compute it. [docs/adr](docs/adr) has the reasoning.",
+          "quote": null
+        }
+      ]
+    },
+    {
       "id": "88cae4fc43af",
       "text": "## Next",
       "words": 2,
@@ -874,7 +1054,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 172,
+          "line": 222,
           "kind": "md-block",
           "raw": "## Next",
           "quote": null
@@ -892,7 +1072,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 174,
+          "line": 224,
           "kind": "md-block",
           "raw": "A review page that is more purpose built than just a code review.",
           "quote": null
@@ -914,7 +1094,7 @@
       "occurrences": [
         {
           "file": "README.md",
-          "line": 176,
+          "line": 226,
           "kind": "md-block",
           "raw": "To start, run `npx slopchop init` in the repo, then `sync`. The first sync stamps the baseline, so the check passes from the beginning. After that, open `slopchop review` and start with the paragraphs.",
           "quote": null
@@ -939,7 +1119,7 @@
         },
         {
           "file": "src/ui.html",
-          "line": 153,
+          "line": 166,
           "kind": "html-text",
           "raw": "SlopChop",
           "quote": null
@@ -957,7 +1137,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 155,
+          "line": 168,
           "kind": "html-text",
           "raw": "loading…",
           "quote": null
@@ -975,7 +1155,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 156,
+          "line": 169,
           "kind": "html-text",
           "raw": "Apply rewrites",
           "quote": null
@@ -993,9 +1173,45 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 156,
+          "line": 169,
           "kind": "html-attr:title",
           "raw": "Write approved rewrites into source",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "a2c6c8f120f4",
+      "text": "Disclosure",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 170,
+          "kind": "html-text",
+          "raw": "Disclosure",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "4fecf67057c3",
+      "text": "Publish a self-reported copy disclosure (slop.json)",
+      "words": 6,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 170,
+          "kind": "html-attr:title",
+          "raw": "Publish a self-reported copy disclosure (slop.json)",
           "quote": "\""
         }
       ]
@@ -1011,7 +1227,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 157,
+          "line": 171,
           "kind": "html-attr:title",
           "raw": "Switch theme",
           "quote": "\""
@@ -1029,7 +1245,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 160,
+          "line": 174,
           "kind": "html-attr:aria-label",
           "raw": "Status",
           "quote": "\""
@@ -1047,7 +1263,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 161,
+          "line": 175,
           "kind": "html-text",
           "raw": "Unreviewed",
           "quote": null
@@ -1065,7 +1281,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 162,
+          "line": 176,
           "kind": "html-text",
           "raw": "New since baseline (blocks CI)",
           "quote": null
@@ -1083,7 +1299,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 163,
+          "line": 177,
           "kind": "html-text",
           "raw": "All",
           "quote": null
@@ -1101,7 +1317,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 164,
+          "line": 178,
           "kind": "html-text",
           "raw": "Rewritten (pending apply)",
           "quote": null
@@ -1119,7 +1335,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 165,
+          "line": 179,
           "kind": "html-text",
           "raw": "Human",
           "quote": null
@@ -1137,7 +1353,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 166,
+          "line": 180,
           "kind": "html-text",
           "raw": "Human: rewrite",
           "quote": null
@@ -1155,7 +1371,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 167,
+          "line": 181,
           "kind": "html-text",
           "raw": "Human: small edits",
           "quote": null
@@ -1173,7 +1389,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 168,
+          "line": 182,
           "kind": "html-text",
           "raw": "Human: already theirs",
           "quote": null
@@ -1191,7 +1407,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 169,
+          "line": 183,
           "kind": "html-text",
           "raw": "Left as drafted",
           "quote": null
@@ -1209,7 +1425,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 170,
+          "line": 184,
           "kind": "html-text",
           "raw": "Model rewrite, accepted",
           "quote": null
@@ -1227,7 +1443,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 171,
+          "line": 185,
           "kind": "html-text",
           "raw": "Not copy",
           "quote": null
@@ -1245,7 +1461,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 173,
+          "line": 187,
           "kind": "html-attr:aria-label",
           "raw": "Word count",
           "quote": "\""
@@ -1263,7 +1479,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 174,
+          "line": 188,
           "kind": "html-attr:placeholder",
           "raw": "Min",
           "quote": "\""
@@ -1281,7 +1497,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 174,
+          "line": 188,
           "kind": "html-attr:aria-label",
           "raw": "At least this many words",
           "quote": "\""
@@ -1299,7 +1515,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 176,
+          "line": 190,
           "kind": "html-attr:placeholder",
           "raw": "Max",
           "quote": "\""
@@ -1317,7 +1533,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 176,
+          "line": 190,
           "kind": "html-attr:aria-label",
           "raw": "At most this many words",
           "quote": "\""
@@ -1335,7 +1551,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 177,
+          "line": 191,
           "kind": "html-text",
           "raw": "words",
           "quote": null
@@ -1353,7 +1569,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 180,
+          "line": 194,
           "kind": "html-attr:placeholder",
           "raw": "Every file",
           "quote": "\""
@@ -1371,7 +1587,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 180,
+          "line": 194,
           "kind": "html-attr:aria-label",
           "raw": "Filter by file",
           "quote": "\""
@@ -1389,7 +1605,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 181,
+          "line": 195,
           "kind": "html-attr:aria-label",
           "raw": "Clear the file filter",
           "quote": "\""
@@ -1407,7 +1623,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 183,
+          "line": 197,
           "kind": "html-attr:placeholder",
           "raw": "Search copy…",
           "quote": "\""
@@ -1425,7 +1641,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 183,
+          "line": 197,
           "kind": "html-attr:aria-label",
           "raw": "Search copy",
           "quote": "\""
@@ -1443,7 +1659,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 187,
+          "line": 201,
           "kind": "html-attr:aria-label",
           "raw": "Bulk actions",
           "quote": "\""
@@ -1461,7 +1677,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 194,
+          "line": 208,
           "kind": "html-attr:title",
           "raw": "Select everything shown",
           "quote": "\""
@@ -1479,7 +1695,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 196,
+          "line": 210,
           "kind": "html-attr:title",
           "raw": "Collapse the list",
           "quote": "\""
@@ -1497,7 +1713,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 201,
+          "line": 215,
           "kind": "html-text",
           "raw": "Loading…",
           "quote": null
@@ -1515,7 +1731,7 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 214,
+          "line": 228,
           "kind": "html-text",
           "raw": "Keyboard",
           "quote": null
@@ -1533,9 +1749,297 @@
       "occurrences": [
         {
           "file": "src/ui.html",
-          "line": 216,
+          "line": 230,
           "kind": "html-text",
           "raw": "Esc closes this. Letter keys do nothing while you are typing.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "205beeec61f0",
+      "text": "Copy disclosure",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 235,
+          "kind": "html-text",
+          "raw": "Copy disclosure",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "7d9eb7acb13e",
+      "text": "Close",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 236,
+          "kind": "html-attr:aria-label",
+          "raw": "Close",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "ccae128e67f7",
+      "text": "A public, self-reported",
+      "words": 3,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 239,
+          "kind": "html-text",
+          "raw": "A public, self-reported",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "834b73204954",
+      "text": "slop.json",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 239,
+          "kind": "html-text",
+          "raw": "slop.json",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "762ab43e51c5",
+      "text": ": an ID and a status for each string you have decided, with no text and no file paths. A Reader hashes the text on a page and looks the IDs up.",
+      "words": 32,
+      "tier": "prose",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 239,
+          "kind": "html-text",
+          "raw": ": an ID and a status for each string you have decided, with no text and no file paths. A Reader hashes the text on a page and looks the IDs up.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "9b0640d59cab",
+      "text": "slopchop report",
+      "words": 2,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 239,
+          "kind": "html-text",
+          "raw": "slopchop report",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "ae6646d92909",
+      "text": "writes the file, and deletes it once this is off.",
+      "words": 10,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 239,
+          "kind": "html-text",
+          "raw": "writes the file, and deletes it once this is off.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2d7dde8163ca",
+      "text": "Publish a copy disclosure",
+      "words": 4,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 242,
+          "kind": "html-text",
+          "raw": "Publish a copy disclosure",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "569c2b28406c",
+      "text": "Declarant",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 246,
+          "kind": "html-text",
+          "raw": "Declarant",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "016a2452a58c",
+      "text": "The one person or organization making these statements.",
+      "words": 8,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 248,
+          "kind": "html-text",
+          "raw": "The one person or organization making these statements.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "2b5c3d26721a",
+      "text": "Contact",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 251,
+          "kind": "html-text",
+          "raw": "Contact",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "379cdf34ad81",
+      "text": "An email address or URL for questions about it.",
+      "words": 9,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 253,
+          "kind": "html-text",
+          "raw": "An email address or URL for questions about it.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "62fa5a5b0d3c",
+      "text": "Path",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 256,
+          "kind": "html-text",
+          "raw": "Path",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "083526407339",
+      "text": "public/slop.json",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 257,
+          "kind": "html-attr:placeholder",
+          "raw": "public/slop.json",
+          "quote": "\""
+        }
+      ]
+    },
+    {
+      "id": "c344924a9071",
+      "text": "Where report writes it, so the site serves it at /slop.json.",
+      "words": 11,
+      "tier": "helper",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 258,
+          "kind": "html-text",
+          "raw": "Where report writes it, so the site serves it at /slop.json.",
+          "quote": null
+        }
+      ]
+    },
+    {
+      "id": "1509f561f241",
+      "text": "Save",
+      "words": 1,
+      "tier": "label",
+      "status": "unreviewed",
+      "replacement": null,
+      "note": null,
+      "occurrences": [
+        {
+          "file": "src/ui.html",
+          "line": 261,
+          "kind": "html-text",
+          "raw": "Save",
           "quote": null
         }
       ]
